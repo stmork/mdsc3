@@ -1,7 +1,12 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
 import ecore;
 import xtext;
 
-process(GeneratedMetamodel this) :
+process(xtext::GeneratedMetamodel this) :
 	nic(this.ePackage) ->
 	process(this.ePackage, "TWI",      "number",   "0") ->
 	process(this.ePackage, "SSH",      "port",    "22") ->

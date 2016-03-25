@@ -24,6 +24,8 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="bits" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="domain" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="gw" eType="#//Host"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="nics" upperBound="-1" eType="#//NIC"
+        eOpposite="#//NIC/network"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Machine" eSuperTypes="#//Type"/>
   <eClassifiers xsi:type="ecore:EClass" name="Switch" eSuperTypes="#//Machine">
@@ -46,10 +48,14 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="parent" eType="#//Host"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="deploy" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="bits64" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="lang" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="lc" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="charset" eType="#//CHARSET"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="cafile" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="lang" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral="de_DE.UTF-8"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="lc" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral="de_DE.utf8"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="charset" eType="#//CHARSET"
+        defaultValueLiteral="UTF-8"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="cafile" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral="cacert.pem"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="devices" upperBound="-1"
         eType="#//HostDevice" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="services" upperBound="-1"
@@ -94,7 +100,8 @@
         eType="#//Volume" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TWI" eSuperTypes="#//Controller">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="number" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="number" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+        defaultValueLiteral="0"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="bbu" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="LSI" eSuperTypes="#//Controller">
@@ -142,7 +149,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="ifaces" unique="false"
         upperBound="-1" eType="#//NIC"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="bridged" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="network" eType="#//Network"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="network" eType="#//Network"
+        eOpposite="#//Network/nics"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="dhcp" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="ipaddr" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
@@ -216,7 +224,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="SMART" eSuperTypes="#//HostService"/>
   <eClassifiers xsi:type="ecore:EClass" name="SNMP" eSuperTypes="#//SwitchService #//PrinterService #//HostService"/>
   <eClassifiers xsi:type="ecore:EClass" name="SSH" eSuperTypes="#//HostService">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="port" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="port" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+        defaultValueLiteral="22"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="UPS" eSuperTypes="#//HostService"/>
   <eClassifiers xsi:type="ecore:EClass" name="APC" eSuperTypes="#//UPS">
@@ -253,7 +262,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="WebServer" eSuperTypes="#//HostService"/>
   <eClassifiers xsi:type="ecore:EClass" name="Apache" eSuperTypes="#//WebServer">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="auth" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="docroot" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="docroot" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral="/var/www"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="connections" upperBound="-1"
         eType="#//Connector" containment="true"/>
   </eClassifiers>
@@ -282,7 +292,8 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="JkServer">
     <eStructuralFeatures xsi:type="ecore:EReference" name="host" eType="#//Host"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="port" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="port" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+        defaultValueLiteral="8009"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Subversion" eSuperTypes="#//SVN">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="svndir" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>

@@ -67,6 +67,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute MDSC3.ecore#//Network/bits"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute MDSC3.ecore#//Network/domain"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference MDSC3.ecore#//Network/gw"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference MDSC3.ecore#//Network/nics"/>
     </genClasses>
     <genClasses ecoreClass="MDSC3.ecore#//Machine"/>
     <genClasses ecoreClass="MDSC3.ecore#//Switch">
