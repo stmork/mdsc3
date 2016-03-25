@@ -26,5 +26,4 @@ Export-Package: de.morknet,
  de.morknet.parser.antlr.internal,
  de.morknet.validation,
  de.morknet.scoping,
- de.morknet.generator,
  de.morknet.formatting

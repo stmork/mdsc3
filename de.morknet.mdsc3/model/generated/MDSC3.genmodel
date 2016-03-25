@@ -48,11 +48,7 @@
       <genEnumLiterals ecoreEnumLiteral="MDSC3.ecore#//SMBMODE/BDC"/>
     </genEnums>
     <genClasses ecoreClass="MDSC3.ecore#//Model">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference MDSC3.ecore#//Model/imports"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference MDSC3.ecore#//Model/elements"/>
-    </genClasses>
-    <genClasses ecoreClass="MDSC3.ecore#//Import">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute MDSC3.ecore#//Import/importURI"/>
     </genClasses>
     <genClasses ecoreClass="MDSC3.ecore#//Type">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute MDSC3.ecore#//Type/name"/>

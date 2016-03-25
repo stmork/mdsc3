@@ -4,11 +4,12 @@ generate mdsc3 "http://www.morknet.de/mdsc3"
 import 'http://www.eclipse.org/emf/2002/Ecore' as ecore
 
 Model :
-	(imports+=Import)*
+//	(imports+=Import)*
 	(elements+=Type)*;
-	
+/*
 Import :
 	'import' importURI=STRING ';';
+*/
 
 Type:
 	Location | Machine;
@@ -23,7 +24,7 @@ Location :
 		(networks+=Network)+
 	'}';
 
-Network :
+Network : {Network}
 	'network' name=ID
 	'{'
 		('address' address=IPADDR ';')
@@ -157,7 +158,7 @@ NIC:	'NIC'
 		(bridged?='bridging' '(' ifaces+=[NIC|ID] (',' ifaces+=[NIC|ID])* ')')
 	)
 	(network=[Network|ID] 'ip' ((dhcp?='dhcp')?|(ipaddr=(IPADDR) (dhcp?='dhcp')?)))?;
-	
+
 Partition:
 	'Partition' name=PATH device=PATH filllevel=INT snmpindex=INT (backup?='backup')?;
 
