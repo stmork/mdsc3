@@ -29,7 +29,7 @@ public class MD5Hasher {
 
 		return hash(baos.toByteArray());
 	}
-	
+
 	private static String hash(byte [] array)
 	{
 		StringBuffer result = new StringBuffer(32);
@@ -37,9 +37,12 @@ public class MD5Hasher {
 		try {
 			MessageDigest md5 = MessageDigest.getInstance("MD5");
 			md5.update(array);
-			Formatter f = new Formatter(result);
-			for (byte b : md5.digest()) {
-				f.format("%02x", b);
+			try(Formatter f = new Formatter(result))
+			{
+				for (byte b : md5.digest())
+				{
+					f.format("%02x", b);
+				}
 			}
 		} catch (NoSuchAlgorithmException ex) {
 			ex.printStackTrace();
