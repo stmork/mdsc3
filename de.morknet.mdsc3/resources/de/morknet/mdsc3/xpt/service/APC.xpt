@@ -1,0 +1,78 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::service::APC»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«DEFINE service(Host host) FOR APC»
+«EXPAND settings(host)»
+«EXPAND config(host)»
+«IF isMaster(this)»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE settings(Host host) FOR APC»
+«IF isUbuntu(host) || isDebian(host) || isWindowsServer(host)»
+«FILE config(host, "/etc/default/apcupsd") CONFIG»
+# Apcupsd-devel internal configuration
+
+APCACCESS=/sbin/apcaccess
+ISCONFIGURED=yes
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE config(Host host) FOR APC»
+«FILE config(host, apc_config(this)) CONFIG»
+## apcupsd.conf v1.1 ##
+«EXPAND tools::ConfigHeader(apc_config(this))»
+# host «host.name» is «IF isMaster(this)»master«ELSE»slave«ENDIF»
+ANNOY 300
+ANNOYDELAY 60
+BATTERYLEVEL 5
+DATATIME 0
+EVENTSFILEMAX 10
+EVENTSFILE /var/log/apcupsd.events
+KILLDELAY 0
+LOCKFILE /var/lock
+LOGSTATS off
+MINUTES 3
+NETTIME 15
+NISIP 0.0.0.0
+NISPORT 3551
+NOLOGON disable
+ONBATTERYDELAY 6
+«IF isMaster(this)»
+«IF usb»
+DEVICE
+UPSCABLE usb
+UPSTYPE usb
+«ELSE»
+DEVICE /dev/ttyS0
+UPSCABLE smart
+UPSTYPE apcsmart
+«ENDIF»
+NETSERVER on
+UPSNAME «this.name»
+«ELSE»
+DEVICE «fqhn(this.host)»
+UPSCABLE ether
+UPSTYPE net
+UPSNAME «this.host.services.typeSelect(APC).first().name»
+«ENDIF»
+UPSCLASS standalone
+UPSMODE disable
+SLEEP 180
+STATFILE /var/log/apcupsd.status
+STATTIME 0
+TIMEOUT «this.delay»
+«ENDFILE»
+«ENDDEFINE»

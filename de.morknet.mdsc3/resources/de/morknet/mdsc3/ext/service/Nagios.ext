@@ -1,0 +1,116 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::host;
+extension de::morknet::mdsc3::ext::util::model;
+extension de::morknet::mdsc3::ext::util::os;
+extension de::morknet::mdsc3::ext::service::Apache;
+extension de::morknet::mdsc3::ext::service::DHCP;
+extension de::morknet::mdsc3::ext::service::Mail;
+extension de::morknet::mdsc3::ext::service::SNMP;
+extension de::morknet::mdsc3::ext::service::VM;
+
+cached String nagiosVersion(Nagios nagios) :
+	isUbuntu(getHost(nagios)) ? "nagios3" : "nagios2";
+
+Boolean hasNagios(Host host) :
+	host.services.exists(s|Nagios.isInstance(s));
+
+String processes(Nagios nagios) :
+	"/root/bin/snmp-processes.sh";
+
+String basedir(Nagios nagios) :
+	"/etc/" + nagiosVersion(nagios);
+
+String apache(Nagios nagios) :
+	basedir(nagios) + "/apache2.conf";
+
+String confdir(Nagios nagios) :
+	basedir(nagios) + "/conf.d";
+
+String plugins(Nagios nagios) :
+	"/usr/lib/nagios/plugins";
+
+String cgi(Nagios nagios) :
+	"/usr/lib/cgi-bin/" + nagiosVersion(nagios);
+
+String stylesheets(Nagios nagios) :
+	basedir(nagios) + "/stylesheets";
+
+String htdocs(Nagios nagios) :
+	"/usr/share/" + nagiosVersion(nagios) + "/htdocs";
+
+String init(Nagios nagios) :
+	"/etc/init.d/" + nagiosVersion(nagios);
+
+String config(Nagios nagios, Machine snmphost) :
+	confdir(nagios) + "/host-" + fqhn(snmphost) + ".cfg";
+
+String groupconf(Nagios nagios) :
+	confdir(nagios) + "/hostgroups_" + nagiosVersion(nagios) + ".cfg";
+
+String serviceconf(Nagios nagios) :
+	confdir(nagios) + "/services_" + nagiosVersion(nagios) + ".cfg";
+
+String contactconf(Nagios nagios) :
+	confdir(nagios) + "/contacts_" + nagiosVersion(nagios) + ".cfg";
+
+String periodconf(Nagios nagios) :
+	confdir(nagios) + "/backup_periods.cfg";
+
+String commandsconf(Nagios nagios) :
+	confdir(nagios) + "/commands_" + nagiosVersion(nagios) + ".cfg";
+
+Boolean condDhcp(Host here, Host there) :
+//	hasDhcpd(there) && (there != here) && (!isExtern(here, there));
+	false;
+
+Boolean condSnmpMem(Host m) :
+	hasSnmpd(m) && (!isWindows(m));
+
+Boolean condSnmpCpu(Host m) :
+	hasSnmpd(m) && (!isWindows(m));
+
+List[Host] getAllSnmpHosts(Nagios nagios) :
+	getAllHosts(nagios).reject(h|isDummy(h) || !condSnmpCpu(h));
+	
+Boolean condSnmpMce(Host m) :
+	hasSnmpd(m) && (!isWindows(m)) && (!isVirtualHost(m));
+
+Boolean condSnmpSmart(Host m) :
+	hasSnmpd(m) && (!isWindows(m));
+
+Boolean condSnmpPart(Host m) :
+	hasSnmpd(m) && (!isWindows(m));
+
+Integer load(Integer l, Integer count) :
+	l * count * 100;
+
+String hostType(Host host) :
+	isVmWare(host) ? "vmware-host" : "generic-host";
+
+String hostType(Machine m) :
+	"generic-host";
+
+String hostType(Printer p) :
+	"printer";
+
+private Integer processes_nagios(Host host) :
+	hasNagios(host) ? 30 : 0;
+
+private Integer processes_zimbra(Host host) :
+	hasZimbra(host) ? 100 : 0;
+
+private Integer process_limit(Host host, Integer limit) :
+	limit + getCpuCount(host) * 25 + getVMs(host).size * 7 + host.services.size * 2 + processes_nagios(host) + processes_zimbra(host);
+
+Integer process_limit_warn(Host host) :
+	process_limit(host, 100);
+
+Integer process_limit_critical(Host host) :
+	process_limit(host, 200);
+

@@ -1,0 +1,59 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::util::constants»
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+«EXTENSION de::morknet::mdsc3::ext::service::SMART»
+
+«DEFINE service(Host host) FOR SMART»
+«EXPAND config(host)»
+«EXPAND mail(host)»
+«ENDDEFINE»
+
+«DEFINE config(Host host) FOR SMART»
+«FILE config(host, smartd(this)) CONFIG»
+«EXPAND tools::ConfigHeader(smartd(this))»
+«FOREACH getDrives(this) AS drive»
+«drive.device» -d «drive.channel» -S on -m «adminmail()» -a -M exec «mailscript(this)»
+«ENDFOREACH»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE mail(Host host) FOR SMART»
+«FILE config(host, mailscript(this)) CONFIG»
+«EXPAND tools::ConfigShell(mailscript(this))»
+#
+# This is a script from the smartmontools examplescripts/ directory.
+# It can be used as an argument to the -M exec Directive in
+# /etc/smartd.conf, in a line like
+# -m «adminmail()» -M exec «mailscript(this)»
+#
+# Please see man 8 smartd or man 5 smartd.conf for further
+# information.
+#
+
+# Save the email message (STDIN) to a file:
+SMART_MSG=/tmp/smart.msg
+
+cat > $SMART_MSG
+
+echo "======================================================================" >>$SMART_MSG
+# Append the output of smartctl -a to the message:
+/usr/sbin/smartctl -a -d $SMARTD_DEVICETYPE $SMARTD_DEVICE >> $SMART_MSG
+echo "======================================================================" >>$SMART_MSG
+echo "-- " >>$SMART_MSG
+echo "System administrator" >>$SMART_MSG
+
+# Now email the message to the user at address ADD.  Solaris and
+# other OSes may need to use /bin/mailx below.
+/usr/bin/mail -s "$SMARTD_SUBJECT" $SMARTD_ADDRESS < $SMART_MSG
+rm $SMART_MSG
+«ENDFILE»
+«ENDDEFINE»

@@ -1,0 +1,201 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::SSL»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«EXTENSION de::morknet::mdsc3::ext::service::LDAP»
+«EXTENSION de::morknet::mdsc3::ext::service::PAM»
+
+«DEFINE service(Host host) FOR PAM»
+«EXPAND config(host)»
+«EXPAND nsSwitchConf(host)»
+«EXPAND pamCommonAccount(host)»
+«EXPAND pamCommonAuth(host)»
+«EXPAND pamCommonPassword(host)»
+«EXPAND pamCommonSession(host)»
+«ENDDEFINE»
+
+«REM»
+«================ abstract PAM ================»
+«ENDREM»
+
+«DEFINE config(Host host) FOR PAM»
+«ERROR "PAM is abstract!"»
+«ENDDEFINE»
+
+«DEFINE nsSwitchConf(Host host) FOR PAM»
+«ERROR "PAM is abstract!"»
+«ENDDEFINE»
+
+«DEFINE pamCommonAccount(Host host) FOR PAM»
+«ERROR "PAM is abstract!"»
+«ENDDEFINE»
+
+«DEFINE pamCommonAuth(Host host) FOR PAM»
+«ERROR "PAM is abstract!"»
+«ENDDEFINE»
+
+«DEFINE pamCommonPassword(Host host) FOR PAM»
+«ERROR "PAM is abstract!"»
+«ENDDEFINE»
+
+«DEFINE pamCommonSession(Host host) FOR PAM»
+«ERROR "PAM is abstract!"»
+«ENDDEFINE»
+
+«REM»
+«================ local PAM ================»
+«ENDREM»
+
+«DEFINE config(Host host) FOR PamLocal»
+«ENDDEFINE»
+
+«DEFINE nsSwitchConf(Host host) FOR PamLocal»
+«FILE config(host, nsSwitch(this)) CONFIG»
+«EXPAND tools::ConfigHeader(nsSwitch(this))»
+# local PAM authentication
+##
+passwd:         compat
+group:          compat
+shadow:         compat
+#
+hosts:          files dns
+networks:       files
+#
+protocols:      db files
+services:       db files
+ethers:         db files
+rpc:            db files
+#
+netgroup:       nis
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE pamCommonAccount(Host host) FOR PamLocal»
+«FILE config(host, pamCommonAccount(this)) CONFIG»
+«EXPAND tools::ConfigHeader(pamCommonAccount(this))»
+account required        pam_unix.so
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE pamCommonAuth(Host host) FOR PamLocal»
+«FILE config(host, pamCommonAuth(this)) CONFIG»
+«EXPAND tools::ConfigHeader(pamCommonAuth(this))»
+auth    required        pam_unix.so nullok_secure
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE pamCommonPassword(Host host) FOR PamLocal»
+«FILE config(host, pamCommonPassword(this)) CONFIG»
+«EXPAND tools::ConfigHeader(pamCommonPassword(this))»
+password   required   pam_unix.so nullok obscure min=4 max=8 md5
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE pamCommonSession(Host host) FOR PamLocal»
+«FILE config(host, pamCommonSession(this)) CONFIG»
+«EXPAND tools::ConfigHeader(pamCommonSession(this))»
+session required        pam_unix.so
+session required        pam_limits.so
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»
+«================ LDAP PAM ================»
+«ENDREM»
+
+«DEFINE config(Host host) FOR PamLDAP»
+«LET getLdap(getLdapMaster(host)) AS master»
+«EXPAND pam_config(host, master, pam_conf(this))»
+«EXPAND pam_config(host, master, pam_nss(this))»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE pam_config(Host host, LDAP master, String file) FOR PamLDAP»
+«IF file != null»
+«FILE config(host, file) CONFIG»
+«EXPAND tools::ConfigHeader(file)»
+base           «master.baseDN»
+ldap_version   3
+rootbinddn     cn=manager,«master.baseDN»
+ssl            on
+tls_checkpeer  «getSecureMode()»
+tls_cacertfile «getSslCaCert(host)»
+#tls_cert       «getSslCert(host)»
+#tls_key        «getSslKey(host)»
+uri           «FOREACH getLdapHosts(host) AS ldapHost» ldaps://«fqhn(ldapHost)»/«ENDFOREACH»
+bind_policy    soft
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE nsSwitchConf(Host host) FOR PamLDAP»
+«FILE config(host, nsSwitch(this)) CONFIG»
+«EXPAND tools::ConfigHeader(nsSwitch(this))»
+# NSS for LDAP authentication.
+##
+passwd: files ldap
+group:  files ldap
+shadow: files ldap
+#
+hosts:  files dns
+networks:       files dns
+#
+services:       files
+protocols:      files
+rpc:    files
+ethers: files
+netmasks:		files
+netgroup:		files
+publickey:		files
+#
+bootparams:		files
+automount:		files nis
+aliases:		files
+#passwd_compat:	ldap
+#group_compat:	ldap
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE pamCommonAccount(Host host) FOR PamLDAP»
+«FILE config(host, pamCommonAccount(this)) CONFIG»
+«EXPAND de::morknet::mdsc3::xpt::util::tools::ConfigHeader(pamCommonAccount(this))»
+session required        pam_mkhomedir.so skel=/etc/skel/ umask=0077
+session required        pam_limits.so
+account sufficient      pam_ldap.so
+account required        pam_unix.so
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE pamCommonAuth(Host host) FOR PamLDAP»
+«FILE config(host, pamCommonAuth(this)) CONFIG»
+«EXPAND de::morknet::mdsc3::xpt::util::tools::ConfigHeader(pamCommonAuth(this))»
+auth    sufficient      pam_ldap.so
+auth    required        pam_unix.so nullok_secure use_first_pass
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE pamCommonPassword(Host host) FOR PamLDAP»
+«FILE config(host, pamCommonPassword(this)) CONFIG»
+«EXPAND de::morknet::mdsc3::xpt::util::tools::ConfigHeader(pamCommonPassword(this))»
+password   sufficient  pam_ldap.so
+password   required    pam_unix.so nullok obscure min=4 max=8 md5
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE pamCommonSession(Host host) FOR PamLDAP»
+«FILE config(host, pamCommonSession(this)) CONFIG»
+«EXPAND de::morknet::mdsc3::xpt::util::tools::ConfigHeader(pamCommonSession(this))»
+session sufficient      pam_ldap.so use_first_pass
+session required        pam_unix.so
+session required        pam_limits.so
+«ENDFILE»
+«ENDDEFINE»

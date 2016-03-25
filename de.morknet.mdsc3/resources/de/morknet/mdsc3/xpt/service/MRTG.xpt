@@ -1,0 +1,570 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::device::twi»
+«EXTENSION de::morknet::mdsc3::ext::device::lsi»
+
+«EXTENSION de::morknet::mdsc3::ext::util::counter»
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::network»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«EXTENSION de::morknet::mdsc3::ext::service::Apache»
+«EXTENSION de::morknet::mdsc3::ext::service::APC»
+«EXTENSION de::morknet::mdsc3::ext::service::Mail»
+«EXTENSION de::morknet::mdsc3::ext::service::MRTG»
+«EXTENSION de::morknet::mdsc3::ext::service::Nagios»
+«EXTENSION de::morknet::mdsc3::ext::service::SNMP»
+«EXTENSION de::morknet::mdsc3::ext::service::LDAP»
+«EXTENSION de::morknet::mdsc3::ext::service::SMART»
+
+«DEFINE service(Host host) FOR MRTG»
+«EXPAND config(host)»
+«EXPAND apache(host)»
+«EXPAND snmp_mem(host)»
+«EXPAND snmp_win(host)»
+«EXPAND give_me_da_hd_age(host)»
+«EXPAND give_me_da_hd_temp(host)»
+«IF !useGlobalConfig()»
+«EXPAND index(host)»
+«EXPAND cronjob(host)»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE config(Host mrtghost) FOR MRTG»
+MRTG «mrtghost.name»
+«LET getSnmpMachines(mrtghost) AS snmpmachinelist»
+«FILE config(mrtghost, mrtgconfig(this)) CONFIG»
+«EXPAND tools::ConfigHeader(mrtgconfig(this))»
+#
+«IF useGlobalConfig()»
+WorkDir: «workdir(this)»
+EnableIPv6: no
+Options[_]: growright
+«ENDIF»
+#
+«FOREACH snmpmachinelist AS snmphost»
+Include: «mrtgconfig(snmphost)»
+«ENDFOREACH»
+«ENDFILE»
+«EXPAND snmp(mrtghost, this) FOREACH snmpmachinelist»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE snmp(Host mrtghost, MRTG mrtg) FOR Machine»
+«ERROR "Machine " + name + " is an abstract definition!"»
+«ENDDEFINE»
+
+«REM»
+«««««««««««««««««««««««««««««««««««««««««« MRTG for Printer »»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+«ENDREM»
+
+«DEFINE snmp(Host mrtghost, MRTG mrtg) FOR Printer»
+«FILE config(mrtghost, mrtgconfig(this)) CONFIG»
+«EXPAND tools::ConfigHeader(mrtgconfig(this))»
+#
+«IF !useGlobalConfig(mrtg)»
+WorkDir: «workdir(mrtg)»/«this.name»
+EnableIPv6: no
+Options[_]: growright
+«ENDIF»
+
+«FOREACH rejectVPN(getConnectedNICs(this)) AS nic»
+#
+##
+# NIC «nic.name»
+##
+Target[«fqhn(this)»_«nic.name»]: /«getIpAddress(nic)»:public@«fqhn(this)»::1:1
+SetEnv[«fqhn(this)»_«nic.name»]: MRTG_INT_IP="«getIpAddress(nic)»" MRTG_INT_DESCR="«nic.name»"
+MaxBytes[«fqhn(this)»_«nic.name»]: 12500000
+Title[«fqhn(this)»_«nic.name»]: Traffic Analysis for interface «nic.name» on «this.name»
+PageTop[«fqhn(this)»_«nic.name»]: <h1>Traffic Analysis for interface «nic.name» on «this.name»</h1>
+«ENDFOREACH»
+«IF color»
+«LET colorIndex() AS titles»
+«FOREACH 1.upTo(4) AS idx»
+#
+##
+# Toner («titles.get(idx)»)
+##
+Target[«fqhn(this)»_«idx»]: 1.3.6.1.2.1.43.11.1.1.9.1.«idx»&1.3.6.1.2.1.43.11.1.1.9.1.1:public@«fqhn(this)»
+MaxBytes[«fqhn(this)»_«idx»]: 100000
+Title[«fqhn(this)»_«idx»]: «titles.get(idx)»-Toner of «this.name»
+PageTop[«fqhn(this)»_«idx»]: <h1>«titles.get(idx)»-Toner of «this.name»</h1>
+Options[«fqhn(this)»_«idx»]: noo,gauge,growright,nopercent
+YLegend[«fqhn(this)»_«idx»]: pages left
+ShortLegend[«fqhn(this)»_«idx»]: pages left
+LegendI[«fqhn(this)»_«idx»]:Pages left:
+«ENDFOREACH»
+«ENDLET»
+«ELSE»
+#
+##
+# Toner
+##
+Target[«fqhn(this)»_black]: 1.3.6.1.2.1.43.11.1.1.9.1.1&1.3.6.1.2.1.43.11.1.1.9.1.1:public@«fqhn(this)»
+MaxBytes[«fqhn(this)»_black]: 100000
+Title[«fqhn(this)»_black]: Toner of «this.name»
+PageTop[«fqhn(this)»_black]: <h1>Toner of «this.name»</h1>
+Options[«fqhn(this)»_black]: noo,gauge,growright
+YLegend[«fqhn(this)»_black]: pages left
+ShortLegend[«fqhn(this)»_black]: pages left
+LegendI[«fqhn(this)»_black]:Pages left:
+«ENDIF»
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»
+«««««««««««««««««««««««««««««««««««««««««« MRTG for Host »»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+«ENDREM»
+
+«DEFINE snmp(Host mrtghost, MRTG mrtg) FOR Host»
+«FILE config(mrtghost, mrtgconfig(this)) CONFIG»
+«EXPAND tools::ConfigHeader(mrtgconfig(this))»
+«setValue("pos", "1")»
+«IF !useGlobalConfig(mrtg)»
+#
+WorkDir: «workdir(mrtg)»/«this.name»
+EnableIPv6: no
+Options[_]: growright
+«ENDIF»
+
+«IF hasZimbra(this)»
+#
+##
+# IMAP connections
+##
+Target[«fqhn(this)»_imap]: 1.3.6.1.4.1.2021.8.1.101.«getValue("pos")»&1.3.6.1.4.1.2021.4.1.0:public@«fqhn(this)»::5:2
+MaxBytes[«fqhn(this)»_imap]: 600
+Title[«fqhn(this)»_imap]: IMAPS connections on «this.name»
+PageTop[«fqhn(this)»_imap]: <h1>IMAPS connections on «this.name»</h1>
+Options[«fqhn(this)»_imap]: noo,gauge,growright,nopercent
+YLegend[«fqhn(this)»_imap]: Connections
+ShortLegend[«fqhn(this)»_imap]: &nbsp;
+LegendI[«fqhn(this)»_imap]: connections:
+Legend1[«fqhn(this)»_imap]: connections
+«addValue("pos", "1")»
+«ENDIF»
+
+«FOREACH rejectVPN(getConnectedNICs(this)) AS nic»
+#
+##
+# NIC «nic.name»
+##
+«IF !isLinux(this)»
+Target[«fqhn(this)»_«nic.name»]: /«getIpAddress(nic)»:public@«fqhn(this)»::1:1
+«ELSE»
+Target[«fqhn(this)»_«nic.name»]: \«nic.name»:public@«fqhn(this)»::1:1::2
+«ENDIF»
+MaxBytes[«fqhn(this)»_«nic.name»]: 500000000
+SetEnv[«fqhn(this)»_«nic.name»]: MRTG_INT_IP="«getIpAddress(nic)»" MRTG_INT_DESCR="«nic.name»"
+Title[«fqhn(this)»_«nic.name»]: Traffic Analysis for interface «nic.name» on «this.name»
+PageTop[«fqhn(this)»_«nic.name»]: <h1>Traffic Analysis for interface «nic.name» on «this.name»</h1>
+Options[«fqhn(this)»_«nic.name»]: growright,nopercent
+«ENDFOREACH»
+#
+##
+# memory usage
+##
+«IF isWindows(this)»
+Target[«fqhn(this)»_mem]: `«snmp_win(this)» «fqhn(this)» «this.name» public`
+«ELSE»
+Target[«fqhn(this)»_mem]: `«snmp_mem(this)» «fqhn(this)» «this.name» public`
+«ENDIF»
+MaxBytes[«fqhn(this)»_mem]: 256000000000
+Title[«fqhn(this)»_mem]: Memory/swap usage on «this.name»
+PageTop[«fqhn(this)»_mem]: <h1>Memory/swap usage on «this.name»</h1>
+Options[«fqhn(this)»_mem]: gauge,growright,nopercent
+YLegend[«fqhn(this)»_mem]: Bytes
+ShortLegend[«fqhn(this)»_mem]: Bytes
+LegendI[«fqhn(this)»_mem]: Memory usage
+LegendO[«fqhn(this)»_mem]: Swap usage
+Legend1[«fqhn(this)»_mem]: Bytes
+kilo[«fqhn(this)»_mem]: 1024
+
+«IF !isWindows(this)»
+#
+##
+# host load
+# snmpwalk -c public -v 1 -O n «fqhn(this)» 1.3.6.1.4.1.2021.10.1.5
+##
+Target[«fqhn(this)»_load]: 1.3.6.1.4.1.2021.10.1.5.1&1.3.6.1.4.1.2021.10.1.5.2:public@«fqhn(this)»
+MaxBytes[«fqhn(this)»_load]: «process_limit_warn() * 10»
+Factor[«fqhn(this)»_load]: 0.01
+Title[«fqhn(this)»_load]: Load on «this.name»
+PageTop[«fqhn(this)»_load]: <h1>Load on «this.name»</h1>
+Options[«fqhn(this)»_load]: gauge,growright,nopercent
+YLegend[«fqhn(this)»_load]: Load * 100
+ShortLegend[«fqhn(this)»_load]: &nbsp;   
+LegendI[«fqhn(this)»_load]: Load 1 min.:
+LegendO[«fqhn(this)»_load]: Load 5 min.:
+Legend1[«fqhn(this)»_load]: Load
+#
+##
+# host cpu utilization
+##
+Target[«fqhn(this)»_cpu]: 1.3.6.1.4.1.2021.11.50.0&1.3.6.1.4.1.2021.11.52.0:public@«fqhn(this)»
+MaxBytes[«fqhn(this)»_cpu]: «getCpuCount() * 101»
+Title[«fqhn(this)»_cpu]: CPU on «this.name»
+PageTop[«fqhn(this)»_cpu]: <h1>CPU on «this.name»</h1>
+Options[«fqhn(this)»_cpu]: growright
+YLegend[«fqhn(this)»_cpu]: % CPU
+ShortLegend[«fqhn(this)»_cpu]: % CPU
+LegendI[«fqhn(this)»_cpu]: User:
+LegendO[«fqhn(this)»_cpu]: System:
+Legend1[«fqhn(this)»_cpu]: % CPU
+#
+##
+# host wait
+# snmpwalk -c public -v 1 -O n «fqhn(this)» 1.3.6.1.4.1.2021.11.54.0
+##
+Target[«fqhn(this)»_wait]: 1.3.6.1.4.1.2021.11.54.0&1.3.6.1.4.1.2021.11.54.0:public@«fqhn(this)»
+MaxBytes[«fqhn(this)»_wait]: 110
+Title[«fqhn(this)»_wait]: Wait on «this.name»
+PageTop[«fqhn(this)»_wait]: <h1>Wait on «this.name»</h1>
+Options[«fqhn(this)»_wait]: noo,growright
+YLegend[«fqhn(this)»_wait]: % Wait
+ShortLegend[«fqhn(this)»_wait]: % Wait
+LegendI[«fqhn(this)»_wait]: Wait:
+Legend1[«fqhn(this)»_wait]: % Wait
+
+#
+##
+# host processes
+# snmpwalk -c public -v 1 -O n «fqhn(this)» 1.3.6.1.2.1.25.1.6.0
+##
+Target[«fqhn(this)»_proc]: 1.3.6.1.2.1.25.1.6.0&1.3.6.1.2.1.25.1.6.0:public@«fqhn(this)»
+MaxBytes[«fqhn(this)»_proc]: «process_limit_critical() * 2»
+Title[«fqhn(this)»_proc]: Processes on «this.name»
+PageTop[«fqhn(this)»_proc]: <h1>Processes on «this.name»</h1>  
+Options[«fqhn(this)»_proc]: noo,gauge,growright,nopercent
+YLegend[«fqhn(this)»_proc]: Processes
+ShortLegend[«fqhn(this)»_proc]: &nbsp;   
+LegendI[«fqhn(this)»_proc]: Processes:
+Legend1[«fqhn(this)»_proc]: Processes
+
+«LET getCPU(this) AS cpu»
+«IF hasSensors(cpu)»
+«IF isMulticore(cpu)»
+«FOREACH 1.upTo(cpu.cores / 2) AS number»
+#
+##
+# CPU temperature of core «number * 2 - 1» and «number * 2»
+##
+Target[«fqhn(this)»_temp«number»]: 1.3.6.1.4.1.2021.13.16.2.1.3.«number * 2 - 1»&1.3.6.1.4.1.2021.13.16.2.1.3.«number * 2»:public@«fqhn(this)»
+MaxBytes[«fqhn(this)»_temp«number»]: 100000
+Factor[«fqhn(this)»_temp«number»]: 0.001
+Title[«fqhn(this)»_temp«number»]: Core «number * 2 - 1» and core «number * 2» Temperatures on «this.name»
+PageTop[«fqhn(this)»_temp«number»]: <h1>Core «number * 2 - 1» and core «number * 2» Temperatures on «this.name»</h1>
+Options[«fqhn(this)»_temp«number»]: gauge,growright,nopercent
+YLegend[«fqhn(this)»_temp«number»]: °C
+ShortLegend[«fqhn(this)»_temp«number»]: &deg;C
+LegendI[«fqhn(this)»_temp«number»]: Core Temp. «number * 2 - 1»:
+LegendO[«fqhn(this)»_temp«number»]: Core Temp. «number * 2»:
+Legend1[«fqhn(this)»_temp«number»]: &deg;C
+«ENDFOREACH»
+«ELSE»
+«FOREACH 1.upTo(cpu.cores) AS number»
+#
+##
+# CPU temperature of core «number»
+##
+Target[«fqhn(this)»_temp«number»]: 1.3.6.1.4.1.2021.13.16.2.1.3.«number»&1.3.6.1.4.1.2021.4.1.0:public@«fqhn(this)»
+MaxBytes[«fqhn(this)»_temp«number»]: 100000
+Factor[«fqhn(this)»_temp«number»]: 0.001
+Title[«fqhn(this)»_temp«number»]: Core «number» Temperatures on «this.name»
+PageTop[«fqhn(this)»_temp«number»]: <h1>Core «number» Temperatures on «this.name»</h1>
+Options[«fqhn(this)»_temp«number»]: noo,gauge,growright,nopercent
+YLegend[«fqhn(this)»_temp«number»]: °C
+ShortLegend[«fqhn(this)»_temp«number»]: &deg;C
+LegendI[«fqhn(this)»_temp«number»]: Core Temp. «number»:
+Legend1[«fqhn(this)»_temp«number»]: &deg;C
+«ENDFOREACH»
+«ENDIF»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+
+«IF !isWindows()»
+«setValue("part", "1")»
+«FOREACH getPartitions() AS part»
+#
+##
+# Usage of partition «part.name» on device «part.device»
+##
+Target[«fqhn(this)»_part«getValue("part")»]: 1.3.6.1.4.1.2021.9.1.9.«getValue("part")»&1.3.6.1.4.1.2021.4.1.0:public@«fqhn(this)»
+MaxBytes[«fqhn(this)»_part«getValue("part")»]: 110
+Title[«fqhn(this)»_part«getValue("part")»]: Used disk space on «part.name» of «this.name»
+PageTop[«fqhn(this)»_part«getValue("part")»]: <h1>Used disk space on «part.name» of «this.name»</h1>
+Options[«fqhn(this)»_part«getValue("part")»]: noo,gauge,growright
+YLegend[«fqhn(this)»_part«getValue("part")»]: %
+ShortLegend[«fqhn(this)»_part«getValue("part")»]: %
+LegendI[«fqhn(this)»_part«getValue("part")»]:Used:
+Legend1[«fqhn(this)»_part«getValue("part")»]: Used space on disk «part.name»
+
+«IF part.snmpindex > 0»
+#
+##
+# Disk IO of partition «part.name» on device «part.device»
+# snmpwalk -c public -v 2c -O n «fqhn(this)» 1.3.6.1.4.1.2021.13.15.1.1.2
+##
+Target[«fqhn(this)»_io«getValue("part")»]: 1.3.6.1.4.1.2021.13.15.1.1.12.«part.snmpindex»&1.3.6.1.4.1.2021.13.15.1.1.13.«part.snmpindex»:public@«fqhn(this)»:::::2
+MaxBytes[«fqhn(this)»_io«getValue("part")»]: 800000000
+Title[«fqhn(this)»_io«getValue("part")»]: Disk IO Analysis for disk «part.device» («part.name») on «this.name»
+PageTop[«fqhn(this)»_io«getValue("part")»]: <h1>Disk IO Analysis for disk «part.device» («part.name») on «this.name»</h1>
+Options[«fqhn(this)»_io«getValue("part")»]: growright
+LegendI[«fqhn(this)»_io«getValue("part")»]: Read:
+LegendO[«fqhn(this)»_io«getValue("part")»]: Write:
+kilo[«fqhn(this)»_io«getValue("part")»]: 1024
+«ENDIF»
+«addValue("part", "1")»
+«ENDFOREACH»
+«ENDIF»
+
+«FOREACH getDrives(this) AS disk»
+«addValue("pos", "1")»
+#
+##
+# disk temperature of «disk.device»
+##
+Target[«fqhn(this)»_«disk.number»_temp]: 1.3.6.1.4.1.2021.8.1.101.«getValue("pos")»&1.3.6.1.4.1.2021.4.1.0:public@«fqhn(this)»::5:2
+MaxBytes[«fqhn(this)»_«disk.number»_temp]: 50
+Title[«fqhn(this)»_«disk.number»_temp]: Temperature of disk «disk.number» on «this.name»
+PageTop[«fqhn(this)»_«disk.number»_temp]: <h1>Temperatures of disk «disk.number» on «this.name»</h1>
+Options[«fqhn(this)»_«disk.number»_temp]: noo,gauge,growright,nopercent
+YLegend[«fqhn(this)»_«disk.number»_temp]: °C
+ShortLegend[«fqhn(this)»_«disk.number»_temp]: &deg;C
+LegendI[«fqhn(this)»_«disk.number»_temp]: Temp.:
+Legend1[«fqhn(this)»_«disk.number»_temp]: &deg;C
+«addValue("pos", "3")»
+«ENDFOREACH»
+
+«REM»
+Skip RAID status.
+«ENDREM»
+«FOREACH get3wareController(this) AS twi»
+«FOREACH twi.volumes AS array»
+«addValue("pos", "1")»
+«ENDFOREACH»
+«ENDFOREACH»
+
+«FOREACH getLsiController(this) AS lsi»
+«FOREACH lsi.volumes AS array»
+«addValue("pos", "1")»
+«ENDFOREACH»
+«ENDFOREACH»
+
+«REM»
+Skip MCE.
+«ENDREM»
+«IF !isVirtualHost(this)»
+«addValue("pos", "1")»
+«ENDIF»
+
+«REM»
+Skip APC status.
+«ENDREM»
+«IF hasApc(this)»
+«addValue("pos", "1")»
+«ENDIF»
+
+«IF isApcMaster()»
+#
+##
+# APC load and battery charge
+##
+Target[«fqhn(this)»_apc1]: 1.3.6.1.4.1.2021.8.1.101.«getValue("pos")»&1.3.6.1.4.1.2021.8.1.101.«getValue("pos")+2»:public@«fqhn(this)»::5:2
+MaxBytes[«fqhn(this)»_apc1]: 110
+Title[«fqhn(this)»_apc1]: APC load and battery charge on «this.name»
+PageTop[«fqhn(this)»_apc1]: <h1>APC load and battery charge</h1>
+Options[«fqhn(this)»_apc1]: gauge,growright
+YLegend[«fqhn(this)»_apc1]: % load/charge
+ShortLegend[«fqhn(this)»_apc1]: %
+LegendI[«fqhn(this)»_apc1]:load:
+LegendO[«fqhn(this)»_apc1]:charge:
+Legend1[«fqhn(this)»_apc1]:APC load and battery charge
+#
+##
+# APC time left
+##
+Target[«fqhn(this)»_apc2]: 1.3.6.1.4.1.2021.8.1.101.«getValue("pos")+1»&1.3.6.1.4.1.2021.4.1.0:public@«fqhn(this)»::5:2
+MaxBytes[«fqhn(this)»_apc2]: 1440
+Title[«fqhn(this)»_apc2]: Time left on APC UPS on «this.name»
+PageTop[«fqhn(this)»_apc2]: <h1>Time left on APC UPS</h1>
+Options[«fqhn(this)»_apc2]: noo,gauge,growright,nopercent
+YLegend[«fqhn(this)»_apc2]: Minutes left
+ShortLegend[«fqhn(this)»_apc2]: min
+LegendI[«fqhn(this)»_apc2]: min.:
+Legend1[«fqhn(this)»_apc2]: Time left
+«addValue("pos", "3")»
+«ENDIF»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE apache(Host host) FOR MRTG»
+«LET getLdap(getLdapMaster(host)) AS master»
+«FILE config(host, apache(this, host)) CONFIG»
+«EXPAND tools::ConfigHeader(apache(this, host))»
+<IfModule mod_alias.c>
+#
+Alias /mrtg-all/  «workdir()»/
+#
+<Directory «workdir()»>
+	Options +Indexes
+«IF isApache24(host)»
+	Require all denied
+«ELSE»
+	Allow from all
+«ENDIF»
+#
+«EXPAND Apache::auth(host, "Network status", "admin")»
+</Directory>
+</IfModule>
+«ENDFILE»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE index(Host host) FOR MRTG»
+«FILE config(host, index(this)) CONFIG»
+<html>
+<head>
+<title>MRTG graphs of domain «getBaseNetwork(host).domain»</title>
+</head>
+<body>
+<h1>MRTG graphs of domain <quote>«getBaseNetwork(host).domain»</quote></h1>
+<p>
+«FOREACH getSnmpMachines(host) AS snmphost»
+<a href="./«snmphost.name»/">«snmphost.name»</a><br>
+«ENDFOREACH»
+</p>
+</body>
+</html>
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE cronjob(Host host) FOR MRTG»
+«FILE config(host, cronjob(this)) CONFIG»
+«EXPAND tools::ConfigShell(cronjob(this))»
+#
+LANG=C
+#
+logger -t MRTG -- "Start"
+#
+«FOREACH getSnmpMachines(host) AS snmphost»
+ping -c 1 «fqhn(snmphost)»  >/dev/null && mrtg «mrtgconfig(snmphost)»
+«ENDFOREACH»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE snmp_mem(Host host) FOR MRTG»
+«FILE config(host, snmp_mem(host)) CONFIG»
+«EXPAND tools::ConfigShell(snmp_mem(host))»
+#
+if [ "$1" == "" ]
+then
+	echo "$0 <fqhn> <hostname> <community>"
+	exit 1
+fi
+#
+fqhn="$1"
+hn="$2"
+secret="$3"
+#
+totalmem=`snmpget -v 1 -O vqU -c "$secret" "$fqhn" 1.3.6.1.4.1.2021.4.5.0`
+freemem=`snmpget -v 1 -O vqU -c "$secret" "$fqhn" 1.3.6.1.4.1.2021.4.6.0`
+#
+echo "($totalmem - $freemem) * 1024" | bc -iq | tail -n1
+totalmem=`snmpget -v 1 -O vqU -c "$secret" "$fqhn" 1.3.6.1.4.1.2021.4.3.0`
+freemem=`snmpget -v 1 -O vqU -c "$secret" "$fqhn" 1.3.6.1.4.1.2021.4.4.0`
+#
+echo "($totalmem - $freemem) * 1024" | bc -iq | tail -n1
+snmpget -v 1 -O vq -c "$secret" "$fqhn" hrSystemUptime.0
+echo "$hn"
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE snmp_win(Host host) FOR MRTG»
+«FILE config(host, snmp_win(host)) CONFIG»
+«EXPAND tools::ConfigShell(snmp_win(host))»
+
+if [ "$1" == "" ]
+then
+	echo "$0 <fqhn> <hostname> <community>"
+	exit 1
+fi
+#
+fqhn="$1"
+hn="$2"
+secret="$3"
+#
+virt_idx=`snmpwalk -c public -v 1 -O n $fqhn .1.3.6.1.2.1.25.2.3.1.1|wc -l`
+phys_idx=`echo $virt_idx - 1 | bc -iq | tail -n1`
+#
+phys_bs=`snmpget -v 1 -O vqU -c "$secret" "$fqhn" hrStorageAllocationUnits.$phys_idx | cut -d" " -f1`
+#phys_size=`snmpget -v 1 -O vqU -c "$secret" "$fqhn" hrStorageSize.$phys_idx`
+phys_used=`snmpget -v 1 -O vqU -c "$secret" "$fqhn" hrStorageUsed.$phys_idx`
+#
+virt_bs=`snmpget -v 1 -O vqU -c "$secret" "$fqhn" hrStorageAllocationUnits.$virt_idx | cut -d" " -f1`
+#virt_size=`snmpget -v 1 -O vqU -c "$secret" "$fqhn" hrStorageSize.$virt_idx`
+virt_used=`snmpget -v 1 -O vqU -c "$secret" "$fqhn" hrStorageUsed.$virt_idx`
+#
+echo "$phys_used * $phys_bs" | bc -iq | tail -n1
+echo "$virt_used * $virt_bs" | bc -iq | tail -n1
+snmpget -v 1 -O vq -c "$secret" "$fqhn" hrSystemUptime.0
+echo "$hn"
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE give_me_da_hd_temp(Host host) FOR MRTG»
+«FILE config(host, give_me_da_hd_temp(host)) CONFIG»
+«EXPAND tools::ConfigShell(give_me_da_hd_temp(host))»
+#
+«FOREACH getSnmpMachines(host).typeSelect(Host) AS temphost»
+«IF hasZimbra(temphost)»
+«setValue("pos", "2")»
+«ELSE»
+«setValue("pos", "1")»
+«ENDIF»
+«LET getDrives(temphost) AS drives»
+«IF drives.size > 0»
+echo "«fqhn(temphost)»:"
+«FOREACH drives AS drive»
+«addValue("pos", "1")»
+echo -n "   «drive.device» - «drive.channel»: ";snmpget -c public -v 1 -O vq «fqhn(temphost)» 1.3.6.1.4.1.2021.8.1.101.«getValue("pos")»
+«addValue("pos", "3")»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+«ENDFOREACH»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE give_me_da_hd_age(Host host) FOR MRTG»
+«FILE config(host, give_me_da_hd_age(host)) CONFIG»
+«EXPAND tools::ConfigShell(give_me_da_hd_age(host))»
+#
+«FOREACH getSnmpMachines(host).typeSelect(Host) AS temphost»
+«IF hasZimbra(temphost)»
+«setValue("pos", "2")»
+«ELSE»
+«setValue("pos", "1")»
+«ENDIF»
+«LET getDrives(temphost) AS drives»
+«IF drives.size > 0»
+echo "«fqhn(temphost)»:"
+«FOREACH drives AS drive»
+echo -n "   «drive.device» - «drive.channel»: ";snmpget -c public -v 1 -O vq «fqhn(temphost)» 1.3.6.1.4.1.2021.8.1.101.«getValue("pos")»
+«addValue("pos", "4")»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+«ENDFOREACH»
+«ENDFILE»
+«ENDDEFINE»

@@ -1,0 +1,66 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::host;
+extension de::morknet::mdsc3::ext::util::model;
+
+Boolean isVPN(Network n) :
+	n != null ? getConnectedNICs(n).exists(e|e.vpn) : false;
+
+private List[NIC] getAllNICs(Network this):
+	this.allElements().typeSelect(NIC).select(nic|nic.network != null);
+
+cached List[Host] getBaseHosts(Network network) :
+	getAllNICs(network).eContainer.typeSelect(Host).select(host|getBaseNetwork(host) == network);
+
+cached List[Host] getHosts(Network network) :
+	getAllNICs(network).select(nic|nic.network == network).eContainer.typeSelect(Host);
+
+cached List[Host] getPrinters(Network network) :
+	getAllNICs(network).select(nic|nic.network == network).eContainer.typeSelect(Printer).sortBy(e|e.name);
+
+cached Location getLocation(Network n) :
+	n.eContainer;
+
+cached List[Machine] getMachines(Network network) :
+	getAllNICs(network).select(nic|nic.network == network).eContainer;
+
+String asIpAddress(String hostname) : 
+	JAVA de.morknet.mdsc3.util.ExtensionFacade.asIpAddress(java.lang.String);
+
+String asHostname(String ip) : 
+	JAVA de.morknet.mdsc3.util.ExtensionFacade.asHostname(java.lang.String);
+
+private String getNetmask(Integer bits) :
+	JAVA de.morknet.mdsc3.util.ExtensionFacade.getNetmask(java.lang.Integer);
+
+cached getNetmask(Network nw) :
+	getNetmask(nw.bits);
+
+Boolean isBonded(NIC nic) :
+	nic.bonded;
+
+Boolean isBridged(NIC nic) :
+	nic.bridged;
+
+private String getBroadcastAddress(String ip, Integer bits) :
+	JAVA de.morknet.mdsc3.util.ExtensionFacade.getBroadcastAddress(java.lang.String, java.lang.Integer);
+
+cached getBroadcastAddress(Network nw) :
+	getBroadcastAddress(nw.address, nw.bits);
+
+private String getNetworkAddress(String ip, Integer bits) :
+	JAVA de.morknet.mdsc3.util.ExtensionFacade.getNetworkAddress(java.lang.String, java.lang.Integer);
+
+cached getNetworkAddress(NIC nic) :
+	getNetworkAddress(nic.ipaddr, nic.network.bits);
+
+cached getNetworkAddress(Network nw) :
+	getNetworkAddress(nw.address, nw.bits);
+
+Boolean isInNetwork(Network network, String ip) :
+	network.address == getNetworkAddress(ip, network.bits);

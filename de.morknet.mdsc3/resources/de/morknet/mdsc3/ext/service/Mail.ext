@@ -1,0 +1,27 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+String base(Postfix mail) :
+	"/etc/postfix";
+
+String config(Postfix mail) :
+	base(mail) + "/main.cf";
+
+String init(Postfix service) :
+	"/etc/init.d/postfix";
+
+String mailname(Postfix mail) :
+	"/etc/mailname";
+
+cached Boolean hasZimbra(Host host) :
+	host.services.exists(s|Zimbra.isInstance(s));
+
+cached Boolean hasMail(Host host) :
+	host.services.exists(s|Mail.isInstance(s));
+
+cached Boolean isRelay(Host host) :
+	hasZimbra(host);

@@ -1,0 +1,133 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+«IMPORT de::morknet::mdsc3::xpt::util»
+«IMPORT de::morknet::mdsc3::xpt::service»
+
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«EXTENSION de::morknet::mdsc3::ext::service::Apache»
+
+«DEFINE JK(Host host) FOR Apache»
+«IF connections.exists(c|JK.isInstance(c))»
+«EXPAND JK_conf(host)»
+«EXPAND JK_workers(host)»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE JK_conf(Host host) FOR Apache»
+«FILE config(host, jk(this)) CONFIG»
+«EXPAND tools::ConfigHeader(jk(this))»
+<IfModule mod_jk.c>
+#
+# Should mod_jk send SSL information to Tomcat (default is On)
+JkExtractSSL On
+# What is the indicator for SSL (default is HTTPS)
+JkHTTPSIndicator HTTPS
+# What is the indicator for SSL session (default is SSL_SESSION_ID)
+JkSESSIONIndicator SSL_SESSION_ID
+# What is the indicator for client SSL cipher suit (default is SSL_CIPHER)
+JkCIPHERIndicator SSL_CIPHER
+# What is the indicator for the client SSL certificated (default is SSL_CLIENT_CERT)
+JkCERTSIndicator SSL_CLIENT_CERT
+«IF !noWorkersFileConfig(host)»
+#
+# Where to find workers.properties
+JkWorkersFile «workers()»
+«ENDIF»
+#
+# Where to put jk logs
+JkLogFile /var/log/apache2/mod_jk.log
+#
+# Set the jk log level [debug/error/info]
+JkLogLevel info
+#
+# Select the log format
+JkLogStampFormat "[%a %b %d %H:%M:%S %Y]"
+#
+# JkOptions indicates to send SSK KEY SIZE
+JkOptions +ForwardKeySize +ForwardURICompat -ForwardDirectories
+#
+# JkRequestLogFormat
+JkRequestLogFormat "%w %V %T"
+#
+# You can use external file for mount points.
+# It will be checked for updates each 60 seconds.
+# The format of the file is: /url=worker
+# /examples/*=loadbalancer
+#JkMountFile conf/uriworkermap.properties
+#
+# Add shared memory.
+# This directive is present with 1.2.10 and
+# later versions of mod_jk, and is needed for
+# for load balancing to work properly
+JkShmFile /var/log/apache2/jk-runtime-status
+#
+</IfModule>
+
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE JK_workers(Host host) FOR Apache»
+«FILE config(host, workers(this)) CONFIG»
+«EXPAND tools::ConfigHeader(workers(this))»
+# OPTIONS ( very important for jni mode )
+
+#
+# workers.tomcat_home should point to the location where you
+# installed tomcat. This is where you have your conf, webapps and lib
+# directories.
+#
+workers.tomcat_home=/opt/tomcat
+#
+# workers.java_home should point to your Java installation. Normally
+# you should have a bin and lib directories beneath it.
+#
+workers.java_home=/usr/lib/jvm/java-gcj
+
+#
+# You should configure your environment slash... ps=\ on NT and / on UNIX
+# and maybe something different elsewhere.
+#
+«IF isWindows(host)»
+ps=\
+«ELSE»
+ps=/
+«ENDIF»
+
+#
+# worker list for nodes
+#
+
+worker.list=«FOREACH getJkList() AS worker»«getLoadBalancerId(worker)»,«ENDFOREACH»status
+
+«FOREACH getJkServer() AS node»
+#
+# «getWorkerId(node)» # Node definition
+#
+ 
+worker.«getWorkerId(node)».port=«node.port»
+worker.«getWorkerId(node)».host=«fqhn(node.host)»
+worker.«getWorkerId(node)».type=ajp13
+worker.«getWorkerId(node)».lbfactor=1
+«ENDFOREACH»
+
+«FOREACH getJkList() AS jk»
+#
+# «getLoadBalancerId(jk)» # Load balancer definition
+#
+worker.«getLoadBalancerId(jk)».type=lb
+worker.«getLoadBalancerId(jk)».balance_workers=«FOREACH jk.server AS node SEPARATOR ","»«getWorkerId(node)»«ENDFOREACH»
+«ENDFOREACH»
+ 
+#
+# Status WORKER DEFINITION
+#
+worker.status.type=status
+«ENDFILE»
+«ENDDEFINE»

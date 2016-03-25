@@ -1,0 +1,480 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+«IMPORT de::morknet::mdsc3::xpt::util»
+«IMPORT de::morknet::mdsc3::xpt::service»
+
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«EXTENSION de::morknet::mdsc3::ext::service::Apache»
+«EXTENSION de::morknet::mdsc3::ext::service::Mail»
+
+«DEFINE Subversion(Host host) FOR Apache»
+«IF hasSubversion(this)»
+«EXPAND SVN_include(host)»
+«EXPAND SVN_create(host)»
+«EXPAND SVN_config(host)»
+«EXPAND SVN_apache(host)»
+«EXPAND SVN_hooks(host)»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE Trac(Host host) FOR Apache»
+«IF hasTrac(this)»
+«EXPAND Trac_include(host)»
+«EXPAND Trac_create(host)»
+«EXPAND Trac_WSGI(host)»
+«EXPAND TracGit_create(host)»
+«EXPAND GIT_include(host)»
+«EXPAND GIT_config(host)»
+«ENDIF»
+«ENDDEFINE»
+
+«REM»
+«««««««««« Subversion »»»»»»»»»»
+«ENDREM»
+
+«DEFINE SVN_create(Host host) FOR Apache»
+«FILE config(host, SVN_create(this)) CONFIG»
+«EXPAND tools::ConfigShell(SVN_create(this))»
+#
+. «SVN_config()» ${1} ${2}
+#
+if [ ! -d ${SVN_REPOSITORY} ]
+then
+	echo "Subversion repository does not exist!"
+	echo "Creating..."
+#
+	umask 007
+	mkdir -p  ${SVN_REPOSITORY}
+	svnadmin create ${SVN_REPOSITORY}
+	svn mkdir -m "- Initial repository setup" file://${SVN_REPOSITORY}/trunk
+	svn mkdir -m "- Initial repository setup" file://${SVN_REPOSITORY}/tags
+	svn mkdir -m "- Initial repository setup" file://${SVN_REPOSITORY}/branches
+#
+	echo "Copying hook scripts..."
+	chmod -R 750 «SVN_hooks()»
+	test -d «SVN_hooks()» && cp -a «SVN_hooks()» ${SVN_REPOSITORY}
+#
+	echo "Setting rights..."
+	chgrp -R $WWW_GROUP ${SVN_REPOSITORY} ${SVN_REPO_BASE}
+	chmod 2770 ${SVN_REPOSITORY} ${SVN_REPOSITORY}/db
+	chmod  750 ${SVN_REPO_BASE}
+«IF isUbuntu(host)»
+	chmod  770 ${SVN_REPOSITORY}/db/rep-cache.db
+«ENDIF»
+fi
+#
+«SVN_apache()» ${1} ${2} || exit 1
+#
+echo "Reloading apache..."
+«init()» reload
+#
+echo "Done."
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE SVN_include(Host host) FOR Apache»
+«FILE config(host, SVN_include(this)) CONFIG»
+«EXPAND tools::ConfigHeader(SVN_include(this))»
+#
+IncludeOptional «svnconf()»/[^.#]*
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE SVN_config(Host host) FOR Apache»
+«FILE config(host, SVN_config(this)) CONFIG»
+«EXPAND tools::ConfigShell(SVN_config(this))»
+#
+SVN_REPO_BASE=«svndir()»
+SVN_REPO_NAME=${1}
+SVN_REPO_GRP=${2}
+SVN_APACHE_CONF="«svnconf()»/${SVN_REPO_NAME}.conf"
+WWW_USER=www-data
+WWW_GROUP=www-data
+#
+if [ "x${SVN_REPO_NAME}" = "x" ]
+then
+	echo "No repository name given!"
+	exit 1
+fi
+#
+if [ "x${SVN_REPO_GRP}" = "x" ]
+then
+	echo "No group name given!"
+	exit 1
+fi
+#
+SVN_REPOSITORY=${SVN_REPO_BASE}/${SVN_REPO_NAME}
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE SVN_apache(Host host) FOR Apache»
+«FILE config(host, SVN_apache(this)) CONFIG»
+«EXPAND tools::ConfigShell(SVN_apache(this))»
+#
+. «SVN_config()» ${1} ${2}
+#
+test -d «svnconf()» || mkdir «svnconf()»
+#
+echo "Configuring Apache..."
+echo '
+<IfModule mod_dav_svn.c>
+<Location "/subversion/'$SVN_REPO_NAME'">
+	DAV svn
+	SVNPath '$SVN_REPOSITORY'
+	SVNPathAuthz off
+#
+«IF isApache24(host)»
+	Require all denied
+«ELSE»
+	Allow from all
+«ENDIF»
+#
+«EXPAND Apache::auth(host, "Projekt: '$SVN_REPO_NAME'", "'$SVN_REPO_GRP'")»
+</Location>
+</IfModule>
+' > ${SVN_APACHE_CONF}
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE SVN_hooks(Host host) FOR Apache»
+«FILE config(host, SVN_precommit(this)) CONFIG»
+«EXPAND tools::ConfigShell(SVN_precommit(this))»
+#
+REPOS="$1"
+TXN="$2"
+#
+LOG=`svnlook log -t "$TXN" "$REPOS"`
+COUNT=`echo $LOG |wc -c`
+MIN_CHAR=20
+#
+# Check for at least some chars.
+if [ $COUNT -lt $MIN_CHAR ]
+then
+  echo 1>&2 "*** ERROR:"
+  echo 1>&2 "Need at least $MIN_CHAR characters for commit message!"
+  exit 1
+fi
+#
+# Check for some clear text characters
+echo "$LOG" | grep "[a-zA-Z0-9]" > /dev/null && exit 0
+echo 1>&2 "*** ERROR:"
+echo 1>&2 "Need a clear text message!"
+exit 1
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»
+«««««««««« Git »»»»»»»»»»
+«ENDREM»
+
+«DEFINE GIT_config(Host host) FOR Apache»
+«FILE config(host, GIT_config(this)) CONFIG»
+«EXPAND tools::ConfigShell(GIT_config(this))»
+#
+GIT_REPO_BASE=«gitdir()»
+GIT_REPO_NAME=${1}
+GIT_REPO_GRP=${2}
+GIT_APACHE_CONF="«gitconf()»/${GIT_REPO_NAME}.conf"
+WWW_USER=www-data
+WWW_GROUP=www-data
+#
+if [ "x${GIT_REPO_NAME}" = "x" ]
+then
+	echo "No repository name given!"
+	exit 1
+fi
+#
+if [ "x${GIT_REPO_GRP}" = "x" ]
+then
+	echo "No group name given!"
+	exit 1
+fi
+#
+GIT_REPOSITORY=${GIT_REPO_BASE}/${GIT_REPO_NAME}
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»
+«««««««««« Trac »»»»»»»»»»
+«ENDREM»
+
+«DEFINE Trac_include(Host host) FOR Apache»
+«FILE config(host, Trac_include(this)) CONFIG»
+«EXPAND tools::ConfigHeader(Trac_include(this))»
+#
+IncludeOptional «tracconf()»/[^.#]*
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE GIT_include(Host host) FOR Apache»
+«FILE config(host, GIT_include(this)) CONFIG»
+«EXPAND tools::ConfigHeader(GIT_include(this))»
+#
+IncludeOptional «gitconf()»/[^.#]*
+#
+SetEnv GIT_PROJECT_ROOT /data/git
+SetEnv GIT_HTTP_EXPORT_ALL
+ScriptAlias /git/ /usr/lib/git-core/git-http-backend/
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE Trac_create(Host host) FOR Apache»
+«FILE config(host, Trac_create(this)) CONFIG»
+«EXPAND tools::ConfigShell(Trac_create(this))»
+#
+if [ $# = 2 ]
+then
+	PROJECT_NAME=${1}
+	GROUP_NAME=${2}
+	. «SVN_config()» ${PROJECT_NAME} ${GROUP_NAME}
+else
+	echo 'Usage:' $0 '<project name> <ldap group name>'
+	exit 1
+fi
+#
+TRAC_BASE=«tracdir()»
+TRAC_REPOSITORY=${TRAC_BASE}/${PROJECT_NAME}
+TRAC_APACHE_CONF=«tracconf()»/${PROJECT_NAME}.conf
+«IF !isUbuntu(host)» 
+TRAC_TEMPLATES=/usr/share/trac/templates 
+«ENDIF» 
+#
+# Check if directory for all trac sites exist        
+if [ ! -d $TRAC_BASE ]
+then
+	mkdir ${TRAC_BASE}
+	chgrp ${WWW_GROUP} ${TRAC_BASE}
+	chmod 750 ${TRAC_BASE}
+fi
+#
+if [ -e $TRAC_REPOSITORY ]
+then
+	echo 'Trac project '$PROJECT_NAME' already exist!'
+	exit 0
+fi
+#
+if [ -d $SVN_REPOSITORY ]
+then
+	echo 'Subversion repository '$PROJECT_NAME' already exist!'
+else
+	«SVN_create()» $PROJECT_NAME $GROUP_NAME
+fi
+#
+echo 'Creating trac project...'
+«IF isUbuntu(host)»
+trac-admin $TRAC_REPOSITORY initenv $PROJECT_NAME sqlite:db/trac.db svn $SVN_REPOSITORY
+«ELSE»
+trac-admin $TRAC_REPOSITORY initenv $PROJECT_NAME sqlite:db/trac.db svn $SVN_REPOSITORY $TRAC_TEMPLATES 
+«ENDIF»
+find $TRAC_REPOSITORY -type f -exec chmod  660 {} \;
+find $TRAC_REPOSITORY -type d -exec chmod 2770 {} \;
+chgrp -R $WWW_GROUP $TRAC_REPOSITORY
+#
+echo '
+[metanav]
+logout = disabled
+#
+[components]
+webadmin.* = enabled
+«IF isApache24(host)»
+tracopt.versioncontrol.svn.svn_fs.subversionconnector = enabled
+«ENDIF»
+#
+[notification]
+always_notify_owner    = true
+always_notify_reporter = true
+always_notify_updater  = true
+mime_encoding = base64
+smtp_default_domain = «getDomain(host)»
+smtp_enabled = true
+smtp_from = trac@«getDomain(host)»
+smtp_port = 25
+smtp_replyto = trac@«getDomain(host)»
+«IF hasMail(host)»
+smtp_server = localhost
+«ELSE»
+smtp_server = «fqhn(connections.typeSelect(Trac).first().relay)»
+«ENDIF»
+smtp_subject_prefix = __default__
+use_tls = true
+' >> $TRAC_REPOSITORY/conf/trac.ini
+#
+echo 'Creating trac apache configuration...'
+#
+test -d «tracconf()» || mkdir «tracconf()»
+#
+echo '<Location "/trac/'$PROJECT_NAME'">
+#
+«EXPAND Apache::auth(host, "Projekt: '$PROJECT_NAME'", "'$GROUP_NAME'")»
+</Location>' > $TRAC_APACHE_CONF
+#
+echo "Reloading apache..."
+«init()» reload
+#
+echo "Done."
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE TracGit_create(Host host) FOR Apache»
+«FILE config(host, TracGit_create(this)) CONFIG»
+«EXPAND tools::ConfigShell(TracGit_create(this))»
+#
+if [ $# = 2 ]
+then
+	# Variablen initialisieren
+	. «GIT_config()» ${PROJECT_NAME} ${GROUP_NAME}
+	PROJECT_NAME=${1}
+	GROUP_NAME=${2}
+else
+	echo 'Usage:' $0 '<project name> <group name>'
+	exit 1
+fi
+#
+TRAC_BASE=«tracdir()»
+TRAC_REPOSITORY=${TRAC_BASE}/${PROJECT_NAME}
+TRAC_APACHE_CONF=«tracconf()»/${PROJECT_NAME}.conf
+GIT_APACHE_CONF=«gitconf()»/${PROJECT_NAME}.conf
+«IF !isUbuntu(host)» 
+TRAC_TEMPLATES=/usr/share/trac/templates 
+«ENDIF»
+#
+# Check if directory for all trac sites exist
+if [ ! -d $TRAC_BASE ]
+then
+	mkdir -p ${TRAC_BASE}
+	chgrp ${WWW_GROUP} ${TRAC_BASE} -R
+	chown ${WWW_USER} ${TRAC_BASE} -R
+	chmod 750 ${TRAC_BASE}
+fi
+#
+# Check if directory for all repositorys exist
+if [ ! -d $GIT_REPO_BASE ]
+then
+	mkdir ${GIT_REPO_BASE}
+	chgrp ${WWW_GROUP} ${GIT_REPO_BASE} -R
+	chown ${WWW_USER} ${GIT_REPO_BASE} -R
+	chmod 750 ${GIT_REPO_BASE}
+fi
+#
+#
+if [ -e $TRAC_REPOSITORY ]
+then
+	echo 'Trac project already exist'
+	exit 0
+fi
+#
+if [ -e $GIT_REPOSITORY ]
+then
+	echo 'Git repository '$PROJECT_NAME' already exist!'
+	exit 0
+fi
+#
+echo "Creating repository..."
+mkdir ${GIT_REPOSITORY}
+cd ${GIT_REPOSITORY}
+git init --bare
+git update-server-info
+touch git-daemon-export-ok
+#
+echo "Copying hook scripts..."
+test -f «GIT_hook()» && sed -e s\\%TRAC_DIR%\\$TRAC_BASE/$PROJECT_NAME\\g «GIT_hook()» >hooks/post-receive
+#
+echo "Setting rights for repository..."
+chgrp -R ${WWW_GROUP} ${GIT_REPOSITORY}
+chown -R ${WWW_USER}  ${GIT_REPOSITORY}
+chmod 750 ${GIT_REPOSITORY} -R
+#
+echo "Configuring Apache Location for Git"
+echo '<Location "/git/'$PROJECT_NAME'">
+«EXPAND Apache::auth(host, "Projekt: '$PROJECT_NAME'", "'$GROUP_NAME'")»
+</Location>
+' > $GIT_APACHE_CONF
+#
+echo 'Creating trac project...'
+mkdir $TRAC_REPOSITORY
+#
+«IF isUbuntu(host)» 
+trac-admin $TRAC_REPOSITORY initenv $PROJECT_NAME sqlite:db/trac.db git $GIT_REPOSITORY
+«ELSE»
+trac-admin $TRAC_REPOSITORY initenv $PROJECT_NAME sqlite:db/trac.db git $GIT_REPOSITORY $TRAC_TEMPLATES 
+«ENDIF»
+#
+#
+find $TRAC_REPOSITORY -type f -exec chmod  660 {} \;
+find $TRAC_REPOSITORY -type d -exec chmod 2770 {} \;
+chgrp -R ${WWW_GROUP} $TRAC_REPOSITORY
+chown -R ${WWW_USER}  $TRAC_REPOSITORY
+#
+echo 'Creating trac project config...'
+#
+echo '
+[trac]
+repository_dir = '$GIT_REPOSITORY'
+repository_type = git
+show_email_addresses = true
+#
+[metanav]
+logout = disabled
+#
+[components]
+webadmin.* = enabled
+tracext.git.* = enabled
+#
+[notification]
+always_notify_owner    = true
+always_notify_reporter = true
+always_notify_updater  = true
+mime_encoding = base64
+smtp_default_domain = «getDomain(host)»
+smtp_enabled = true
+smtp_from = trac@«getDomain(host)»
+smtp_port = 25
+smtp_replyto = trac@«getDomain(host)»
+«IF hasMail(host)»
+smtp_server = localhost
+«ELSE»
+smtp_server = «fqhn(connections.typeSelect(Trac).first().relay)»
+«ENDIF»
+smtp_subject_prefix = __default__
+use_tls = true
+#
+[git]
+cached_repository =false
+git_bin = /usr/bin/git
+persistent_cache = false
+shortrev_len = 7
+' >> $TRAC_REPOSITORY/conf/trac.ini
+#
+echo 'Creating trac apache configuration...'
+echo '<Location "/trac/'$PROJECT_NAME'">
+#
+«EXPAND Apache::auth(host, "Projekt: '$PROJECT_NAME'", "'$GROUP_NAME'")»
+</Location>' > $TRAC_APACHE_CONF
+#
+echo "Reloading Apache"
+«init()» reload
+#
+echo Done.
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE Trac_WSGI(Host host) FOR Apache»
+«FILE config(host, Trac_WSGI(this)) CONFIG»
+import sys
+sys.stdout = sys.stderr
+
+import os
+os.environ['TRAC_ENV_PARENT_DIR'] = '«tracdir()»'
+os.environ['PYTHON_EGG_CACHE'] = '«tracdir()»/eggs'
+ 
+import trac.web.main
+application = trac.web.main.dispatch_request
+«ENDFILE»
+«ENDDEFINE»

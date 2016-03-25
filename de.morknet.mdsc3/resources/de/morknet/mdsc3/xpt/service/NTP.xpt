@@ -1,0 +1,133 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::model»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::network»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«EXTENSION de::morknet::mdsc3::ext::service::SNMP»
+«EXTENSION de::morknet::mdsc3::ext::service::NTP»
+
+«DEFINE AppArmor FOR Host»
+«FILE config(this, AppArmor(this)) CONFIG -»«EXPAND tools::ConfigHeader(AppArmor(this))»
+/etc/ldap/ldap.conf r,
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE ntprestart FOR Host»
+«IF isLinux() && isVirtualHost() && parent.hasVmWare()»
+«FILE config(this, ntprestart(this)) CONFIG-»
+«EXPAND tools::ConfigShell(ntprestart(this))»
+#
+ntpdate -u «FOREACH getNtpHosts() AS ntp SEPARATOR " "»«fqhn(ntp)»«ENDFOREACH» >/dev/null
+«IF isUbuntu() || isDebian()»
+/sbin/start-stop-daemon  -x /usr/sbin/ntpd --start --test --quiet && «initntp()» start >/dev/null
+«ELSE»
+start >/dev/null
+«ENDIF»
+hwclock --systohc
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE ntpconfig FOR Host»
+«FILE config(this, ntpconfig(this)) CONFIG»
+«EXPAND tools::ConfigHeader(ntpconfig(this))»
+# ntpd will use syslog() if logfile is not defined
+#logfile «ntplogfile()»
+#
+driftfile «driftfile()»
+statsdir «ntpstatdir()»/
+#
+statistics loopstats peerstats clockstats
+filegen loopstats  file loopstats  type day enable
+filegen peerstats  file peerstats  type day enable
+filegen clockstats file clockstats type day enable
+#
+# ... and use the local system clock as a reference if all else fails
+# NOTE: in a local network, set the local stratum of *one* stable server
+# to 10; otherwise your clocks will drift apart if you lose connectivity.
+server 127.127.1.0
+fudge 127.127.1.0 stratum 13
+#
+# You do need to talk to an NTP server or two (or three).
+«LET getNtpHosts() AS hosts»
+«IF hasNtp() || (hosts.size == 0)»
+«IF hosts.size > 0»
+# Trusted keys if any.
+trustedkey«FOREACH 1.upTo(hosts.size) AS nr» «nr»«ENDFOREACH» 
+requestkey 1 
+controlkey 1 
+#
+«ENDIF»
+«LET getExternalNtpServer() AS extNtpServer»
+«FOREACH extNtpServer AS ext»
+server «ext» burst iburst
+«ENDFOREACH»
+#
+«FOREACH extNtpServer AS ext»
+restrict «ext»
+«ENDFOREACH»
+«ENDLET»
+#
+# localhost
+restrict 127.0.0.1
+#
+# Local net
+restrict «getNetworkAddress()»  mask  «getNetmask()» nomodify notrap
+
+«LET getWatchList() AS watchList»
+«IF watchList.size > 0»
+#
+# Watcher like Nagios etc.
+«FOREACH watchList AS watcher»
+restrict «getIpAddress(watcher)» mask 255.255.255.255 nomodify notrap
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+
+«LET getAllSwitches() AS switches»
+«IF switches.size > 0»
+#
+# Remote switches
+«FOREACH switches AS swt»
+«IF !isInNetwork(getBaseNetwork(), swt.getIpAddress())»
+restrict «swt.getIpAddress()» mask 255.255.255.255 nomodify notrap
+«ENDIF»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+«ELSE»
+«FOREACH hosts AS host»
+server «fqhn(host)» burst iburst prefer
+«ENDFOREACH»
+#
+# Fall back
+«FOREACH hosts AS host»
+restrict «fqhn(host)» noquery
+«ENDFOREACH»
+restrict 127.0.0.1
+restrict ::1
+«ENDIF»
+restrict default ignore
+«ENDLET»
+#
+# If you want to provide time to your local subnet, change the next line.
+# (Again, the address is already configured.)
+#broadcast «getBroadcastAddress()»
+#
+# If you want to listen to time broadcasts on your local subnet,
+# de-comment the next lines. Please do this only if you trust everybody
+# on the network!
+#disable auth
+#broadcastclient
+«ENDFILE»
+«ENDDEFINE»

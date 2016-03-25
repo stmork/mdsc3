@@ -1,0 +1,28 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«EXTENSION de::morknet::mdsc3::ext::service::DNS»
+
+«DEFINE service(Host host) FOR DNS»
+«EXPAND AppArmor(host)»
+«REM»
+«Hier könnten DNS-Konfigurationen untergebracht werden...»
+«ENDREM»
+«ENDDEFINE»
+
+«DEFINE AppArmor(Host host) FOR DNS»
+«FILE config(host, AppArmor(this)) CONFIG -»«EXPAND tools::ConfigHeader(AppArmor(this))»
+/etc/ldap/ldap.conf r,
+/etc/bind/zone/** rwk,
+«ENDFILE»
+«ENDDEFINE»

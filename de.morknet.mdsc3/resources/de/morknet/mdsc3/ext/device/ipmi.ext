@@ -1,0 +1,21 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::network;
+extension de::morknet::mdsc3::ext::util::host;
+
+cached Boolean hasIPMI(Host host) :
+	(host.devices.exists(d|IPMI.isInstance(d)));
+
+cached Boolean hasIPMI(Machine m) :
+	false;
+
+cached String ipmi(Host host) :
+	asHostname(host.devices.typeSelect(IPMI).get(0).ipaddr);
+
+String ipmi(Machine m) :
+	null;

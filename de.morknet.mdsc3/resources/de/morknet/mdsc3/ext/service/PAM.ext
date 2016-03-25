@@ -1,0 +1,38 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::host;
+extension de::morknet::mdsc3::ext::util::os;
+extension de::morknet::mdsc3::ext::service::LDAP;
+
+String nsSwitch(PAM pam) :
+	"/etc/nsswitch.conf";
+
+String getSecureMode(PamLDAP pam) :
+	pam.secure ? "yes" : "no";
+
+String pam_nss(PamLDAP pam) :
+	isDebian(getHost(pam)) ?
+		"/etc/libnss-ldap.conf" :
+		null;
+
+String pam_conf(PamLDAP pam) :
+	isDebian(getHost(pam)) ?
+		"/etc/pam-ldap.conf" :
+		"/etc/ldap.conf";
+
+String pamCommonAccount(PAM pam) :
+	"/etc/pam.d/common-account";
+
+String pamCommonAuth(PAM pam) :
+	"/etc/pam.d/common-auth";
+	
+String pamCommonPassword(PAM pam) :
+	"/etc/pam.d/common-password";
+	
+String pamCommonSession(PAM pam) :
+	"/etc/pam.d/common-session";

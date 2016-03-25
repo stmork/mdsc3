@@ -1,0 +1,125 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+import emf;
+
+extension de::morknet::mdsc3::ext::util::host;
+extension de::morknet::mdsc3::ext::util::model;
+extension de::morknet::mdsc3::ext::util::network;
+extension de::morknet::mdsc3::ext::util::os;
+
+cached LDAP getLdap(Host host) :
+	host.services.typeSelect(LDAP).first();
+
+cached Boolean hasLdap(Host host) :
+	host.services.exists(s|LDAP.isInstance(s));
+
+cached Boolean hasLdap389(Host host) :
+	host.services.typeSelect(LDAP).exists(ldap|!ldap.security);
+
+cached Boolean hasLdap636(Host host) :
+	host.services.typeSelect(LDAP).exists(ldap|ldap.security);
+
+private Boolean isLdapMaster(Host host) :
+	host.services.typeSelect(LDAP).exists(s|s.master);
+/*
+Gibt LDAP-Relevanz relativ zum Host zurück. Kleinere Werte = Höhere Priorität.
+LDAP-Host = Gefragter Host -> Prio = 0
+LDAP-Host im selben Netzwerk wie Gefragter Host? Bei Master 1, bei Slave 2
+LDAP-Host nicht im selben Netzwerk wie Gefragter Host? Bei Master 3, bei Slave 4
+
+Bei entfernten Debug-LDAP-Server erhöht sich der Wert um 10.
+*/
+private Integer getLdapPrio(Host host, Host ldap) :
+	host == ldap ? 0 :
+		(getLdap(ldap).debug ?
+			(getBaseNetwork(host) == getBaseNetwork(ldap) ?
+				(isLdapMaster(ldap) ? 11 : 12) :
+				(isLdapMaster(ldap) ? 13 : 14)) :
+			(getBaseNetwork(host) == getBaseNetwork(ldap) ?
+				(isLdapMaster(ldap) ? 1 : 2) :
+				(isLdapMaster(ldap) ? 3 : 4)));
+
+private Integer getLdapPrio(Host ldap) :
+	getLdap(ldap).debug ?
+		(isLdapMaster(ldap) ? 2 : 3) :
+		(isLdapMaster(ldap) ? 0 : 1);
+
+private Set[Host] getLdapHostSet(Network n) :
+	getHosts(n).select(h|hasLdap(h));
+
+private Set[Host] getLdapHostSet(Location loc) :
+	loc.networks.select(n|!isVPN(n)).getLdapHostSet().toSet();
+
+cached List[Host] getLdapHosts(Location loc) :
+	getLdapHostSet(loc).sortBy(ldap|getLdapPrio(ldap));
+
+cached List[Host] getLdapHosts(Host host) :
+	getLdapHosts(getLocation(getBaseNetwork(host))).sortBy(ldap|getLdapPrio(host, ldap));
+
+cached List[Host] getAllLdapSlaveHosts(EObject o) : //getLdapHosts(host).first();
+	getAllHosts(o).select(h|hasLdap(h) && (!isLdapMaster(h)));
+
+Host getLdapMaster(EObject o) :
+	getAllHosts(o).selectFirst(h|hasLdap(h) && isLdapMaster(h));
+
+String cryptCredential(String credential) :
+	JAVA de.morknet.mdsc3.util.ExtensionFacade.cryptSSHA(java.lang.String);
+
+cached String basedir(LDAP ldap) :
+	isSuSE (getHost(ldap)) ? "/etc/openldap" : "/etc/ldap";
+
+cached String config(LDAP ldap) :
+	basedir(ldap) + "/slapd.conf";
+
+cached String configDir(LDAP ldap) :
+	basedir(ldap) + "/slapd.d";
+
+cached String ldapConfig(Host host) :
+	isUbuntu(host) || isDebian(host) ? "/etc/ldap/ldap.conf" :
+		(isSuSE(host) ? "/etc/openldap/ldap.conf" : "/etc/ldap.conf");
+
+cached String getSecureMode(LDAP ldap) :
+	ldap.security ? "True" : "Try";
+
+cached String init(LDAP service) :
+	"/etc/init.d/slapd";
+
+cached String reset(LDAP ldap) :
+	"/root/bin/reset-ldap.sh";
+	
+cached String restore(LDAP ldap) :
+	"/root/bin/restore-ldap.sh";
+	
+cached String backup(LDAP ldap) :
+	"/root/bin/backup-ldap.sh";
+
+cached String slapdConv(LDAP ldap) :
+	"/root/bin/slapdconv.sh";
+
+cached String workdir(LDAP ldap) :
+	"/var/lib/ldap";
+
+cached String slurpdir(LDAP ldap) :
+	"/var/lib/slurpd";
+
+cached String dbconfig(LDAP ldap) :
+	workdir(ldap) + "/DB_CONFIG";
+
+cached String AppArmor(LDAP ldap) :
+	"/etc/apparmor.d/local/usr.sbin.slapd";
+
+cached Boolean isSyncRepl(Host host) :
+	isUbuntu(host);
+
+cached Boolean isSyncRepl(LDAP master, LDAP slave) :
+	isSyncRepl(getHost(master)) && isSyncRepl(getHost(slave));
+
+cached Boolean isConfDir(Host host, LDAP ldap) : 
+	isUbuntu(host); 
+
+cached String getLdapProtocol(Host host) :
+	"ldaps";

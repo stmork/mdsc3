@@ -1,0 +1,272 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::device::ipmi»
+«EXTENSION de::morknet::mdsc3::ext::device::twi»
+«EXTENSION de::morknet::mdsc3::ext::device::lsi»
+
+«EXTENSION de::morknet::mdsc3::ext::util::constants»
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::model»
+«EXTENSION de::morknet::mdsc3::ext::util::network»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«EXTENSION de::morknet::mdsc3::ext::service::Apache»
+«EXTENSION de::morknet::mdsc3::ext::service::AppServer»
+«EXTENSION de::morknet::mdsc3::ext::service::APC»
+«EXTENSION de::morknet::mdsc3::ext::service::DNS»
+«EXTENSION de::morknet::mdsc3::ext::service::DHCP»
+«EXTENSION de::morknet::mdsc3::ext::service::LDAP»
+«EXTENSION de::morknet::mdsc3::ext::service::Mail»
+«EXTENSION de::morknet::mdsc3::ext::service::NTP»
+«EXTENSION de::morknet::mdsc3::ext::service::Nagios»
+«EXTENSION de::morknet::mdsc3::ext::service::SMART»
+«EXTENSION de::morknet::mdsc3::ext::service::SNMP»
+«EXTENSION de::morknet::mdsc3::ext::service::SSH»
+
+«DEFINE services(Host host) FOR Nagios»
+«LET getAllMachines().reject(m|isDummy(m)).sortBy(m|m.name) AS machines»
+«LET machines.typeSelect(Host) AS hosts»
+«FILE config(host, serviceconf(this)) CONFIG»
+«EXPAND tools::ConfigHeader(serviceconf(this))»
+# check that ping-only hosts are up
+define service {
+		hostgroup_name                  internal-ping-servers
+		service_description             Ping
+		check_command                   check_ping!50.0,2%!150.0,10%
+		use                             generic-service
+	}
+«IF machines.exists(m|isExtern(host, m))»
+#
+define service {
+		hostgroup_name                  external-ping-servers
+		service_description             Ping
+		check_command                   check_ping!400.0,20%!1000.0,50%
+		use                             generic-service
+	}
+«ENDIF»
+«IF hosts.exists(m|hasIPMI(m))»
+#
+define service {
+		hostgroup_name                  ipmi-servers
+		service_description             HTTP
+		check_command                   check_http
+		use                             generic-service
+	}
+#
+define service {
+		hostgroup_name                  ipmi-servers
+		service_description             HTTPS
+		check_command                   check_https
+		use                             generic-service
+	}
+«ENDIF»
+«IF hosts.exists(m|has3ware(m))»
+#
+define service {
+		hostgroup_name                  3ware-servers
+		service_description             3DM2
+		check_command                   check_3dm2_ssl
+		use                             generic-service
+	}
+«ENDIF»
+«IF hosts.exists(m|hasApache(m))»
+#
+define service {
+		hostgroup_name                  http-servers
+		service_description             HTTP
+		check_command                   check_http
+		use                             generic-service
+	}
+#
+define service {
+		hostgroup_name                  http-servers
+		service_description             HTTPS
+		check_command                   check_www_auth!$HOSTNAME!/server-status
+		use                             generic-service
+	}
+#
+define service {
+		hostgroup_name                  http-servers
+		service_description             Certificate
+		check_command                   check_certificate
+		use                             generic-service
+	}
+«ENDIF»
+«IF hosts.exists(m|hasApc(m))»
+#
+define service {
+		hostgroup_name                  apcups-servers
+		service_description             APC NIS
+		check_command                   check_tcp!3551
+		use                             generic-service
+	}
+«ENDIF»
+«IF hosts.reject(m|isExtern(host, m)).exists(m|hasBind(m))»
+
+define service {
+		hostgroup_name                  bind-servers
+		service_description             DNS
+		check_command                   check_dns
+		use                             generic-service
+	}
+«ENDIF»
+«IF hosts.exists(m|hasBEA(m))»
+#
+define service {
+		hostgroup_name                  bea-servers
+		service_description             BEA
+		check_command                   check_bea!7001
+		use                             generic-service
+	}
+«ENDIF»
+«IF hosts.exists(m|hasJBoss(m) && isReferenced(host))»
+#
+define service {
+		hostgroup_name                  jboss-servers
+		service_description             JBoss
+		check_command                   check_ajp!8009
+		use                             generic-service
+	}
+«ENDIF»
+«IF hosts.exists(m|hasWebSphere(m))»
+#
+define service {
+		hostgroup_name                  was-servers
+		service_description             WebSphere
+		check_command                   check_was!9043
+		use                             generic-service
+	}
+«ENDIF»
+«IF hosts.exists(m|hasLdap389(m))»
+#
+define service {
+		hostgroup_name                  ldap-servers
+		service_description             LDAP
+		check_command                   check_tcp!389
+		use                             generic-service
+	}
+«ENDIF»
+«IF hosts.exists(m|hasLdap636(m))»
+#
+define service {
+		hostgroup_name                  ldaps-servers
+		service_description             LDAPS
+		check_command                   check_tcp_ssl!636
+		use                             generic-service
+	}
+«ENDIF»
+«IF hosts.exists(m|hasNtp(m))»
+#
+define service {
+		hostgroup_name                  ntp-servers
+		service_description             NTP
+		check_command                   check_ntp
+		use                             generic-service
+	}
+«ENDIF»
+«IF hosts.exists(m|hasSshd(m))»
+#
+define service {
+		hostgroup_name                  ssh-servers
+		service_description             SSH
+		check_command                   check_ssh
+		use                             generic-service
+	}
+«ENDIF»
+«IF hosts.exists(m|hasSnmpd(m))»
+#
+define service {
+		name                            snmp-service
+		use                             generic-service
+		register                        0
+		max_check_attempts              5
+	}
+#
+define service {
+		use                             snmp-service
+		hostgroup_name                  snmp-servers
+		service_description             Uptime
+		check_command                   snmp_uptime_t«timeout()»
+	}
+#
+define service {
+		use                             snmp-service
+		hostgroup_name                  snmp-servers
+		service_description             Uname
+		check_command                   snmp_uname_t«timeout()»
+	}
+#
+define service {
+		use                             snmp-service
+		hostgroup_name                  snmp-cpuinfo-servers
+		service_description             CPU-Stats
+		check_command                   snmp_cpustats_t«timeout()»
+	}
+«IF hosts.exists(m|condSnmpMem(m))»
+#
+define service {
+		use                             snmp-service
+		hostgroup_name                  snmp-meminfo-servers
+		service_description             Memory  
+		check_command                   snmp_mem_t«timeout()»!2000!1000       ; 2 MB / 1 MB
+	}
+#
+define service {
+		use                             snmp-service
+		hostgroup_name                  snmp-swap-servers-native
+		service_description             Swap 
+		check_command                   snmp_swap_t«timeout()»!524288!1048576  ; 512 MB / 1024 MB
+	}
+#
+define service {
+		use                             snmp-service
+		hostgroup_name                  snmp-swap-servers-virtual
+		service_description             Swap 
+		check_command                   snmp_swap_t«timeout()»!131072!262144  ; 128 MB / 256 MB
+	}
+«ENDIF»
+«ENDIF»
+«LET machines.typeSelect(Printer) AS printers»
+«IF printers.size > 0»
+«LET printers.reject(p|p.ssl) AS http_printers»
+«IF http_printers.size > 0»
+#
+define service {
+		hostgroup_name                  http-printers
+		service_description             HTTP
+		check_command                   check_http
+		use                             generic-service
+	}
+«ENDIF»
+«ENDLET»
+«LET printers.select(p|p.ssl) AS http_printers»
+«IF http_printers.size > 0»
+#
+define service {
+		hostgroup_name                  https-printers
+		service_description             HTTPS
+		check_command                   check_tcp!443
+		use                             generic-service
+	}
+«ENDIF»
+«ENDLET»
+#
+define service {
+		hostgroup_name                  printers
+		service_description             JetDirect
+		check_command                   check_tcp!9100
+		use                             generic-service
+	}
+«ENDIF»
+«ENDLET»
+«ENDFILE»
+«ENDLET»
+«ENDLET»
+«ENDDEFINE»

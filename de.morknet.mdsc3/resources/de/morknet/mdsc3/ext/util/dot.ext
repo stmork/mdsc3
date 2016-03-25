@@ -1,0 +1,26 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::constants;
+
+String getDotColor(Machine m) :
+	"grey";
+
+String getDotColor(Host m) :
+	"green";
+
+String getDotColor(Printer m) :
+	"blue";
+
+String getDotColor(Switch m) :
+	"yellow";
+
+String getDotFile(Model m) :
+	getInfrastructure() + ".dot";
+
+String getMapFile(Model m) :
+	getInfrastructure() + ".gif";

@@ -1,0 +1,35 @@
+import ecore;
+import xtext;
+
+process(GeneratedMetamodel this) :
+	nic(this.ePackage) ->
+	process(this.ePackage, "TWI",      "number",   "0") ->
+	process(this.ePackage, "SSH",      "port",    "22") ->
+	process(this.ePackage, "Apache",   "docroot", "/var/www") ->	
+	process(this.ePackage, "JkServer", "port",    "8009") ->
+	process(this.ePackage, "Host",     "cafile",  "cacert.pem") ->
+	process(this.ePackage, "Host",     "lang",    "de_DE.UTF-8") ->
+	process(this.ePackage, "Host",     "lc",      "de_DE.utf8") ->
+	process(this.ePackage, "Host",     "charset", "UTF-8");
+
+
+process(EPackage this, String clsName, String attrName, String defaultValue) :
+	findEClass(this, clsName).eAllAttributes.
+	selectFirst(e|e.name==attrName).setDefaultValueLiteral(defaultValue);
+
+nic(ecore::EPackage pkg) :
+	findEClass(pkg, "Network").eStructuralFeatures.add(createBackReference(pkg)) ->
+	findEReference(pkg, "NIC", "network").setEOpposite(findEReference(pkg, "Network", "nics"));
+
+create ecore::EReference this createBackReference(ecore::EPackage pkg) :
+	this.setName("nics") ->
+	this.setUpperBound(-1) ->
+	this.setEType(findEClass(pkg, "NIC")) ->
+	this.setEOpposite(findEReference(pkg, "NIC", "network")) ->
+	this;
+
+EClass findEClass(EPackage pkg, String clsName) :
+	pkg.eClassifiers.typeSelect(ecore::EClass).selectFirst(e|e.name == clsName);
+
+EReference findEReference(EPackage pkg, String clsName, String refName):
+	findEClass(pkg, clsName).eStructuralFeatures.typeSelect(EReference).selectFirst(e|e.name == refName);

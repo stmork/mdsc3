@@ -1,0 +1,59 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::service::Apache;
+
+Boolean useGlobalConfig(MRTG mrtg) : false;
+
+String mrtgconfig(MRTG mrtg) :
+	"/etc/mrtg-all.cfg";
+
+String mrtgconfigdir(Machine machine) :
+	"/etc/mrtg/";
+
+String mrtgconfig(Machine machine) :
+	mrtgconfigdir(machine) + machine.name + ".cfg";
+
+String workdir(MRTG mrtg) :
+	"/data/mrtg-all";
+
+String index(MRTG mrtg) :
+	workdir(mrtg) + "/index.html";
+
+String cronjob(MRTG mrtg) :
+	"/root/bin/mrtg-all.sh";
+
+MRTG getMrtg(Host host) :
+	host.services.typeSelect(MRTG).first();
+
+String workdir(Host host) :
+	workdir(getMrtg(host)) + host.name;
+
+String apache(MRTG mrtg, Host host) :
+	confdir(getApache(host)) + "/mrtg.conf";
+
+Boolean hasSensors(CPU cpu) :
+	cpu != null ? cpu.sensors : false;
+
+Boolean isMulticore(CPU cpu) :
+	cpu.multicore;
+
+String snmp_mem(Host host) :
+	"/root/bin/snmp_mem.sh";
+
+String snmp_win(Host host) :
+	"/root/bin/snmp_win.sh";
+
+String give_me_da_hd_temp(Host host) :
+	"/root/bin/givemedahdtemp.sh";
+
+String give_me_da_hd_age(Host host) :
+	"/root/bin/givemedahdage.sh";
+
+List[String] colorIndex(Printer printer) :
+	{ "B", "C", "M", "Y", "K" };
+ 

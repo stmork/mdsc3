@@ -1,0 +1,18 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::host;
+extension de::morknet::mdsc3::ext::util::os;
+
+String config(NFS nfs) :
+	"/etc/idmapd.conf";
+
+String init(NFS nfs) :
+	isSuSE(getHost(nfs)) ? "/etc/init.d/nfs" : "/etc/init.d/nfs-kernel-server";
+
+String pipefs(NFS nfs) :
+	isUbuntu(getHost(nfs)) ? "/run/rpc_pipefs" : "/var/lib/nfs/rpc_pipefs";

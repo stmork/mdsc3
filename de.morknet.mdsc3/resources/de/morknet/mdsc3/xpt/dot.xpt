@@ -1,0 +1,66 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::util::constants»
+«EXTENSION de::morknet::mdsc3::ext::util::dot»
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::model»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«DEFINE Map FOR Model»
+«FILE getDotFile()»
+«EXPAND tools::ConfigHeader(getDotFile(this))»
+«LET getAllMachines(this) AS machines»
+#  twopi -Tgif «getDotFile()» -o «getMapFile()» -Gcharset=latin1
+##
+#
+digraph «getInfrastructure()»
+{
+	ranksep=3;
+	ratio=auto;
+#
+«FOREACH machines AS machine»
+	"«fqhn(machine)»" [ label="«machine.name»",shape="hexagon",style="filled",color="«getDotColor(machine)»" ];
+«ENDFOREACH»
+
+«FOREACH getAllLocations(this) AS loc»
+#
+«REM»
+	"«loc.name»" [ label="«loc.name»",shape="box",style="filled",color="purple" ];
+«ENDREM»
+«FOREACH loc.networks.reject(n|n.name.startsWith("local")) AS network»
+«LET getConnectedNICs(network) AS nics»
+«IF nics.size > 0»
+#
+	"«network.name»" [ label="«network.name»",shape="circle",style="filled",color="grey" ];
+«REM»
+	"«network.name»" -> "«loc.name»" [ color="purple",arrowhead="none" ];
+«ENDREM»
+«FOREACH nics AS nic»
+«LET getMachine(nic) AS machine»
+«IF Host.isInstance(machine)»
+«LET (Host)machine AS host»
+«IF isVirtualHost(host) && (getBaseNIC(host) == nic)»
+	"«fqhn(host)»" -> "«fqhn(host.parent)»" [ color="«getDotColor(machine)»",arrowhead="none" ];
+«ELSE»
+	"«fqhn(machine)»" -> "«network.name»" [ color="purple",arrowhead="none" ];
+«ENDIF»
+«ENDLET»
+«ELSE»
+	"«fqhn(machine)»" -> "«network.name»" [ color="purple",arrowhead="none" ];
+«ENDIF»
+«ENDLET»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+«ENDFOREACH»
+«ENDFOREACH»
+«ENDLET»
+}
+«ENDFILE»
+«ENDDEFINE»

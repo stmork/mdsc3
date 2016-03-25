@@ -1,0 +1,81 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+«IMPORT de::morknet::mdsc3::xpt::util»
+«IMPORT de::morknet::mdsc3::xpt::service»
+
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«EXTENSION de::morknet::mdsc3::ext::service::Apache»
+
+«DEFINE usage(Host host) FOR Apache»
+«FILE config(host, usage(this)) CONFIG»
+«EXPAND tools::ConfigHeader(usage(this))»
+<IfModule mod_alias.c>
+#
+Alias /usage/ «usagedir()»/
+#
+<Location /usage>
+	Options +Indexes
+«IF isApache24(host)»
+	Require all denied
+«ELSE»
+	Allow from all
+«ENDIF»
+#
+«EXPAND Apache::auth(host, "Apache usage", "admin")»
+</Location>
+
+</IfModule>
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE webalizer(Host host) FOR Apache»
+«FILE config(host, webalizer(this)) CONFIG»
+«EXPAND tools::ConfigHeader(webalizer(this))»
+DNSCache        dns_cache.db
+DNSChildren     5
+HideURL         *.gif
+HideURL         *.GIF
+HideURL         *.jpg
+HideURL         *.JPG
+HideURL         *.png
+HideURL         *.PNG
+HideURL         *.ra
+HostName        «fqhn(host)»
+IncrementalName webalizer.current
+Incremental     yes
+LogFile         «logdir()»/access.log
+OutputDir       «usagedir()»
+PageType        cgi
+PageType        htm*
+ReportTitle     Usage Statistics for
+SearchEngine    alltheweb.com   query=
+SearchEngine    altavista.com   q=
+SearchEngine    eureka.com      q=
+SearchEngine    excite          search=
+SearchEngine    google.be       q=
+SearchEngine    google.ca       q=
+SearchEngine    google.ch       q=
+SearchEngine    google.com      q=
+SearchEngine    google.fr       q=
+SearchEngine    google.nl       q=
+SearchEngine    hotbot.com      MT=
+SearchEngine    infoseek.com    qt=
+SearchEngine    lycos.com       query=
+SearchEngine    mamma.com       query=
+SearchEngine    msn.com         MT=
+SearchEngine    netscape.com    search=
+SearchEngine    northernlight.com  qr=
+SearchEngine    sensis.com.au   find=
+SearchEngine    webcrawler      searchText=
+SearchEngine    yahoo.com       p=
+UseHTTPS        yes
+TopUsers        200
+«ENDFILE»
+«ENDDEFINE»

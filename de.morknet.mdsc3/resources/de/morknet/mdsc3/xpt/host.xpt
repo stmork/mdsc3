@@ -1,0 +1,429 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+«IMPORT de::morknet::mdsc3::xpt::util»
+«IMPORT de::morknet::mdsc3::xpt::service»
+
+«EXTENSION de::morknet::mdsc3::ext::util::constants»
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::network»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::SSL»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«EXTENSION de::morknet::mdsc3::ext::device::twi»
+«EXTENSION de::morknet::mdsc3::ext::device::lsi»
+
+«EXTENSION de::morknet::mdsc3::ext::service::DNS»
+«EXTENSION de::morknet::mdsc3::ext::service::LDAP»
+«EXTENSION de::morknet::mdsc3::ext::service::NTP»
+
+«DEFINE host FOR Host»
+«IF isLinux()»
+«EXPAND twi_config»
+«EXPAND resolv»
+«EXPAND NTP::ntprestart»
+«EXPAND NTP::ntpconfig»
+«EXPAND NTP::AppArmor»
+«EXPAND LdapConfig»
+«EXPAND tune2fs»
+
+«IF isUbuntu() || isDebian()»
+«EXPAND dpkglist»
+«EXPAND UbuntuLocale»
+«EXPAND UbuntuLocales»
+«EXPAND UbuntuConsoleSetup»
+«EXPAND iftab»
+«EXPAND udevRules»
+«EXPAND interfaces»
+«EXPAND bonding_module»
+«EXPAND blacklist»
+«ENDIF»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE UbuntuConsoleSetup FOR Host»
+«IF !(isVirtualHost() && hasXen(parent))»
+«FILE config(this, "/etc/default/console-setup") CONFIG-»
+# Change to "yes" and setupcon will explain what is being doing
+VERBOSE_OUTPUT="no"
+
+# Setup these consoles.  Most people do not need to change this.
+ACTIVE_CONSOLES="/dev/tty[1-6]"
+
+# Put here your encoding.  Valid charmaps are: UTF-8 ARMSCII-8 CP1251
+# CP1255 CP1256 GEORGIAN-ACADEMY GEORGIAN-PS IBM1133 ISIRI-3342
+# ISO-8859-1 ISO-8859-2 ISO-8859-3 ISO-8859-4 ISO-8859-5 ISO-8859-6
+# ISO-8859-7 ISO-8859-8 ISO-8859-9 ISO-8859-10 ISO-8859-11 ISO-8859-13
+# ISO-8859-14 ISO-8859-15 ISO-8859-16 KOI8-R KOI8-U TIS-620 VISCII
+CHARMAP="«charset»"
+
+# The codeset determines which symbols are supported by the font.
+# Valid codesets are: Arabic Armenian CyrAsia CyrKoi CyrSlav Ethiopian
+# Georgian Greek Hebrew Lao Lat15 Lat2 Lat38 Lat7 Thai Uni1 Uni2 Uni3
+# Vietnamese.  Read README.fonts for explanation.
+CODESET="Lat15"
+
+# Valid font faces are: VGA (sizes 8, 14 and 16), Terminus (sizes  
+# 12x6, 14, 16, 20x10, 24x12, 28x14 and 32x16), TerminusBold (sizes
+# 14, 16, 20x10, 24x12, 28x14 and 32x16), TerminusBoldVGA (sizes 14
+# and 16) and Fixed (sizes 13, 14, 15, 16 and 18).  Only when
+# CODESET=Ethiopian: Goha (sizes 12, 14 and 16) and 
+# GohaClassic (sizes 12, 14 and 16).
+# Set FONTFACE and FONTSIZE to empty strings if you want setupcon to
+# set up the keyboard but to leave the console font unchanged.
+FONTFACE="VGA"
+FONTSIZE="16"
+
+# You can also directly specify nonstandard font or console map to load.
+# Use space as separator if you want to load more than one font.
+# You can use FONT_MAP in order to specify the Unicode map of the font
+# in case the font doesn't have it embedded.
+
+# FONT='lat9w-08.psf.gz brl-8x8.psf'
+# FONT_MAP=/usr/share/consoletrans/lat9u.uni
+# CONSOLE_MAP=/usr/local/share/consoletrans/my_special_encoding.acm
+
+# You can also specify a screen size that setupcon will enforce.  This can not
+# exceed what the current screen resolution can display according to the size of
+# the loaded font.
+#
+# SCREEN_WIDTH=80
+# SCREEN_HEIGHT=25
+
+«IF isMinUbuntuPrecise()»
+if [ -f /etc/default/keyboard ]; then
+	. /etc/default/keyboard
+fi
+«ELSE»
+# Check /usr/share/doc/keyboard-configuration/README.Debian for
+# documentation on what to do after having modified this file.
+
+# The following variables describe your keyboard and can have the same
+# values as the XkbModel, XkbLayout, XkbVariant and XkbOptions options
+# in /etc/X11/xorg.conf.
+
+XKBMODEL="pc105"
+XKBLAYOUT="de"
+XKBVARIANT=""
+XKBOPTIONS="lv3:ralt_switch"
+
+# If you don't want to use the XKB layout on the console, you can
+# specify an alternative keymap.  Make sure it will be accessible
+# before /usr is mounted.
+# KMAP=/etc/console-setup/defkeymap.kmap.gz
+«ENDIF»
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE UbuntuLocale FOR Host»
+«IF !(isVirtualHost() && hasXen(parent))»
+«FILE config(this, "/etc/default/locale") CONFIG-»
+LANG=«lang»
+LC_ALL=«lc»
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE UbuntuLocales FOR Host»
+«FILE config(this, "/var/lib/locales/supported.d/local") CONFIG-»
+en_GB.UTF-8 UTF-8
+en_US.UTF-8 UTF-8
+de_DE.UTF-8 UTF-8
+en_GB ISO-8859-15
+de_DE@euro ISO-8859-15
+«lc» «charset»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE blacklist FOR Host»
+«FILE config(this, blacklist(this)) CONFIG»
+«EXPAND tools::ConfigHeader(blacklist(this))»
+#
+# Ignore frame buffer device
+blacklist vga16fb
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE tune2fs FOR Host»
+«FILE config(this, tune2fs(this)) CONFIG»
+«EXPAND tools::ConfigShell(tune2fs(this))»
+#
+for DEVICE in `mount|fgrep ext|cut -d" " -f1`
+do
+	echo $DEVICE
+	tune2fs -c0 -i0 $DEVICE
+done
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE dpkglist FOR Host»
+«FILE config(this, dpkglist(this)) CONFIG-»«EXPAND tools::ConfigShell(dpkglist(this))»
+dpkg --get-selections >${HOME}/«name».sel
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE resolv FOR Host»
+«FILE config(this, resolv(this)) CONFIG»
+«EXPAND tools::ConfigHeader(resolv(this))»
+#
+search     «getDomain()»
+«FOREACH  getBindHosts(this) AS bind»
+nameserver «getIpAddress(bind)»
+«ENDFOREACH»
+«IF isMinUbuntuTrusty() || isRedHat()»
+options    single-request-reopen
+«ENDIF»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE iftab FOR Host»
+«FILE config(this, iftab(this)) CONFIG»
+«EXPAND tools::ConfigHeader(iftab(this))»
+#
+«FOREACH getNICs().rejectVPN().reject(n|isBonded(n) || isBridged(n)) AS nic»
+«nic.name» mac «nic.mac» arp 1
+«ENDFOREACH»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE udevRules FOR Host»
+«IF isDebian()»
+«FILE config(this, udev_rules(this)) CONFIG»
+«EXPAND tools::ConfigHeader(udev_rules(this))»
+#
+«FOREACH getNICs().rejectVPN().reject(n|isBonded(n) || isBridged(n)) AS nic»
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="«nic.mac»", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="eth*", NAME="«nic.name»"
+«ENDFOREACH»
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE interfaces FOR Host»
+«FILE config(this, interfaces(this)) CONFIG»
+«EXPAND tools::ConfigHeader(interfaces(this))»
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+##
+#
+# The loopback network interface
+auto lo
+iface lo inet loopback
+«EXPAND NIC(this, null) FOREACH getConnectedBridgedNICs()»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE NIC(Host host, NIC parent) FOR NIC»
+«REM»
+############
+# «name» connected=«isConnected()» bonded=«isBonded()»
+############
+«ENDREM»
+«IF isBridged()»
+«EXPAND NIC(host, this) FOREACH ifaces»
+«ENDIF»
+«IF isConnected()»
+#
+auto «name»
+«IF dhcp»
+iface «name» inet dhcp
+«EXPAND bonding(host)»
+«EXPAND bridging(host)»
+«ELSE»
+iface «name» inet static
+«EXPAND bonding(host)»
+	address «ipaddr»
+	netmask «getNetmask(network)»
+	network «getNetworkAddress(network)»
+	broadcast «getBroadcastAddress(network)»
+«LET getGateway(network) AS gateway»
+«IF (gateway != null) && (gateway != host) && (network.gw != null)»
+«IF (getBaseNIC(host) == this) || (network.gw != getBaseNetwork(host).gw)»
+	gateway «getIpAddress(gateway, network)»
+«ELSE»
+«ERROR fqhn(host) + ": " + name + "  GW: " + fqhn(gateway)»
+«ENDIF»
+«ENDIF»
+«ENDLET»
+	# dns-* options are implemented by the resolvconf package, if installed
+	dns-nameservers«FOREACH getBindHosts(host) AS dns» «getIpAddress(dns)»«ENDFOREACH»
+	dns-search «getDomain(host)»
+«EXPAND bridging(host)»
+«ENDIF»
+«ELSE»
+«REM» If not connected «ENDREM»
+«IF isDebian(host) || isBridged()»
+#
+auto «name»
+iface «name» inet manual
+«EXPAND bonding(host)»
+«IF (parent != null) && isBonded(parent)»
+	bond-master «parent.name»
+	bond-primary«FOREACH parent.ifaces AS primary» «primary.name»«ENDFOREACH»
+«ENDIF»
+«EXPAND bridging(host)»
+«ENDIF»
+«ENDIF»
+«IF !isBridged()»
+«EXPAND NIC(host, this) FOREACH ifaces»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE bonding(Host host) FOR NIC»
+«IF isBonded()»
+«IF isDebian(host)»
+	bond-slaves none
+	bond-mode «mode»
+«ELSE»
+	bond_mode «mode»
+	post-up  ifenslave    «name»«FOREACH ifaces AS primary» «primary.name»«ENDFOREACH»
+	pre-down ifenslave -d «name»«FOREACH ifaces AS primary» «primary.name»«ENDFOREACH»
+«ENDIF»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE bridging(Host host) FOR NIC»
+«IF isBridged()»
+«IF ifaces.size > 0»
+	bridge_ports«FOREACH ifaces AS primary» «primary.name»«ENDFOREACH»
+«ENDIF»
+	bridge_fd    0.5
+	bridge_hello 0.5
+«REM»
+	bridge_stp   off
+«ENDREM»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE bonding_module FOR Host»
+«LET getNICs().rejectVPN().select(n|isBonded(n)) AS bonded_nics»
+«IF bonded_nics.size > 0»
+«FILE config(this, bonding_conf(this)) CONFIG»
+«EXPAND tools::ConfigHeader(bonding_conf(this))»
+#
+«FOREACH bonded_nics AS nic»
+alias «nic.name» bonding
+«ENDFOREACH»
+#
+options bonding miimon=100 max_bonds=«bonded_nics.size»
+«ENDFILE»
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE ntpconfig FOR Host»
+«IF !hasNtp()»
+«FILE config(this, ntpconfig()) CONFIG»
+«EXPAND tools::ConfigHeader(ntpconfig())»
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE ntp FOR Host»
+«IF isSuSE()»
+«FILE config(this, "/etc/sysconfig/xntp") CONFIG»
+«EXPAND tools::ConfigHeader("xntp config")»
+XNTPD_INITIAL_NTPDATE="AUTO"
+XNTPD_OPTIONS="-u ntp"
+XNTPD_RUN_CHROOTED="yes"
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE twi_config FOR Host»
+«IF has3ware(this)»
+«EXPAND twi_certificate»
+«EXPAND twi_optimize»
+«EXPAND twi_test_bbu»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE twi_certificate FOR Host»
+«FILE config(this, twi_cert(this)) CONFIG»
+«EXPAND tools::ConfigHeader(twi_cert(this))»
+«LET getLocation() AS loc»
+[ req ]
+default_bits = 2048
+encrypt_key = yes
+distinguished_name = req_dn
+x509_extensions = cert_type
+prompt = no
+#
+[ req_dn ]
+C=DE
+ST=Nordrhein-Westfalen
+L=«loc.name»
+O=«getInfrastructure()»
+OU=IT
+CN=«fqhn(this)»
+emailAddress=«loc.contact»
+#
+[ cert_type ]
+nsCertType = server
+«ENDLET»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE twi_optimize FOR Host»
+«FILE config(this, getOpt3wareScript(this)) CONFIG»
+«EXPAND tools::ConfigShell(getOpt3wareScript(this))»
+#
+for dev in «FOREACH get3wareVolumes(this).select(v|v.type != VOLTYPE::DRIVE) AS dev SEPARATOR " "»`basename «dev.device»`«ENDFOREACH»
+do
+	blockdev  --setra 16384 /dev/$dev
+	echo  64      > /sys/block/$dev/queue/max_sectors_kb
+	echo 512      > /sys/block/$dev/queue/nr_requests
+	echo deadline > /sys/block/$dev/queue/scheduler
+done
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE twi_test_bbu FOR Host»
+«LET get3wareController().select(c|c.bbu) AS list»
+«IF list.size > 0»
+«FILE config(this, twi_bbu_test(this)) CONFIG»
+«EXPAND tools::ConfigHeader(twi_bbu_test(this))»
+#
+«FOREACH list AS ctrl»
+/usr/sbin/tw_cli /c«ctrl.number»/bbu test quiet
+«ENDFOREACH»
+«ENDFILE»
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE LdapConfig FOR Host»
+«LET getLdapHosts(this) AS ldaps»
+«IF ldaps.size > 0» 
+«FILE config(this, ldapConfig(this)) CONFIG»
+«EXPAND tools::ConfigHeader(ldapConfig(this))»
+#
+##
+# LDAP Defaults
+##
+#
+# See ldap.conf(5) for details
+# This file should be world readable but not world writable.
+«LET getLdapMaster(this) AS masterHost»
+«LET getLdap(masterHost) AS master»
+BASE    «master.baseDN»
+URI     «FOREACH ldaps AS ldaphost SEPARATOR " "»«getLdapProtocol(ldaphost)»://«fqhn(ldaphost)»«ENDFOREACH»
+#
+#SIZELIMIT      12
+#TIMELIMIT      15
+#DEREF          never
+#
+TLS_CACERT      «getSslCaCert(this)»
+TLS_CERT        «getSslCert(this)»
+TLS_KEY         «getSslKey(this)»
+#TLS_CACERTDIR  «getSslBase(this)»/certs
+«ENDLET»
+«ENDLET»
+«ENDFILE»
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»

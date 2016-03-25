@@ -1,0 +1,102 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::model»
+«EXTENSION de::morknet::mdsc3::ext::util::network»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+
+«EXTENSION de::morknet::mdsc3::ext::service::SSH»
+
+«DEFINE cssh FOR Model»
+«FILE "csshrc.conf"»
+«LET getAllHosts().select(e|e.isLinux()).select(e|hasSshd(e)) AS hosts»
+«EXPAND HostList("alle", hosts)»
+«LET getAllLocations() AS locations»
+#
+# Locations
+«FOREACH locations AS location»
+«LET hosts.select(e|e.getLocation() == location) AS locHosts»
+«EXPAND HostList(location.name, locHosts)»
+«ENDLET»
+«ENDFOREACH»
+#
+# Networks
+«FOREACH locations AS location»
+«FOREACH location.networks AS network»
+«LET hosts.select(e|e.getBaseNetwork() == network) AS nwHosts»
+«EXPAND HostList(network.name, nwHosts)»
+«ENDLET»
+«ENDFOREACH»
+«ENDFOREACH»
+«ENDLET»
+
+«LET hosts.select(e|isUbuntu(e)) AS ubuntu»
+«IF ubuntu.size > 0»
+#
+# Ubuntu
+«EXPAND HostList("ubuntu",  ubuntu)»
+«EXPAND HostList("precise", ubuntu.select(e|e.os == OS::Ubuntu_12_04))»
+«EXPAND HostList("trusty",  ubuntu.select(e|e.os == OS::Ubuntu_14_04))»
+«ENDIF»
+«ENDLET»
+
+«LET hosts.select(e|isDebian(e)) AS debian»
+«IF debian.size > 0»
+#
+# Debian
+«EXPAND HostList("debian",  debian)»
+«EXPAND HostList("squeeze", debian.select(e|e.os == OS::Debian6))»
+«EXPAND HostList("wheezy",  debian.select(e|e.os == OS::Debian7))»
+«EXPAND HostList("jessie",  debian.select(e|e.os == OS::Debian8))»
+«ENDIF»
+«ENDLET»
+
+«LET hosts.select(e|isRedHat(e)) AS redhat»
+«IF redhat.size > 0»
+#
+# Red Hat
+«EXPAND HostList("redhat", redhat)»
+«ENDIF»
+«ENDLET»
+
+«LET hosts.select(e|isSuSE(e)) AS suse»
+«IF suse.size > 0»
+#
+# SuSE
+«EXPAND HostList("suse", suse)»
+«ENDIF»
+«ENDLET»
+
+«LET hosts.select(e|e.parent == null) AS bares»
+«IF bares.size > 0»
+#
+# Bare metal
+«EXPAND HostList("native", bares)»
+«ENDIF»
+«ENDLET»
+
+«LET hosts.select(e|hasVirtualisation(e)) AS vmServer»
+«IF vmServer.size > 0»
+#
+# Virtualisation Server
+«EXPAND HostList("vm-server", vmServer)»
+«FOREACH vmServer AS VM»
+«EXPAND HostList("vm-" + VM.name, hosts.select(e|e.parent == VM))»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+ 
+«ENDLET»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE HostList(String name, List[Host] list) FOR Model»
+«IF list.size > 0»
+«name» «FOREACH list AS host SEPARATOR " "»«login(host)»«ENDFOREACH»
+«ENDIF»
+«ENDDEFINE»

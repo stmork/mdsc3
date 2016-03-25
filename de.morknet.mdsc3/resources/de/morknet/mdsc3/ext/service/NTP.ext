@@ -1,0 +1,63 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::host;
+extension de::morknet::mdsc3::ext::util::network;
+extension de::morknet::mdsc3::ext::util::os;
+
+String config(NTP ntp) :
+	"/etc/ntpd.conf";
+
+cached Boolean hasNtp(Host host) :
+	host.services.exists(s|NTP.isInstance(s));
+
+List[Host] getNtpHosts(Host host) :
+	getBaseHosts(getBaseNetwork(host)).select(h|hasNtp(h)).sortBy(h|h.name);
+
+/*
+List[String] getExternalNtpServer() :
+	{
+		"ptbtime1.ptb.de", "ptbtime2.ptb.de",
+		"ntp1.belwue.de", "ntp2.belwue.de",
+		"ntp0.fau.de", "ntp1.fau.de", "ntp2.fau.de"
+	};
+*/
+
+List[String] getExternalNtpServer() :
+	{
+		"ptbtime1.ptb.de",
+		"ptbtime2.ptb.de",
+		"ptbtime3.ptb.de",
+		"ntp1.belwue.de",
+		"ntp2.belwue.de"
+	};
+
+String AppArmor(Host host) :
+	"/etc/apparmor.d/local/usr.sbin.ntpd";
+
+String initntp(Host host) :
+	isSuSE(host) ?
+		"/etc/init.d/xntpd" :
+		"/etc/init.d/ntp";
+
+String init(NTP ntp, Host host) :
+	initntp(host);
+
+String ntprestart(Host host) :
+	"/etc/cron.hourly/ntp-restart";
+
+String ntpconfig(Host host) :
+	"/etc/ntp.conf";
+
+String driftfile(Host host) :
+	isSuSE(host) ? "/var/lib/ntp/drift/ntp.drift" : "/var/lib/ntp/ntp.drift";
+
+String ntplogfile(Host host) :
+	"/var/log/ntp";
+
+String ntpstatdir(Host host) :
+	"/var/log/ntpstats";
