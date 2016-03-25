@@ -224,82 +224,28 @@
     </extension>
 
 
-	<!-- marker definitions for de.morknet.MDSC3 -->
-	<extension
-	        id="mdsc3.check.fast"
-	        name="MDSC3 Problem"
-	        point="org.eclipse.core.resources.markers">
-	    <super type="org.eclipse.xtext.ui.check.fast"/>
-	    <persistent value="true"/>
-	</extension>
-	<extension
-	        id="mdsc3.check.normal"
-	        name="MDSC3 Problem"
-	        point="org.eclipse.core.resources.markers">
-	    <super type="org.eclipse.xtext.ui.check.normal"/>
-	    <persistent value="true"/>
-	</extension>
-	<extension
-	        id="mdsc3.check.expensive"
-	        name="MDSC3 Problem"
-	        point="org.eclipse.core.resources.markers">
-	    <super type="org.eclipse.xtext.ui.check.expensive"/>
-	    <persistent value="true"/>
-	</extension>
-
-   <extension
-         point="org.eclipse.xtext.builder.participant">
-      <participant
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.builder.IXtextBuilderParticipant"
-            fileExtensions="mdsc3"
-            >
-      </participant>
-   </extension>
-   <extension
-            point="org.eclipse.ui.preferencePages">
-        <page
-            category="de.morknet.MDSC3"
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.builder.preferences.BuilderPreferencePage"
-            id="de.morknet.MDSC3.compiler.preferencePage"
-            name="Compiler">
-            <keywordReference id="de.morknet.ui.keyword_MDSC3"/>
-        </page>
+    <!-- marker definitions for de.morknet.MDSC3 -->
+    <extension
+            id="mdsc3.check.fast"
+            name="MDSC3 Problem"
+            point="org.eclipse.core.resources.markers">
+        <super type="org.eclipse.xtext.ui.check.fast"/>
+        <persistent value="true"/>
     </extension>
     <extension
-            point="org.eclipse.ui.propertyPages">
-        <page
-            category="de.morknet.MDSC3"
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.builder.preferences.BuilderPreferencePage"
-            id="de.morknet.MDSC3.compiler.propertyPage"
-            name="Compiler">
-            <keywordReference id="de.morknet.ui.keyword_MDSC3"/>
-            <enabledWhen>
-	            <adapt type="org.eclipse.core.resources.IProject"/>
-			</enabledWhen>
-	        <filter name="projectNature" value="org.eclipse.xtext.ui.shared.xtextNature"/>
-        </page>
+            id="mdsc3.check.normal"
+            name="MDSC3 Problem"
+            point="org.eclipse.core.resources.markers">
+        <super type="org.eclipse.xtext.ui.check.normal"/>
+        <persistent value="true"/>
     </extension>
-    <extension point="org.eclipse.ui.menus">
-		<menuContribution locationURI="popup:#TextEditorContext?after=xtext.ui.openDeclaration">
-			<command
-				commandId="org.eclipse.xtext.ui.OpenGeneratedFileCommand"
-				id="de.morknet.MDSC3.OpenGeneratedCode"
-				style="push">
-					<visibleWhen checkEnabled="false">
-						<reference definitionId="de.morknet.MDSC3.Editor.opened" />
-					</visibleWhen>
-			</command>
-		</menuContribution>
-	</extension>
-	<extension point="org.eclipse.ui.handlers">
-		<handler
-			class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.generator.trace.OpenGeneratedFileHandler"
-			commandId="org.eclipse.xtext.ui.OpenGeneratedFileCommand">
-				<activeWhen>
-					<reference definitionId="de.morknet.MDSC3.Editor.opened" />
-				</activeWhen>
-		</handler>
-	</extension>
+    <extension
+            id="mdsc3.check.expensive"
+            name="MDSC3 Problem"
+            point="org.eclipse.core.resources.markers">
+        <super type="org.eclipse.xtext.ui.check.expensive"/>
+        <persistent value="true"/>
+    </extension>
 
 	<!-- Quick Outline -->
 	<extension
