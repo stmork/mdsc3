@@ -1,0 +1,165 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::host;
+extension de::morknet::mdsc3::ext::util::os;
+extension de::morknet::mdsc3::ext::util::tools;
+
+Apache getApache(Host host) :
+	host.services.typeSelect(Apache).first();
+
+cached Boolean isApache24(Host host) :
+	isMinUbuntuTrusty(host) || isMinDebianJessie(host);
+
+cached Boolean hasApache(Host host) :
+	host.services.exists(s|Apache.isInstance(s));
+
+Boolean hasSubversion(Apache apache) :
+	apache.connections.exists(c|Subversion.isInstance(c) || Trac.isInstance(c));
+
+Boolean hasTrac(Apache apache) :
+	apache.connections.exists(c|Trac.isInstance(c));
+
+String init(Apache service) :
+	"/etc/init.d/apache2";
+
+String basedir(Apache service) :
+	"/etc/apache2";
+
+String confdir_old(Apache service) :
+	basedir(service) + "/conf.d";
+
+String confdir(Apache service) :
+	isApache24(getHost(service)) ?
+		basedir(service) + "/conf-enabled" :	
+		basedir(service) + "/conf.d";
+
+String svnconf(Apache service) :
+	basedir(service) + "/svn.d";
+
+String gitconf(Apache service) :
+	basedir(service) + "/git.d";
+
+String tracconf(Apache service) :
+	basedir(service) + "/trac.d";
+
+String sslhost(Apache service) :
+	basedir(service) + "/sites-enabled/" + getHost(service).name + (isApache24(getHost(service)) ? ".conf" : "");
+
+String sslhost_old(Apache service) :
+	basedir(service) + "/sites-enabled/" + getHost(service).name;
+
+String port(Apache service) :
+	basedir(service) + "/ports.conf";
+
+String global(Apache service) :
+	confdir(service) + "/global.conf";
+
+String ldap(Apache service) :
+	confdir(service) + "/ldap.conf";
+
+String status(Apache service) :
+	confdir(service) + "/status.conf";
+
+String usage(Apache service) :
+	confdir(service) + "/usage.conf";
+
+String ssl(Apache service) :
+	confdir(service) + "/ssl.conf";
+
+String ocsp(Apache service) :
+	confdir(service) + "/ocsp.conf";
+
+String usagedir(Apache service) :
+	"/data/usage";
+
+private Subversion getSubversion(Apache service) :
+	(Subversion)(service.connections.selectFirst(c|Subversion.isInstance(c) || Trac.isInstance(c)));
+
+String svndir(Apache service) :
+	getSubversion(service).svndir;
+
+String gitdir(Apache service) :
+	service.connections.typeSelect(Trac).first().gitdir;
+
+String tracdir(Apache service) :
+	service.connections.typeSelect(Trac).first().tracdir;
+
+String logdir(Apache service) :
+	"/var/log/apache2";
+
+Set[String] ApacheModules(Host host, Apache service) :
+	{ "authnz_ldap.load", "ldap.load", "ssl.conf", "ssl.load", "info.load", "jk.load" };
+
+String webalizer(Apache service) :
+	"/etc/webalizer/webalizer.conf";
+
+String getPasswdFile(String admgrp) :
+	basedir(null) + "/" + admgrp + "s";
+
+String jk(Apache a) :
+	confdir(a) + "/jk.conf";
+
+String workers(Apache a) :
+	"/etc/libapache2-mod-jk/workers.properties";
+
+List[JK] getJkList(Apache a) :
+	a.connections.typeSelect(JK).sortBy(jk|jk.mountpoint);
+
+Set[JkServer] getJkServer(Apache a) :
+	a.connections.typeSelect(JK).server.toSet();
+
+Set[JkServer] getJkServer(JK jk) :
+	jk.server.toSet();
+
+String getWorkerId(JkServer server) :
+	"node_" + server.host.name + "_" + server.port;
+
+String getLoadBalancerId(JK jk) :
+	"lb_" + makeId(jk.mountpoint);
+
+String SVN_hooks(Apache service) :
+	"/root/config/hooks";
+
+String SVN_precommit(Apache service) :
+	SVN_hooks(service) + "/pre-commit";
+
+String SVN_config(Apache service) :
+	"/root/bin/svn-config.sh";
+
+String SVN_create(Apache service) :
+	"/root/bin/add-svn.sh";
+
+String SVN_apache(Apache service) :
+	"/root/bin/create-svn-conf.sh";
+
+String SVN_include(Apache service) :
+	confdir(service) + "/svn.conf";
+
+String Trac_create(Apache service) :
+	"/root/bin/add-project.sh";
+
+String Trac_WSGI(Apache service) :
+	tracdir(service) + "/trac.wsgi";
+
+String TracGit_create(Apache service) :
+	"/root/bin/add-git.sh";
+
+String Trac_include(Apache service) :
+	confdir(service) + "/trac.conf";
+
+String GIT_config(Apache service) :
+	"/root/bin/git-config.sh";
+
+String GIT_include(Apache service) :
+	confdir(service) + "/git.conf";
+
+String GIT_hook(Apache service) :
+	"/root/config/trac-post-receive-hook.3.py";
+
+Boolean noWorkersFileConfig(Host host) :
+	isMinUbuntuPrecise(host) || isMinDebianWheezy(host);

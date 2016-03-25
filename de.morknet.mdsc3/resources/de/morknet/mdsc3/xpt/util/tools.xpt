@@ -1,0 +1,25 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+«IMPORT emf»
+
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«DEFINE ConfigHeader(String file) FOR EObject-»
+##
+# Modelbased server configuration  - Version 3
+# Configuration file «file» generated with TMF/Xtext.
+# Copyright (C) «year()» MORKNet
+##
+«ENDDEFINE»
+
+«DEFINE ConfigShell(String file) FOR EObject-»
+#!/bin/bash
+#
+# Modelbased server configuration  - Version 3
+# Shell script «file» generated with TMF/Xtext.
+# Copyright (C) «year()» MORKNet
+«ENDDEFINE»

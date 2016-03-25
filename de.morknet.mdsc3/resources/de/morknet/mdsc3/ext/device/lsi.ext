@@ -1,0 +1,17 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::host;
+
+cached List[LSI] getLsiController(Host host) :
+	host.devices.typeSelect(LSI);
+
+cached Set[Volume] getLsiVolumes(Host host) :
+	getLsiController(host).volumes;
+
+cached Boolean hasLsi(Host host) :
+	(host.devices.exists(d|LSI.isInstance(d))) && (!isVirtualHost(host));

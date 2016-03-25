@@ -1,0 +1,457 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::util::constants»
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::model»
+«EXTENSION de::morknet::mdsc3::ext::util::network»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::SSL»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«EXTENSION de::morknet::mdsc3::ext::device::twi»
+«EXTENSION de::morknet::mdsc3::ext::device::lsi»
+
+«EXTENSION de::morknet::mdsc3::ext::service::Apache»
+«EXTENSION de::morknet::mdsc3::ext::service::AppServer»
+«EXTENSION de::morknet::mdsc3::ext::service::APC»
+«EXTENSION de::morknet::mdsc3::ext::service::CUPS»
+«EXTENSION de::morknet::mdsc3::ext::service::DHCP»
+«EXTENSION de::morknet::mdsc3::ext::service::DNS»
+«EXTENSION de::morknet::mdsc3::ext::service::LDAP»
+«EXTENSION de::morknet::mdsc3::ext::service::Mail»
+«EXTENSION de::morknet::mdsc3::ext::service::MRTG»
+«EXTENSION de::morknet::mdsc3::ext::service::MySQL»
+«EXTENSION de::morknet::mdsc3::ext::service::Nagios»
+«EXTENSION de::morknet::mdsc3::ext::service::NFS»
+«EXTENSION de::morknet::mdsc3::ext::service::NTP»
+«EXTENSION de::morknet::mdsc3::ext::service::PAM»
+«EXTENSION de::morknet::mdsc3::ext::service::Samba»
+«EXTENSION de::morknet::mdsc3::ext::service::SMART»
+«EXTENSION de::morknet::mdsc3::ext::service::SNMP»
+«EXTENSION de::morknet::mdsc3::ext::service::SSH»
+
+«DEFINE deploy FOR Model»
+«EXPAND global»
+«EXPAND deploy FOREACH getAllHosts().select(e|isLinux(e))»
+«ENDDEFINE»
+
+«DEFINE global FOR Model»
+«FILE "deploy.sh" CONFIG»
+«EXPAND tools::ConfigShell("deploy.sh")»
+#
+echo "****************************"
+echo "*** MDSC3 with TMF/Xtext ***"
+echo "****************************"
+echo
+#
+CA_HOME=«getCaHome()»
+CA_CERT=${CA_HOME}/cacert.pem
+#
+if [ ! -e ${CA_CERT} ]
+then
+	echo "SSL CA home ${CA_HOME} not available!"
+	echo "Deployment not possible."
+	exit 1
+fi
+#
+find . -name "*.sh" | xargs chmod 755
+#
+test -f $HOME/hashes.txt || touch $HOME/hashes.txt
+echo -n "" >hashes.txt
+#
+echo "Deploying..."
+echo
+«FOREACH getAllHosts(this).select(e|isLinux(e) && e.deploy && hasSshd(e)) AS host»
+«LET fqhn(host) + getSslBase(host) + "/" AS HostSslBase»
+#
+# Deploy «fqhn(host)»
+#
+test -d  «HostSslBase» || mkdir -p «HostSslBase»
+cp -a ${CA_HOME}/cacert.pem «HostSslBase»
+cp -a ${CA_HOME}/«getInfrastructure()».pem «HostSslBase»
+if [ -e ${CA_HOME}/«host.cafile» ]
+then
+	cp -a ${CA_HOME}/«host.cafile» «fqhn(host)»/«getSslCaChainCert(host)»
+fi
+#
+if [ -e ${CA_HOME}/files/«fqhn(host)»-cert.pem ]
+then
+	cp -a ${CA_HOME}/files/«fqhn(host)»-cert.pem «HostSslBase»/«host.name»-cert.pem
+	cp -a ${CA_HOME}/files/«fqhn(host)»-key.pem  «HostSslBase»/«host.name»-key.pem
+fi
+
+«IF hasApache(host) && isMinUbuntuTrusty(host)»
+«LET getApache(host) AS apache»
+#
+if [ `openssl x509 -in «HostSslBase»/«host.name»-cert.pem -noout -ocsp_uri |wc -l` -gt 0 ]
+then
+	echo "	SSLUseStapling   On"  >«config(host, ocsp(apache))»
+	echo "	SSLStaplingCache \"shmcb:\${APACHE_RUN_DIR}/stapling_cache(128000)\"" >>«config(host, ocsp(apache))»
+else
+	echo "	SSLUseStapling Off" >«config(host, ocsp(apache))»
+fi
+«ENDLET»
+«ENDIF»
+
+«IF hasMail(host) || hasMySQL(host)»
+#
+if [ -e ${CA_HOME}/files/localhost-cert.pem ]
+then
+	cp -a ${CA_HOME}/files/localhost-cert.pem «HostSslBase»/
+	cp -a ${CA_HOME}/files/localhost-key.pem  «HostSslBase»/
+fi
+«ENDIF»
+#
+«ENDLET»
+#
+md5sum_new=`find «fqhn(host)» -type f | sort | xargs cat | md5sum |cut -b1-32`
+md5sum_old=`grep «fqhn(host)» $HOME/hashes.txt|cut -b1-32`
+#
+if [ "$md5sum_old" != "$md5sum_new" ]
+then
+	if ping -c1 «fqhn(host)» > /dev/null
+	then
+		echo "******************************************"
+		echo "Host «fqhn(host)» is reachable"
+		echo "Deploying..."
+		scp -P «getSSH(host).port» -r -q «fqhn(host)»/* root@«fqhn(host)»:/
+		echo "Restarting services..."
+		ssh -p «getSSH(host).port» root@«fqhn(host)» bin/deploy.sh
+		echo "$md5sum_new «fqhn(host)»" >>hashes.txt
+		echo "Done."
+	else
+		echo "******************************************"
+		echo "Host «fqhn(host)» is not reachable"
+		echo "Skipping..."
+	fi
+else
+	echo "******************************************"
+	echo "Host «fqhn(host)» configuration not changed"
+	echo "$md5sum_new «fqhn(host)»" >>hashes.txt
+	echo "Skipping..."
+fi
+«ENDFOREACH»
+mv hashes.txt $HOME
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE deploy FOR Printer»
+«REM»
+Printer aren't configurable.
+«ENDREM»
+«ENDDEFINE»
+
+«DEFINE deploy FOR Host»
+«FILE config(this, deploy(this)) CONFIG»
+«EXPAND tools::ConfigShell(deploy(this))»
+#
+TERM=xterm
+«EXPAND ssl»
+
+«IF isDebian()»
+#
+# allow newgrp to function over NFS
+setcap cap_setgid=ep `which newgrp`
+chmod u-s `which newgrp`
+«ENDIF»
+
+«IF isUbuntu()»
+#
+# Configure locales
+dpkg-reconfigure locales
+test -e «dpkglist(this)».sh && rm «dpkglist(this)».sh
+chmod 755 «dpkglist(this)»
+#
+# Disable resolvconf
+echo manual >/etc/init/resolvconf.override
+#
+# Repair symbolic linked «resolv(this)».
+if [ -L «resolv(this)» ]
+then
+	FILE=`readlink -f «resolv(this)»`
+	rm «resolv(this)»
+	mv $FILE «resolv(this)»
+fi
+«ENDIF»
+
+«IF isDebian()»
+test -e «dpkglist(this)».sh && rm «dpkglist(this)».sh
+chmod 755 «dpkglist(this)»
+«REM»
+FIXME!
+How should I reconfigure locales in Debian???
+«ENDREM»
+«ENDIF»
+
+«IF isLinux()»
+«IF hasSnmpd()»
+test -f «sudoers()» && chmod 440 «sudoers()»
+«ENDIF»
+«IF has3ware()»
+#
+sed -n "/^-----BEGIN \(RSA \)*PRIVATE KEY-----/,/^-----END \(RSA \)*PRIVATE KEY-----/p"  «getSslKey()»   >«get3wareCert()»
+sed -n "/^-----BEGIN CERTIFICATE-----/,/^-----END CERTIFICATE-----/p"          «getSslCert()» >>«get3wareCert()»
+chown root.ssl-cert «get3wareCert()»
+chmod 640           «get3wareCert()»
+chmod 750           «getOpt3wareScript()»
+«ENDIF»
+«IF isVirtualHost()»
+test -e «ntprestart(this)» && chmod 755 «ntprestart(this)»
+«ENDIF»
+«ENDIF»
+
+«EXPAND init(this) FOREACH services»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR Apache»
+«init(this)» stop
+«IF isUbuntu(host) || isDebian(host)»
+a2enmod -q ssl
+a2enmod -q headers
+«IF isMinUbuntuTrusty(host)»
+a2disconf -q security
+test -f «sslhost_old()» && rm -f «sslhost_old(this)»
+if [ -d «confdir_old()» ]
+then
+	echo "WARNING! Migrate directory «confdir_old()» to new one: «confdir()»!!!"
+fi 
+«ENDIF»
+usermod -G ssl-cert -a www-data
+#
+cd «basedir(this)»/mods-enabled
+for _link in «FOREACH ApacheModules(host, this) AS link SEPARATOR " " »"«link»"«ENDFOREACH»
+do
+	if [ -e "../mods-available/$_link" ]
+	then
+		test -L "$_link" || ln -s "../mods-available/$_link" .
+	else
+		test -L "$_link" && rm "$_link"
+	fi
+done
+#
+cd ..
+«ENDIF»
+if [ ! -d «usagedir()» ]
+then
+  mkdir -p «usagedir()»
+  webalizer -q
+fi
+#
+test -d «logdir()» || mkdir -p «logdir()»
+
+«IF hasSubversion()»
+test -d «svnconf()» || mkdir -p «svnconf()»
+«ENDIF»
+«IF hasTrac()»
+test -d «gitconf()» || mkdir -p «gitconf()»
+test -d «tracconf()» || mkdir -p «tracconf()»
+«ENDIF»
+#
+sleep 2
+«init(this)» start
+«ENDDEFINE»
+
+«DEFINE ssl FOR Host»
+crl_name=`basename «getSslCrl()»`
+test -d «getCrlBase()» || mkdir «getCrlBase()»
+test -e «getSslBase()»/$crl_name && mv «getSslBase()»/$crl_name «getCrlBase()»
+test -e «getCrlBase()»/.r0 && rm «getCrlBase()»/.r0 
+#
+chown root.ssl-cert «getSslBase()»/*-key.pem
+chmod 640           «getSslBase()»/*-key.pem
+#
+if [ -e «getSslCaCert()» ]
+then
+	chown root.root     «getSslCaCert()» «getSslBase()»/*-cert.pem «getSslCrl()» «getSslCaChainCert()»
+	chmod 644           «getSslCaCert()» «getSslBase()»/*-cert.pem «getSslCrl()» «getSslCaChainCert()»
+	chmod 755           «getCrlBase()»
+fi
+if [ -e «getSslCrl()» ]
+then
+	crl_hash=`openssl crl -hash -noout -in «getSslCrl()»`
+	test -L «getCrlBase()»/${crl_hash}.r0 || ln -s «getSslCrl()» «getCrlBase()»/${crl_hash}.r0
+fi
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR JBoss»
+«IF (isUbuntu(host) || isDebian(host)) && (path != null)»
+test -e «logrotate(this)».sh && rm «logrotate(this)».sh
+chmod 755 «init(this)» «logrotate()»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR Wildfly»
+«IF (isUbuntu(host) || isDebian(host)) && (path != null)»
+test -e «logrotate(this)».sh && rm «logrotate(this)».sh
+chmod 755 «init(this)» «logrotate()»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR Tomcat»
+«IF (isUbuntu(host) || isDebian(host)) && (path != null)»
+test -e «logrotate(this)».sh && rm «logrotate(this)».sh
+chmod 755 «init(this)» «logrotate()»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR Glassfish»
+«IF (isUbuntu(host) || isDebian(host)) && (path != null)»
+chmod 755 «init(this)»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR AppServer»
+«REM»
+Nothing to do
+«ENDREM»
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR APC»
+# «init(this)» reload
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR CUPS»
+«IF isUbuntu(host) || isDebian(host)»
+usermod -G ssl-cert -a cupsys
+«ENDIF»
+«init(this)» restart
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR DHCP»
+chmod 644 «configGeneratedHosts(this)» «dhcp_config(this)»
+«init(this)» restart
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR DNS»
+«init(this)» reload
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR LDAP»
+«IF isUbuntu(host) || isDebian(host)»
+usermod -G ssl-cert -a openldap
+«ENDIF»
+«slapdConv()»
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR Mail»
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR MRTG»
+«IF useGlobalConfig()»
+test -d «workdir(this)» || mkdir -p «workdir(this)»
+indexmaker\
+	--output=«workdir(this)»/index.html\
+	--perhost\
+	--optlog\
+	--columns=1\
+	--sectionhost «mrtgconfig(this)»
+«ELSE»
+«FOREACH getSnmpMachines(host) AS snmpmachine»
+test -d «workdir(this)»/«snmpmachine.name» || mkdir -p «workdir(this)»/«snmpmachine.name»
+test -L «workdir(this)»/«snmpmachine.name»/favicon.ico || ln -s ../favicon.ico «workdir(this)»/«snmpmachine.name»/
+indexmaker\
+	--output=«workdir(this)»/«snmpmachine.name»/index.html\
+	--optlog --columns=1 «mrtgconfig(snmpmachine)»
+«ENDFOREACH»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR MySQL»
+«IF isUbuntu(host) || isDebian(host)»
+usermod -G ssl-cert -a mysql
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR Nagios»
+«init(this)» stop
+sleep 5
+chmod  644 «confdir()»/*.cfg
+chmod 4755 «plugins()»/check_dhcp 
+test -f    «confdir()»/localhost_nagios2.cfg && rm «confdir()»/localhost_nagios2.cfg
+«init(this)» start
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR NFS»
+«init(this)» reload
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR NTP»
+test -d «ntpstatdir(host)» || mkdir -p «ntpstatdir(host)»
+«init(this, host)» stop
+ntpdate -b «FOREACH getExternalNtpServer() AS ntp SEPARATOR " "»«ntp»«ENDFOREACH»
+«init(this, host)» start
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR PAM»
+chmod 644 «nsSwitch(this)»
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR PamLDAP»
+«IF isMinUbuntuPrecise(host)»
+nssldap-update-ignoreusers
+«ENDIF»
+chmod 644 «nsSwitch(this)» «pam_conf(this)»
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR Postfix»
+newaliases
+touch «base(this)»/password
+touch «base(this)»/transport
+postmap hash:«base(this)»/password
+postmap hash:«base(this)»/transport
+test -e «base(this)»/dh_512.pem  || openssl gendh -out «base(this)»/dh_512.pem -2 512
+test -e «base(this)»/dh_1024.pem || openssl gendh -out «base(this)»/dh_1024.pem -2 1024
+chmod 600 «base(this)»/dh_*.pem
+«init(this)» reload
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR Samba»
+# «init(this)» restart
+«ENDDEFINE»
+
+«DEFINE init FOR SMART»
+«init(this)» restart
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR SMART»
+«init(this)» restart
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR SNMP»
+«init(this)» stop
+chmod 440 «sudoers(host)»
+«IF hasSmart(host)»
+chmod 755 `which smartctl` «hdtemp(host)» «checkSmart(host)»
+«ENDIF»
+«IF has3ware(host)»
+chmod 755 «check3ware(host)»
+«ENDIF»
+«IF isVirtualHost(host)»
+test -f «checkMce(host)» && rm «checkMce(host)»
+«ELSE»
+chmod 755 «checkMce(host)»
+«ENDIF»
+sleep 2
+«init(this)» start
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR SSH»
+«init(this)» reload
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR VM»
+«REM»
+# Deploy nothing
+«ENDREM»
+«ENDDEFINE»
+
+«DEFINE init(Host host) FOR HostService»
+# service: «this.metaType.name»
+«ENDDEFINE»

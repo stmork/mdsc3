@@ -1,0 +1,38 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::model;
+
+cached Boolean isVirtual(Host host) :
+	host.parent != null;
+
+String vmctrl(VMWare vmware) :
+	"/root/bin/vmctrl.sh";
+
+String vmmem(VMWare vmware) :
+	"/root/bin/vmmem.sh";
+
+String vmbackup(VMWare vmware) :
+	"/root/bin/backup.sh";
+
+String vserver_add(VServer vs) :
+	"/root/bin/add-vserver.sh";
+
+String vserver(VServer vs) :
+	"/root/bin/vserver.sh";
+
+cached List[Host] getVMs(Host host) :
+	getAllHosts(host).select(e|e.parent == host);
+
+String vmctrl(KVM kvm) :
+	"/root/bin/vmctrl.sh";
+
+String vmmem(KVM kvm) :
+	"/root/bin/vmmem.sh";
+
+String vmbackup(KVM kvm) :
+	"/root/bin/backup.sh";

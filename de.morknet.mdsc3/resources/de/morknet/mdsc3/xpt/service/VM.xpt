@@ -1,0 +1,461 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::service::VM»
+
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«REM»
+«««««««««««««««««««««««««« VMware service routines »»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+«ENDREM»
+
+«DEFINE service(Host host) FOR VMWare»
+«EXPAND vmctrl(host)»
+«EXPAND vmmem(host)»
+«EXPAND vmbackup(host)»
+«ENDDEFINE»
+
+«DEFINE vmctrl(Host host) FOR VMWare»
+«ERROR "No script for abstract type " + this.metaType.name»
+«ENDDEFINE»
+
+«DEFINE vmctrl(Host host) FOR VMWare1»
+«FILE config(host, vmctrl(this)) CONFIG»
+«EXPAND tools::ConfigShell(vmctrl(this))»
+#
+vmbase=«base»
+match=$1
+action=$2
+#
+if [ "x$action" != "x" ]
+then
+	shift
+fi
+#
+for vmx in ${vmbase}/vm*/*.vmx
+do
+	status=`vmware-cmd "${vmx}" getstate | cut -d" " -f3`
+	if [ "$match" = "$status" ]
+	then
+		if [ "x$action" != "x" ]
+		then
+			vmware-cmd "${vmx}" $@
+		else
+			echo "$match: ${vmx}"
+		fi
+	fi
+done
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE vmctrl(Host host) FOR VMWare2»
+«FILE config(host, vmctrl(this)) CONFIG»
+«EXPAND tools::ConfigShell(vmctrl(this))»
+#
+vmbase=«base»
+match=$1
+action=$2
+#
+#
+# Kompatibilitätszustände zu VMware1
+if [ "x$action" != "x" ]
+then
+	shift
+fi
+#
+if [ "${match}" = "on" ]
+then
+	match="Powered on"
+fi
+#
+if [ "${match}" = "suspended" ]
+then
+	match="Suspended"
+fi
+#
+if [ "${action}" = "start" ]
+then
+	action="on"
+fi
+#
+vmware-vim-cmd vmsvc/getallvms | tail -n+2 | awk -F" +" '{ print $1,$2 } '|while read vminfo
+do
+	vmxid=`echo $vminfo|cut -d" " -f1`
+	vm=`echo $vminfo|cut -d" " -f2`   
+	state=`vmware-vim-cmd vmsvc/power.getstate ${vmxid} |tail -n1`
+	if [ "${state}" = "${match}" ]  
+	then
+		if [ "x${action}" != "x" ]
+		then
+			vmware-vim-cmd vmsvc/power."${action}" "${vmxid}"
+		else
+			echo "${match}: ${vm}"
+		fi
+	fi
+done
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE vmmem(Host host) FOR VMWare»
+«ERROR "No script for abstract type " + this.metaType.name»
+«ENDDEFINE»
+
+«DEFINE vmmem(Host host) FOR VMWare1»
+«FILE config(host, vmmem(this)) CONFIG»
+«EXPAND tools::ConfigShell(vmmem(this))»
+#
+vmbase=«base»
+#
+for vm in ${vmbase}/vm*
+do
+	mem=`grep -i memsize ${vm}/*vmx | cut -d "\"" -f2`
+	echo "`basename ${vm}`:    ${mem} MB"
+	val="${val}+${mem}"
+done
+echo
+sum=`echo "0${val}"|bc -iq|tail -n1`
+echo "Gesamt: ${sum} MB"
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE vmmem(Host host) FOR VMWare2»
+«FILE config(host, vmmem(this)) CONFIG»
+«EXPAND tools::ConfigShell(vmmem(this))»
+#
+vmbase=«base»
+#
+for vm in `vmware-vim-cmd vmsvc/getallvms|tail -n+2|awk -F" +" '{ print $2 } '`
+do
+	mem=`grep -i mem ${vmbase}/${vm}/*vmx | cut -d "\"" -f2`
+	echo "`basename ${vm}`:    ${mem} MB"
+	val="${val}+${mem}"
+done
+echo
+sum=`echo "0${val}"|bc -iq|tail -n1`
+echo "Gesamt: ${sum} MB"
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE vmbackup(Host host) FOR VMWare»
+«FILE config(host, vmbackup(this)) CONFIG»
+«EXPAND tools::ConfigShell(vmbackup(this))»
+#
+if [ -f /etc/default/backup ]
+then
+	. /etc/default/backup
+else
+	logger -t BACKUP "No backup configuration found."
+	exit 5
+fi
+#
+HOST=`hostname`
+INDEX=`date +"%s / 24 / 3600 % $BACKUP_CYCLE" | bc -iq | tail -n1`
+TEMPFILE=$MOUNT_POINT/backup-$HOST-tmp.tar.gz
+FINALFILE=$MOUNT_POINT/backup-$HOST-$INDEX.tar.gz
+#
+if [ -f $HOME/exclude-list ]
+then
+	EXCLUDE="--exclude-from=$HOME/exclude-list"
+else
+	EXCLUDE=""
+fi
+#
+logger -t BACKUP "Script startet."
+umask 027
+#
+if [ "$MOUNT" = yes ]
+then
+	umount $MOUNT_POINT && logger -t BACKUP "Umounted $MOUNT_POINT"
+	mount $MOUNT_POINT || exit 5
+fi
+#
+«vmctrl(this)» on suspend hard
+sync
+#
+logger -t BACKUP "  Starting backup..."
+tar 1>/var/log/backup-out.log 2>/var/log/backup-err.log cfz $TEMPFILE $EXCLUDE\
+	--one-file-system\
+	--atime-preserve\
+	--ignore-failed-read\
+	$BACKUP_DIRS
+# || exit 5
+#
+logger -t BACKUP "  Moving completed backup..."
+mv $TEMPFILE $FINALFILE
+#
+df -hl
+ls -l $MOUNT_POINT
+#
+if [ "$MOUNT" = yes ]
+then
+	logger -t BACKUP "  Unmounting..."
+	umount $MOUNT_POINT
+fi
+#
+logger -t BACKUP "  Resuming VMs..."
+«vmctrl(this)» suspended start
+sleep 300
+logger -t BACKUP "  First retry..."
+«vmctrl(this)» suspended start
+#logger -t BACKUP "  Second retry..."
+#«vmctrl(this)» off start
+#
+logger -t BACKUP "Script completed."
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»
+«««««««««««««««««««««««««« VServer service routines »»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+«ENDREM»
+
+«DEFINE service(Host host) FOR VServer»
+«EXPAND vserver_add(host)»
+«EXPAND vserver(host)»
+«ENDDEFINE»
+
+«DEFINE vserver_add(Host host) FOR VServer»
+«FILE config(host, vserver_add(this)) CONFIG»
+«EXPAND tools::ConfigShell(vserver_add(this))»
+#
+HOSTNAME=$1
+IP=$2
+DOMAIN=«getDomain(host)»
+#
+echo "Hostname: $HOSTNAME"
+echo "IP:       $IP"
+#
+BASE=«base»
+ROOT=$BASE/$HOSTNAME
+echo "Root:     $ROOT"
+#
+echo "Creating VServer..."
+newvserver -v --hostname $HOSTNAME --domain $DOMAIN --interface eth0 --ip $IP || exit 1
+echo VIRT_MEM >> /etc/vservers/$HOSTNAME/flags
+mkdir -p         /etc/vservers/$HOSTNAME/rlimits
+#
+echo "Copying some files..."
+test -d $ROOT/root/.ssh||mkdir $ROOT/root/.ssh
+#
+cp -a $HOME/.ssh/authorized_keys $ROOT/root/.ssh
+cp -a /etc/apt/sources.list $ROOT/etc/apt
+cp -a /etc/apt/apt.conf $ROOT/etc/apt
+cp -a /etc/default/locale $ROOT/etc/default
+cp -a /var/lib/locales/supported.d/local $ROOT/var/lib/locales/supported.d/
+#
+sed -e s/%IP%/$IP/g $HOME/config/sshd_config >$ROOT/etc/ssh/sshd_config
+sed -e s/%IP%/$IP/g -e s/%DOMAIN%/$DOMAIN/g $HOME/config/interfaces >$ROOT/etc/network/interfaces
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE vserver(Host host) FOR VServer»
+«FILE config(host, vserver(this)) CONFIG»
+«EXPAND tools::ConfigShell(vserver(this))»
+#
+. /lib/lsb/init-functions
+#
+VM_LIST="«FOREACH getVMs(host) AS client SEPARATOR " "»«client.name»«ENDFOREACH»"
+#
+doExecute()
+{
+	for vserver in ${VM_LIST}
+	do
+		echo ""
+		echo "   Executing ${1} command for vserver $vserver..."
+		vserver $vserver ${1}
+		echo "   Done."
+	done
+}
+#
+case "$1" in
+	start|stop|restart)
+	doExecute ${1}
+	;;
+#
+	*)
+	log_success_msg "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»
+«««««««««««««««««««««««««« KVM service routines »»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+«ENDREM»
+
+«DEFINE service(Host host) FOR KVM»
+«EXPAND vmmem(host)»
+«EXPAND vmctrl(host)»
+«EXPAND vmbackup(host)»
+«ENDDEFINE»
+
+«DEFINE vmmem(Host host) FOR KVM»
+«FILE config(host, vmmem(this)) CONFIG»
+«EXPAND tools::ConfigShell(vmmem(this))»
+#
+VM_LIST=`ls /etc/libvirt/qemu/*.xml`
+#
+for CONFIG in ${VM_LIST}
+do
+	VM=`basename ${CONFIG}|cut -d"." -f1`
+	kb=`grep -E "memory[ >]" $CONFIG|sed -e :a -e 's/[^0-9]//g'` 
+	cc=`grep -E "vcpu[ >]"   $CONFIG|sed -e :a -e 's/<vcpu[^>]*>\([0-9]*\)<\/vcpu>/\1/g' -e 's/[^0-9]//g'`
+	mem=`echo "$kb / 1024"|bc -iq|tail -n1`
+	echo "${VM}:	${mem} MB   # ${cc} CPUs"
+	val="${val}+${mem}"
+done
+#
+echo
+sum=`echo "0${val}"|bc -iq|tail -n1`
+echo "Gesamt: ${sum} MB"
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE vmctrl(Host host) FOR KVM»
+«FILE config(host, vmctrl(this)) CONFIG»
+«EXPAND tools::ConfigShell(vmctrl(this))»
+#
+VM_LIST=`ls /etc/libvirt/qemu/*.xml`
+#
+MATCH=$1
+ACTION=$2
+#
+if [ "x$ACTION" != "x" ]
+then
+	shift
+	shift
+fi
+#
+for CONFIG in ${VM_LIST}
+do
+	VM=`basename ${CONFIG}|cut -d"." -f1`
+	STATE=`virsh domstate ${VM}`
+	echo "${VM}: ${STATE}"
+	if [ "${STATE}" = "${MATCH}" ]
+	then
+		virsh ${ACTION} ${VM} $@
+	fi
+done
+
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE vmbackup(Host host) FOR KVM»
+«FILE config(host, vmbackup(this)) CONFIG»
+«EXPAND tools::ConfigShell(vmbackup(this))»
+#
+if [ -f /etc/default/backup ]
+then
+	. /etc/default/backup
+else
+	logger -t BACKUP "No backup configuration found."
+	exit 5
+fi
+#
+HOST=`hostname`
+INDEX=`date +"%s / 24 / 3600 % $BACKUP_CYCLE" | bc -iq | tail -n1`
+VM_LIST="«FOREACH getVMs(host) AS client SEPARATOR " "»«client.name»«ENDFOREACH» ${ADDITIONAL_BACKUP_HOSTS}"
+VG=«vg»
+MAPPER=/dev/mapper
+#
+logger -t BACKUP "Script startet."
+umask 027
+#
+if [ "$MOUNT" = yes ]
+then
+	umount $MOUNT_POINT && logger -t BACKUP "Umounted $MOUNT_POINT"
+	mount $MOUNT_POINT || exit 5
+fi
+#
+for SNAPSHOT in `find ${VG} -name "*-snap"`
+do
+«IF isMinDebianWheezy(host)»
+#	dmsetup remove ${SNAPSHOT} >/dev/null
+«ENDIF»
+	lvremove -f    ${SNAPSHOT} >/dev/null
+done
+#
+for COW in `find ${MAPPER} -name "*-cow"`
+do
+	logger -t BACKUP "WARNING: Existing ${COW}!"
+	echo "WARNING: Existing ${COW}!"
+done
+#
+DST_DIR=${MOUNT_POINT}/${HOSTNAME}-${INDEX}
+test -d ${DST_DIR} || mkdir -p ${DST_DIR}
+#
+rm -f ${DST_DIR}/*.dd.bz2
+rsync --archive --delete /etc/libvirt/ ${DST_DIR}/libvirt/
+#
+for GUEST in ${VM_LIST}
+do
+	echo "====================================================================="
+	echo "Backup of host $GUEST."
+#
+	STATE=`virsh domstate ${GUEST}`
+	if [ "${STATE}" = "running" ]
+	then
+		logger -t BACKUP "  Suspending ${GUEST}..."
+		virsh -q suspend ${GUEST} >/dev/null
+	fi
+#
+	LV_ERROR=0
+	for DISK in `find ${VG} -name "${GUEST}-disk??"`
+	do
+		SNAPSHOT=${DISK}-snap
+		SIZE=`lvdisplay ${DISK}|fgrep LE|sed -e 's/[^0-9]//g'`
+		echo "$DISK -> $SNAPSHOT $SIZE LEs"
+		logger -t BACKUP "  Snapshotting ${GUEST}..."
+		lvcreate -l ${SIZE} -s -n ${SNAPSHOT} ${DISK} >/dev/null
+		let LV_ERROR+=$?
+	done
+#
+	if [ "${STATE}" = "running" ]
+	then
+		virsh -q resume ${GUEST} >/dev/null
+		logger -t BACKUP "  Resumed ${GUEST}."
+	fi
+#
+	if [ $LV_ERROR = "0" ]
+	then
+		for DISK in `find ${VG} -name "${GUEST}-disk??"`
+		do
+			SNAPSHOT=${DISK}-snap
+			NAME=`basename ${DISK}`
+			logger -t BACKUP "  Backing up ${SNAPSHOT}..."
+			echo             "Backing up ${SNAPSHOT}..."
+			dd if=${SNAPSHOT} bs=4M | pbzip2 -1 -c >${DST_DIR}/${NAME}.dd.bz2
+«IF isMinDebianWheezy(host)»
+#			dmsetup remove ${SNAPSHOT} >/dev/null
+«ENDIF»
+			lvremove -f    ${SNAPSHOT} >/dev/null
+			logger -t BACKUP "  Backup of ${GUEST} completed."
+		done
+	else
+		logger -t BACKUP "ERROR - snapshots of VM ${VM} not created!"
+		echo "ERROR - snapshots of VM ${VM} not created!"
+	fi
+done
+echo "====================================================================="
+#
+touch ${DST_DIR}
+df -h
+echo
+echo "Content of ${DST_DIR}:"
+ls -hla ${DST_DIR}
+#
+if [ "$MOUNT" = yes ]
+then
+	logger -t BACKUP "  Unmounting..."
+	umount $MOUNT_POINT
+fi
+logger -t BACKUP "Script completed."
+«ENDFILE»
+«ENDDEFINE»

@@ -1,0 +1,202 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+import emf;
+
+extension de::morknet::mdsc3::ext::util::model;
+extension de::morknet::mdsc3::ext::util::network;
+
+Machine getMachine(NIC nic) :
+	(Machine)nic.eContainer;
+
+Boolean isPrinter(Machine machine) :
+	Printer.isInstance(machine);
+
+Boolean isHost(Machine machine) :
+	Host.isInstance(machine);
+
+Host getHost(HostService service) :
+	(Host)service.eContainer;
+
+Printer getPrinter(PrinterService service) :
+	service.eContainer;
+
+Switch getPrinter(SwitchService service) :
+	service.eContainer;
+
+Host getHost(HostDevice device) :
+	(Host)device.eContainer;
+
+Boolean isVirtualHost(Host host) :
+	host.parent != null;
+
+Boolean isDummy(Host host) :
+	host.os == OS::Dummy;
+
+Boolean isDummy(Machine m) :
+	false;
+
+Boolean hasVirtualisation(Host host) :
+	host.services.typeSelect(VM).size > 0;
+
+Boolean hasXen(Host host) :
+	host.services.typeSelect(Xen).size > 0;
+
+Boolean hasVmWare(Host host) :
+	host.services.typeSelect(VMWare).size > 0;
+
+Boolean hasVServer(Host host) :
+	host.services.typeSelect(VServer).size > 0;
+
+Boolean hasKVM(Host host) :
+	host.services.typeSelect(KVM).size > 0;
+	
+Boolean isVmWare(Host host) :
+	(host.parent != null) && hasVmWare(host.parent);
+	
+Boolean isVServer(Host host) :
+	(host.parent != null) && hasVServer(host.parent);
+
+cached Host getHost(Drive hd) :
+	(Host)hd.eContainer.eContainer;
+
+cached Boolean isExtern(Machine here, Machine there) :
+	getLocation(here) != getLocation(there);
+
+List[NIC] rejectVPN(List[NIC] nics) :
+	nics.reject(nic|nic.vpn || isVPN(nic.network));
+
+List[NIC] selectVPN(List[NIC] nics) :
+	nics.select(nic|isVPN(nic.network));
+
+/* Host networking */
+
+cached List[NIC] getNICs(Host host) :
+	host.devices.typeSelect(NIC);
+
+/* Printer networking */
+
+cached List[NIC] getNICs(Printer printer) :
+	printer.devices.typeSelect(NIC);
+
+/* Switch networking */
+
+cached List[NIC] getNICs(Switch s) :
+	s.devices.typeSelect(NIC);
+
+/* Machine networking */
+cached List[NIC] getNICs(Machine m) : null;
+
+cached Boolean isConnected(NIC nic) :
+	nic.network != null;
+
+cached List[NIC] getConnectedNICs(Machine m) :
+	getNICs(m).select(nic|isConnected(nic));
+
+cached List[NIC] getConnectedBridgedNICs(Machine m) :
+	getNICs(m).select(nic|isConnected(nic) || isBridged(nic)).rejectVPN();
+
+cached NIC getBaseNIC(Machine m) :
+	getConnectedNICs(m).first();
+
+cached Network getBaseNetwork(Machine m) :
+	getBaseNIC(m).network;
+
+cached String getDomain(Machine m) :
+	getBaseNetwork(m).domain;
+
+cached Boolean isLocalhost(Machine m) :
+	m.name == "localhost";
+
+cached String fqhn(Machine m) :
+	isLocalhost(m) ? "localhost" : m.name + "." + getDomain(m);
+
+cached String fqhn (String name, Machine m) :
+	name + "." + getDomain(m);
+
+cached String getNetmask(Machine m) :
+	getNetmask(getBaseNetwork(m));
+
+cached String getNetworkAddress(Machine m) :
+	getNetworkAddress(getBaseNetwork(m));
+
+cached String getBroadcastAddress(Machine m) :
+	getBroadcastAddress(getBaseNetwork(m));
+
+cached List[Host] getRouters(EObject object):
+	getAllHosts(object).select(h|getConnectedNICs(h).size > 1);
+
+cached List[Network] getNetworks(Host h) :
+	getConnectedNICs(h).network;
+
+cached Location getLocation(Machine m) :
+	getLocation(getBaseNetwork(m));
+
+private Boolean connected(Host h, Network n) :
+	getNetworks(h).exists(e|e == n);
+
+Host getGateway(Network n) :
+	n.gw != null ? n.gw : getRouters(n).selectFirst(r|connected(r, n));
+
+cached Host getGateway(Host h) :
+	getBaseNetwork(h).gw != null ?
+		getBaseNetwork(h).gw :
+		getRouters(h).selectFirst(r|connected(r, getBaseNetwork(h)));
+
+cached String getIpAddress(NIC nic) :
+	nic.dhcp ? asIpAddress(fqhn(getHost(nic))) : nic.ipaddr;
+
+cached String getIpAddress(Machine m) :
+	getIpAddress(getBaseNIC(m));
+
+cached String getIpAddress(Machine m, Network n) :
+	getIpAddress(getConnectedNICs(m).selectFirst(nic|nic.network == n));
+
+cached List[Partition] getPartitions(Host host) :
+	host.devices.typeSelect(Partition);
+
+cached List[Drive] getDrives(Host host) :
+	host.devices.typeSelect(Controller).drives.sortBy(d|d.number);
+
+cached List[Volume] getVolumes(Host host) :
+	host.devices.typeSelect(Controller).volumes.sortBy(v|v.number);
+
+cached CPU getCPU(Host host) :
+	host.devices.typeSelect(CPU).first();
+
+cached Integer getCpuCount(Host host) :
+	getCPU(host) != null ? getCPU(host).cores : 1;
+
+cached String getLocationName(Machine m) :
+	getLocation(getBaseNetwork(m)).name;
+
+String deploy(Host host) :
+	"/root/bin/deploy.sh";
+
+String blacklist(Host host) :
+	"/etc/modprobe.d/blacklist-fb.conf";
+
+String tune2fs(Host host) :
+	"/root/bin/tune2fs.sh";
+
+String dpkglist(Host host) :
+	"/etc/cron.daily/dpkglist";
+
+String resolv(Host host) :
+	"/etc/resolv.conf";
+
+String bonding_conf(Host host) :
+	"/etc/modprobe.d/bonding.conf";
+
+String iftab(Host host) :
+	"/etc/iftab";
+
+String udev_rules(Host host) :
+	"/etc/udev/rules.d/70-persistent-net.rules";
+
+String interfaces(Host host) :
+	"/etc/network/interfaces";
+	

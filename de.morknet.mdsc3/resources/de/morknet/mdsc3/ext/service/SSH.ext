@@ -1,0 +1,26 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::host;
+extension de::morknet::mdsc3::ext::util::os;
+
+cached Boolean hasSshd(Host host) :
+	host.services.exists(s|SSH.isInstance(s));
+
+cached SSH getSSH(Host host) :
+	host.services.typeSelect(SSH).first();
+
+cached String config(SSH ssh) :
+	"/etc/ssh/sshd_config";
+
+cached String init(SSH ssh) :
+	isUbuntu(getHost(ssh))? "service ssh" :
+		(isRedHat(getHost(ssh)) ? "/etc/init.d/sshd" : "/etc/init.d/ssh");
+
+cached String login(Host host) :
+	"root@" + fqhn(host) + (getSSH(host).port != 22 ? ":" + getSSH(host).port : "");
+ 

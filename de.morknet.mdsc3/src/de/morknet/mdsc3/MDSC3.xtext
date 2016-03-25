@@ -1,0 +1,272 @@
+grammar de.morknet.MDSC3 with org.eclipse.xtext.common.Terminals
+generate mdsc3 "http://www.morknet.de/mdsc3"
+
+import 'http://www.eclipse.org/emf/2002/Ecore' as ecore
+
+Model :
+	(imports+=Import)*
+	(elements+=Type)*;
+	
+Import :
+	'import' importURI=STRING ';';
+
+Type:
+	Location | Machine;
+
+/******************************/
+/* Location and machine types */
+/******************************/
+
+Location :
+	'location' name=STRING contact=STRING
+	'{'
+		(networks+=Network)+
+	'}';
+
+Network :
+	'network' name=ID
+	'{'
+		('address' address=IPADDR ';')
+		('bits'    bits=INT ';')
+		('domain'  domain=FQHN ';')?
+		('gw'      gw=[Host|HOSTNAME] ';')?
+	'}';
+
+Machine :
+	Host|Switch|Printer;
+
+Switch :
+	'switch' name=HOSTNAME
+	'{'
+		(devices+=SwitchDevice)*
+		(services+=SwitchService)*
+	'}';
+
+Printer :
+	'printer' name=HOSTNAME (color?='color')? (duplex?='duplex')? (ssl?='ssl')?
+	'{'
+		(devices+=PrinterDevice)*
+		(services+=PrinterService)*
+	'}';
+
+Host :
+	'host' name=HOSTNAME os=OS
+		('virtual' parent=[Host|HOSTNAME])?
+		(deploy?='deploy')?
+		(bits64?='bits64')?
+		('lang' lang=STRING)?
+		('LC_ALL' lc=STRING)?
+		('charset' charset=CHARSET)?
+		('cafile' cafile=STRING)?
+	'{'
+		(devices+=HostDevice)*
+		(services+=HostService)*
+	'}';
+
+enum CHARSET :
+	UTF8 = 'UTF-8'|
+	ISO8859_1 = 'ISO-8859-1'|
+	ISO8859_15 = 'ISO-8859-15';
+
+enum OS : Dummy='Dummy' |
+	SuSE_12='SuSE 12' |
+	SuSE_13='SuSE 13' |
+	SLES_11='SLES 11'|
+	Debian6='Squeeze'|
+	Debian7='Wheezy'|
+	Debian8='Jessie'|
+	Ubuntu_12_04='Precise' |
+	Ubuntu_14_04='Trusty' |
+	ArchLinux='ArchLinux' |
+	Windows_2K3='Windows Server 2003'|
+	Windows_2K8='Windows Server 2008'|
+	Windows_2K12='Windows Server 2012'|
+	Windows_7='Windows 7'|
+	Mac_10_6='Snow'|
+	Mac_10_7='Lion'|
+	Mac_10_8='Mountain Lion'|
+	Mac_10_9='Mavericks'|
+	Mac_10_10='Yosemite'|
+	Red_Hat='Red Hat';
+
+/***************************/
+/* Switch devices/services */
+/***************************/
+
+SwitchDevice :		NIC ';';
+SwitchService:		SNMP ';';
+
+/****************************/
+/* Printer devices/services */
+/****************************/
+
+PrinterDevice :		NIC ';';
+PrinterService:		SNMP ';';
+
+/****************/
+/* Host devices */
+/****************/
+
+HostDevice :
+	(CPU|NIC|IPMI|Partition|Controller) ';';
+
+Controller :
+	(TWI|SAS|AHCI|Areca|LSI)
+	'{'
+		(drives+=Drive)+
+		(volumes+=Volume)+
+	'}';
+
+TWI:		{TWI}	'3ware' number=INT (bbu?='bbu')?;
+LSI:		{LSI}	'LSI' number=INT (bbu?='bbu')?;
+SAS:		{SAS}	'SAS';
+Areca:		{Areca}	'Areca';
+
+AHCI:		{AHCI}	'AHCI' (name=STRING)?;
+
+Drive:		'drive'  number=INT device=PATH channel=STRING ';';	
+Volume:		'volume' number=INT ((device=PATH type=VOLTYPE)|spare?='spare') ';';
+
+enum VOLTYPE:
+	DRIVE='drive'|
+	RAID0='raid0'|
+	RAID1='raid1'|
+	RAID5='raid5'|
+	RAID6='raid6'|
+	RAID10='raid10';
+				
+CPU:
+	'CPU' name=STRING mhz=INT cores=INT (sensors?='sensors')? (multicore?='multicore')?;
+
+/*
+Jede NIC hat eine MAC-Adresse. Die NIC muss aber nicht angeschlossen sein, womit die Netzwerkzugehörigkeit optional ist.
+Die Networkregel soll besagen: Wenn sie angegeben wird, muss die Netzwerkzugehörigkeit angegeben werden. Die IP-Adresse wird
+entweder komplett dynamisch per DHCP vergeben, oder statisch ohne DHCP, oder fix vom DHCP. Also sind folgende Schreibweisen
+möglich:
+ip dhcp  
+ip <ipaddr>  
+ip <ipaddr> dhcp  
+*/
+NIC:	'NIC'
+	name=ID
+	(
+		(loopback?='loopback')|
+		(vpn?='vpn')|
+		('mac' mac=MAC)|
+		(bonded?='bonding' mode=INT '(' ifaces+=[NIC|ID] (',' ifaces+=[NIC|ID])* ')')|
+		(bridged?='bridging' '(' ifaces+=[NIC|ID] (',' ifaces+=[NIC|ID])* ')')
+	)
+	(network=[Network|ID] 'ip' ((dhcp?='dhcp')?|(ipaddr=(IPADDR) (dhcp?='dhcp')?)))?;
+	
+Partition:
+	'Partition' name=PATH device=PATH filllevel=INT snmpindex=INT (backup?='backup')?;
+
+IPMI:	'IPMI'	'mac' mac=MAC  network=[Network|ID] 'ip' ipaddr=(IPADDR);
+
+/*****************/
+/* Host services */
+/*****************/
+
+HostService :
+	(AppServer|CUPS|DHCP|DNS|LDAP|Mail|MySQL|NFS|NTP|PAM|Samba|SMART|SNMP|SSH|UPS|VM|Watcher|WebServer) ';';
+
+AppServer:					BEA|JBoss|Wildfly|Tomcat|Glassfish|WebSphere;
+JBoss:		{JBoss}			'JBoss' (path=PATH)?;
+Wildfly:	{Wildfly}		'Wildfly' (path=PATH)?;
+Tomcat:		{Tomcat}		'Tomcat' (path=PATH)?;
+Glassfish:	{Glassfish}		'Glassfish' (path=PATH)?;
+WebSphere:	{WebSphere}		'WebSphere';
+BEA:		{BEA}			'BEA';
+
+CUPS:		{CUPS}			'CUPS';
+DHCP:		{DHCP}			'DHCP' (master?='master')?;
+DNS:		{DNS}			'DNS'  (master?='master')?;
+LDAP:		{LDAP}			'LDAP' baseDN=STRING credentials=STRING (master?='master')? (security?='SSL')? (debug?='debug')?;
+
+MySQL:		{MySQL}			'MySQL';
+
+Mail:						Postfix|Sendmail|Zimbra|Google;
+Postfix:	{Postfix}		'Postfix' relay=[Host|HOSTNAME];
+Sendmail:	{Sendmail}		'Sendmail';
+Zimbra:		{Zimbra}		'Zimbra';
+Google:		{Google}		'Google';
+
+NFS:		{NFS}			'NFS';
+NTP:		{NTP}			'NTP';
+
+PAM:						PamLDAP|PamLocal|PamNIS;
+PamLDAP:	{PamLDAP}		'PamLDAP' (secure?='secure')?;
+PamLocal:	{PamLocal}		'PamLocal';
+PamNIS:		{PamNIS}		'PamNIS';
+
+Samba:		{Samba}			'Samba' (netbiosname=STRING)? (mode=SMBMODE)?;
+
+enum SMBMODE :
+	Server='Server'|PDC='PDC'|BDC='BDC';
+
+SMART:		{SMART}			'SMART';
+SNMP:		{SNMP}			'SNMP';
+SSH:		{SSH}			'SSH' (port=INT)?;
+
+UPS:						APC;
+APC:		{APC}			'APC' delay=INT ((name=STRING) (usb ?= 'usb')?|(host=[Host|HOSTNAME]));
+
+VM:							(VMWare|VServer|Xen|KVM);
+VMWare:						(VMWare1|VMWare2) base=PATH; 
+VMWare1:	{VMWare1}		'VMware1';
+VMWare2:	{VMWare2}		'VMware2';
+VServer:	{VServer}		'VServer' base=PATH;
+Xen:		{Xen}			'Xen';
+KVM:		{KVM}			'KVM' vg=PATH;
+
+Radius:		{Radius}		'Radius' '{' (SIDs+=SID)* '}';
+SID:		{SID}			'sid' sid=ID '(' clients+=[Host|HOSTNAME] (',' clients+=[Host|HOSTNAME])* ')' ';';
+
+Watcher:					MRTG|Nagios;
+MRTG:		{MRTG}			'MRTG';
+Nagios:		{Nagios}		'Nagios';
+
+WebServer:					Apache|IIS;
+Apache:		{Apache}		'Apache' (auth?='auth')? (docroot=PATH)? ('{' (connections+=Connector)* '}')?;
+IIS:		{IIS}			'IIS';
+
+Connector:					(JK|SVN|Trac|VTiger|WordPress) ';';
+
+JK:			{JK}			'JK' server+=JkServer
+		(',' server+=JkServer)* mountpoint=PATH (secure?='secure')? (auth?='auth')? ('vhost' vhost=FQHN (redirect?='redirect')?)?;
+
+SVN:		{Subversion}	'Subversion' svndir=PATH;
+Trac:		{Trac}			'Trac' svndir=PATH gitdir=PATH tracdir=PATH relay=[Host|HOSTNAME];
+
+VTiger:		{VTiger}		'VTiger';
+WordPress:	{WordPress}		'WordPress' path=PATH (mu?='MU')?;
+
+JkServer:	{JkServer}		host=[Host|HOSTNAME] (':' port=INT)?;
+
+/******************/
+/* Terminal rules */
+/******************/
+
+FQHN :
+	('localhost'|(HOSTNAME ('.' HOSTNAME)+));
+
+terminal HEX returns ecore::EInt :
+	('$'|'0x')('0'..'9'|'a'..'f')+;
+
+terminal HEXDIGIT:
+	('0'..'9'|'a'..'f'|'A'..'F');
+
+terminal MAC:
+	(HEXDIGIT)(HEXDIGIT)':'(HEXDIGIT)(HEXDIGIT)':'(HEXDIGIT)(HEXDIGIT)':'(HEXDIGIT)(HEXDIGIT)':'(HEXDIGIT)(HEXDIGIT)':'(HEXDIGIT)(HEXDIGIT);
+
+terminal IPADDR:
+	('0'..'9')+ '.' ('0'..'9')+ '.' ('0'..'9')+ '.' ('0'..'9')+;
+
+terminal PATH:
+	('A'..'Z' ':')? (('/')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-'|'.'|'ä'|'ö'|'ü'|'ß'|'Ä'|'Ö'|'Ü')*)+;
+
+terminal HOSTNAME:
+	('_')? ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'-')*;
+
+terminal INTERFACE:
+	('#')?('a'..'z')+('0'..'9')*(':' ('0'..'9')+)?;

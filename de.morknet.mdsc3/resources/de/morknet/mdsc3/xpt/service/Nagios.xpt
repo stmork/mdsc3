@@ -1,0 +1,620 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«IMPORT de::morknet::mdsc3::xpt::util»
+«IMPORT de::morknet::mdsc3::xpt::service::nagios»
+
+«EXTENSION de::morknet::mdsc3::ext::device::ipmi»
+«EXTENSION de::morknet::mdsc3::ext::device::twi»
+«EXTENSION de::morknet::mdsc3::ext::device::lsi»
+
+«EXTENSION de::morknet::mdsc3::ext::util::constants»
+«EXTENSION de::morknet::mdsc3::ext::util::counter»
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::model»
+«EXTENSION de::morknet::mdsc3::ext::util::network»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«EXTENSION de::morknet::mdsc3::ext::service::Apache»
+«EXTENSION de::morknet::mdsc3::ext::service::AppServer»
+«EXTENSION de::morknet::mdsc3::ext::service::APC»
+«EXTENSION de::morknet::mdsc3::ext::service::DNS»
+«EXTENSION de::morknet::mdsc3::ext::service::DHCP»
+«EXTENSION de::morknet::mdsc3::ext::service::LDAP»
+«EXTENSION de::morknet::mdsc3::ext::service::Mail»
+«EXTENSION de::morknet::mdsc3::ext::service::NTP»
+«EXTENSION de::morknet::mdsc3::ext::service::Nagios»
+«EXTENSION de::morknet::mdsc3::ext::service::SMART»
+«EXTENSION de::morknet::mdsc3::ext::service::SNMP»
+«EXTENSION de::morknet::mdsc3::ext::service::SSH»
+«EXTENSION de::morknet::mdsc3::ext::service::VM»
+
+«DEFINE service(Host host) FOR Nagios»
+«EXPAND Apache(host)»
+«EXPAND config(host)»
+«EXPAND contacts(host)»
+«EXPAND periods(host)»
+«EXPAND commands::commands(host)»
+«EXPAND hostgroups::groups(host)»
+«EXPAND service::services(host)»
+«EXPAND processes(host)»
+«ENDDEFINE»
+
+«DEFINE processes(Host host) FOR Nagios»
+«FILE config(host, processes(this)) CONFIG»
+«EXPAND tools::ConfigShell(processes(this))»
+#
+«LET getAllSnmpHosts() AS snmplist»
+«FOREACH snmplist AS snmphost»
+#
+if ping -c1 «fqhn(snmphost)» > /dev/null
+then
+	PROCESSES=`snmpget -v 1 -c public -O Q «fqhn(snmphost)» 1.3.6.1.2.1.25.1.6.0|cut -d "=" -f2`
+	echo "«fqhn(snmphost)» ${PROCESSES} «process_limit_warn(snmphost)» «process_limit_critical(snmphost)»"
+else
+	echo "No connection to «fqhn(snmphost)»!"
+fi
+«ENDFOREACH»
+«ENDLET»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE config(Host host) FOR Nagios»
+«LET getAllMachines().reject(m|isDummy(m)) AS snmplist»
+«FOREACH snmplist AS snmpmachine»
+«FILE config(host, config(this, snmpmachine)) CONFIG»
+«EXPAND tools::ConfigHeader(config(this, snmpmachine))»
+#
+define host {
+	host_name   «fqhn(snmpmachine)»
+	alias       «fqhn(snmpmachine)»
+	address     «fqhn(snmpmachine)»
+	use         «hostType(snmpmachine)»
+}
+«IF hasIPMI(snmpmachine)»
+#
+define host {
+	host_name   «ipmi(snmpmachine)»
+	alias       «ipmi(snmpmachine)»
+	address     «ipmi(snmpmachine)»
+	use         «hostType(snmpmachine)»
+}
+«ENDIF»
+«IF Host.isInstance(snmpmachine)»
+«LET (Host)snmpmachine AS snmphost»
+«LET getSSH(snmphost) AS ssh»
+«IF (ssh != null) && (ssh.port != 22)»
+#
+define service {
+		host_name              «fqhn(snmpmachine)»    
+		service_description    SSH 
+		check_command          check_ssh_port!«ssh.port»
+		use                    generic-service
+	}
+«ENDIF»
+«ENDLET»
+
+«IF condDhcp(host, snmphost)»
+#
+define service {
+		host_name              «fqhn(snmpmachine)»    
+		service_description    DHCP 
+		check_command          check_dhcp_interface!«fqhn(snmpmachine)»!«snmphost.getBaseNIC().name»
+		use                    generic-service
+	}
+«ENDIF»
+
+«IF isSuSE(snmphost) && has3ware(snmphost)»
+#
+define service {
+		host_name              «fqhn(snmpmachine)»    
+		service_description    3DM2 
+		check_command          check_3dm2
+		use                    generic-service
+	}
+«ENDIF»
+
+«LET snmphost.getApache() AS apache»
+«IF (apache != null)»
+«FOREACH apache.getJkList() AS jk»
+«LET jk.vhost != null ? jk.vhost : fqhn(snmphost) AS vhost»
+#
+define service {
+		host_name              «fqhn(snmpmachine)»
+		service_description    mod_jk «jk.mountpoint»
+«IF apache.auth || jk.auth»
+		check_command          check_jk_auth!«vhost»!«jk.mountpoint»
+«ELSE»
+«IF jk.secure» 
+		check_command          check_jk_ssl!«vhost»!«jk.mountpoint»
+«ELSE»
+		check_command          check_jk!«jk.mountpoint»
+«ENDIF»
+«ENDIF»
+«IF jk.server.exists(e|isVmWare(e.host))»
+		use                    vmware-service
+«ELSE»
+		use                    generic-service
+«ENDIF»
+	}
+«ENDLET»
+«IF jk.redirect»
+#
+define service {
+		host_name              «fqhn(snmpmachine)»
+		service_description    redirect «jk.mountpoint»
+		check_command          check_jk_ssl!«fqhn(snmpmachine)»!«jk.mountpoint»
+«IF jk.server.exists(e|isVmWare(e.host))»
+		use                    vmware-service
+«ELSE»
+		use                    generic-service
+«ENDIF»
+}
+«ENDIF»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+
+«IF condSnmpCpu(snmphost)»
+«LET getCpuCount(snmphost) AS count»
+#
+define service {
+		use                    snmp-service
+		host_name              «fqhn(snmpmachine)»
+		service_description    Load 
+		check_command          snmp_load_t«timeout()»!«load(8, count)»!«load(7, count)»!«load(6, count)»!«load(16, count)»!«load(12, count)»!«load(8, count)»
+	}
+#
+define service {
+		use                    snmp-service
+		host_name              «fqhn(snmpmachine)»
+		service_description    Processes
+		check_command          snmp_processes_t«timeout()»!«process_limit_warn(snmphost)»!«process_limit_critical(snmphost)»
+	}
+«ENDLET»
+«ENDIF»
+
+«IF condSnmpPart(snmphost)»
+«setValue("part", "1")»
+«FOREACH getPartitions(snmphost) AS part»
+#
+# Partition «part.name»
+# OID .1.3.6.1.4.1.2021.9.1.9.«getValue("part")»
+define service {
+		use                    snmp-service
+		host_name              «fqhn(snmpmachine)»
+		service_description    Partition «part.name»
+		check_command          snmp_partfill_t20!«getValue("part")»!«part.filllevel»!«(100 + part.filllevel) / 2»
+	}
+«addValue("part", "1")»
+«ENDFOREACH»
+«ENDIF»
+
+«setValue("pos", "1")»
+#
+#############################
+# Configured custom values  #
+# OID .1.3.6.1.4.1.2021.8.1 #
+#############################
+«IF (hasZimbra((Host)snmpmachine)) && (!isDummy(snmpmachine))»
+#
+# Check IMAPS connection count
+# «EXPAND oid»
+define service{
+		use                    snmp-service
+		host_name              «fqhn(snmpmachine)»
+		service_description    IMAPS conn.
+		check_command          snmp_connections_t«timeout()»!«getValue("pos")»!IMAPS conn.
+	}
+«addValue("pos", "1")»
+«ENDIF»
+
+«IF condSnmpSmart(snmphost)»
+«LET getDrives(snmphost) AS drives»
+«setValue("drive", "1")»
+«FOREACH drives AS drive»
+#
+# Power on hours for drive «getValue("drive")»
+# «EXPAND oid»
+define service{
+		use                    snmp-service
+		host_name              «fqhn(snmpmachine)»
+		service_description    Disk «getValue("drive")»: Hours
+		check_command          snmp_age_t«timeout()»!«getValue("pos")»!Disk «getValue("drive")» power on hours:
+	}
+«addValue("pos", "1")»
+#
+# Temperature of drive no. «getValue("drive")»
+# «EXPAND oid»
+define service{
+		use                    snmp-service
+		host_name              «fqhn(snmpmachine)»
+		service_description    Disk «getValue("drive")»: Temp.
+		check_command          snmp_temp_t«timeout()»!«getValue("pos")»!Disk «getValue("drive")» temperature:
+	}
+«addValue("pos", "1")»
+#
+# Reallocated sector count for drive «getValue("drive")»
+# «EXPAND oid»
+define service{
+		use                    snmp-service
+		host_name              «fqhn(snmpmachine)»
+		service_description    Disk «getValue("drive")»: Realloc. sectors
+		check_command          snmp_reallocated_t«timeout()»!«getValue("pos")»!Disk «getValue("drive")» realloc. sector count:
+	}
+«addValue("pos", "1")»
+#
+# Check SMART status for drive «getValue("drive")»
+# «EXPAND oid»
+define service{
+		use                    snmp-service
+		host_name              «fqhn(snmpmachine)»
+		service_description    Disk «getValue("drive")»: SMART status
+		check_command          snmp_smart_t«timeout()»!«getValue("pos")»!Disk «getValue("drive")»:
+	}
+«addValue("pos", "1")»
+«addValue("drive", "1")»
+«ENDFOREACH»
+
+«setValue("array", "1")»
+«FOREACH get3wareController(snmphost).volumes AS array»
+#
+# 3ware array check no. «getValue("array")»
+# «EXPAND oid»
+define service{
+		use                    snmp-service
+		host_name              «fqhn(snmpmachine)»
+		service_description    RAID Array «getValue("array")»
+		check_command          snmp_3ware_t«timeout()»!«getValue("pos")»!Status:
+	}
+«addValue("pos", "1")»
+«addValue("array", "1")»
+«ENDFOREACH»
+«FOREACH getLsiController(snmphost).volumes AS array»
+#
+# LSI megaraid array check no. «getValue("array")»
+# «EXPAND oid»
+define service{
+		use                    snmp-service
+		host_name              «fqhn(snmpmachine)»
+		service_description    RAID Array «getValue("array")»
+		check_command          snmp_lsi_t«timeout()»!«getValue("pos")»!Status:
+	}
+«addValue("pos", "1")»
+«addValue("array", "1")»
+«ENDFOREACH»
+
+«IF (!isVirtualHost((Host)snmpmachine)) && (!isDummy(snmpmachine))»
+#
+# Check MCE status
+# «EXPAND oid»
+define service{
+		use                    snmp-service
+		host_name              «fqhn(snmpmachine)»
+		service_description    MCE status
+		check_command          snmp_mce_t«timeout()»!«getValue("pos")»!MC exceptions:
+	}
+«addValue("pos", "1")»
+«ENDIF»
+
+«IF hasApc((Host)snmpmachine)»
+#
+# Check APC status
+# «EXPAND oid»
+define service{
+		use                    snmp-service
+		host_name              «fqhn(snmpmachine)»
+		service_description    APC status
+		check_command          snmp_apc_t«timeout()»!«getValue("pos")»!APC Status:
+	}
+«addValue("pos", "1")»
+«ENDIF»
+
+«IF isApcMaster((Host)snmpmachine)»
+#
+# Check APC load
+# «EXPAND oid»
+define service {
+		use                    snmp-service
+		host_name              «fqhn(snmpmachine)»
+		service_description    APC load
+		check_command          snmp_apc_load_t«timeout()»!«getValue("pos")»!APC load
+	}
+«addValue("pos", "1")»
+#
+# Check APC power time left
+# «EXPAND oid»
+define service {
+		use                    snmp-service
+		host_name              «fqhn(snmpmachine)»
+		service_description    APC power time left
+		check_command          snmp_apc_timeleft_t«timeout()»!«getValue("pos")»!APC power time left
+	}
+«addValue("pos", "1")»
+#
+# Check APC charge
+# «EXPAND oid»
+define service {
+		use                    snmp-service
+		host_name              «fqhn(snmpmachine)»
+		service_description    APC charge
+		check_command          snmp_apc_charge_t«timeout()»!«getValue("pos")»!APC charge
+	}
+«addValue("pos", "1")»
+«ENDIF»
+
+«ENDLET»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDFILE»
+«ENDFOREACH»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE oid FOR Nagios»OID 1.3.6.1.4.1.2021.8.1.100.«getValue("pos")»«ENDDEFINE»
+
+«DEFINE Apache(Host host) FOR Nagios»
+«FILE config(host, apache(this)) CONFIG»
+«EXPAND tools::ConfigHeader(apache(this))»
+«IF isUbuntu(host) || isDebian(host)»
+
+# apache configuration for nagios 3.x
+# note to users of nagios 1.x and 2.x:
+#	throughout this file are commented out sections which preserve
+#	backwards compatibility with bookmarks/config for older nagios versios.
+#	simply look for lines following "nagios 1.x:" and "nagios 2.x" comments.
+
+ScriptAlias /cgi-bin/nagios3 /usr/lib/cgi-bin/nagios3
+ScriptAlias /nagios3/cgi-bin /usr/lib/cgi-bin/nagios3
+# nagios 1.x:
+#ScriptAlias /cgi-bin/nagios /usr/lib/cgi-bin/nagios3
+#ScriptAlias /nagios/cgi-bin /usr/lib/cgi-bin/nagios3
+# nagios 2.x: 
+#ScriptAlias /cgi-bin/nagios2 /usr/lib/cgi-bin/nagios3
+#ScriptAlias /nagios2/cgi-bin /usr/lib/cgi-bin/nagios3
+
+# Where the stylesheets (config files) reside
+Alias /nagios3/stylesheets /etc/nagios3/stylesheets
+# nagios 1.x:
+#Alias /nagios/stylesheets /etc/nagios3/stylesheets
+# nagios 2.x:
+#Alias /nagios2/stylesheets /etc/nagios3/stylesheets
+
+# Where the HTML pages live
+Alias /nagios3 /usr/share/nagios3/htdocs
+# nagios 2.x: 
+#Alias /nagios2 /usr/share/nagios3/htdocs
+# nagios 1.x:
+#Alias /nagios /usr/share/nagios3/htdocs
+
+<DirectoryMatch (/usr/share/nagios3/htdocs|/usr/lib/cgi-bin/nagios3|/etc/nagios3/stylesheets)>
+	Options FollowSymLinks
+
+	DirectoryIndex index.html index.php
+
+	AllowOverride AuthConfig
+	Order Allow,Deny
+	Allow From All
+
+«EXPAND Apache::auth(host, "Nagios Access", getAdminGroup())»
+</DirectoryMatch>
+
+# Enable this ScriptAlias if you want to enable the grouplist patch.
+# See http://apan.sourceforge.net/download.html for more info
+# It allows you to see a clickable list of all hostgroups in the
+# left pane of the Nagios web interface
+# XXX This is not tested for nagios 2.x use at your own peril
+#ScriptAlias /nagios3/side.html /usr/lib/cgi-bin/nagios3/grouplist.cgi
+# nagios 1.x:
+#ScriptAlias /nagios/side.html /usr/lib/cgi-bin/nagios3/grouplist.cgi
+
+
+«ELSE»
+# apache configuration for nagios 2.x
+# note to users of nagios 1.x:
+#	throughout this file are commented out sections which preserve
+#	backwards compatibility with bookmarks/config for nagios 1.x.  simply
+#	look for lines following "nagios 1.x:" comments.
+#
+ScriptAlias /cgi-bin/nagios2 «cgi()»
+ScriptAlias /nagios2/cgi-bin «cgi()»
+# nagios 1.x:
+#ScriptAlias /cgi-bin/nagios «cgi()»
+#ScriptAlias /nagios/cgi-bin «cgi()»
+#
+# Where the stylesheets (config files) reside
+Alias /nagios2/stylesheets «stylesheets()»
+# nagios 1.x:
+#Alias /nagios/stylesheets «stylesheets()»
+#
+# Where the HTML pages live
+Alias /nagios2 «htdocs(this)»
+# nagios 1.x:
+#Alias /nagios «htdocs(this)»
+#
+<DirectoryMatch («htdocs(this)»|«cgi()»)>
+	Options FollowSymLinks
+#
+	AllowOverride AuthConfig
+	Order Allow,Deny
+	Allow From All
+#
+«EXPAND Apache::auth(host, "Nagios Access", "admin")»
+</DirectoryMatch>
+#
+# Enable this ScriptAlias if you want to enable the grouplist patch.
+# See http://apan.sourceforge.net/download.html for more info
+# It allows you to see a clickable list of all hostgroups in the
+# left pane of the Nagios web interface
+# XXX This is not tested for nagios 2.x use at your own peril
+#ScriptAlias /nagios2/side.html «cgi()»/grouplist.cgi
+# nagios 1.x:
+#ScriptAlias /nagios/side.html «cgi()»/grouplist.cgi
+«ENDIF»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE contacts(Host host) FOR Nagios»
+«FILE config(host, contactconf(this)) CONFIG»
+«EXPAND tools::ConfigHeader(contactconf(this))»
+#
+###############################################################################
+###############################################################################
+#
+# CONTACTS
+#
+###############################################################################
+###############################################################################
+#
+# In this simple config file, a single contact will receive all alerts.
+#
+define contact{
+		contact_name                    admin
+		alias                           Administrator
+		service_notification_period     24x7
+		host_notification_period        24x7
+		service_notification_options    w,u,c,r
+		host_notification_options       d,r
+		service_notification_commands   notify-by-email
+		host_notification_commands      host-notify-by-email
+		email                           «adminmail()»
+	}
+#
+#
+#
+###############################################################################
+###############################################################################
+#
+# CONTACT GROUPS
+#
+###############################################################################
+###############################################################################
+#
+# We only have one contact in this simple configuration file, so there is
+# no need to create more than one contact group.
+#
+define contactgroup {
+		contactgroup_name       admins
+		alias                   Nagios Administrators
+		members                 admin
+	}
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE periods(Host host) FOR Nagios»
+«FILE config(host, periodconf(this)) CONFIG»
+«EXPAND tools::ConfigHeader(periodconf(this))»
+#
+define timeperiod {
+		timeperiod_name Backup
+		alias           Backup time in the night and early morning.
+		sunday          22:00-08:00
+		monday          22:00-08:00
+		tuesday         22:00-08:00
+		wednesday       22:00-08:00
+		thursday        22:00-08:00
+		friday          22:00-08:00
+		saturday        22:00-08:00
+	}
+#
+define timeperiod {
+		timeperiod_name Productive
+		alias           Productive non backup time.
+		sunday          08:00-20:00
+		monday          08:00-20:00
+		tuesday         08:00-20:00
+		wednesday       08:00-20:00
+		thursday        08:00-20:00
+		friday          08:00-20:00
+		saturday        08:00-20:00
+	}
+#
+define timeperiod {
+		timeperiod_name Printer-Active
+		alias           Productive non backup time.
+		monday          08:00-19:00
+		tuesday         08:00-19:00
+		wednesday       08:00-19:00
+		thursday        08:00-19:00
+		friday          08:00-19:00
+	}
+#
+##
+# Generic VMware host definition.
+##
+define host {
+		name                            vmware-host    ; The name of this host template
+		notifications_enabled           1              ; Host notifications are enabled
+		event_handler_enabled           1              ; Host event handler is enabled
+		flap_detection_enabled          1              ; Flap detection is enabled
+		failure_prediction_enabled      1              ; Failure prediction is enabled
+		process_perf_data               1              ; Process performance data
+		retain_status_information       1              ; Retain status information across program restarts
+		retain_nonstatus_information    1              ; Retain non-status information across program restarts
+		check_command                   check-host-alive
+		max_check_attempts              10
+		notification_interval           0
+		notification_period             Productive
+		notification_options            d,u,r
+		contact_groups                  admins
+		register                        0       ; DONT REGISTER THIS DEFINITION - ITS NOT A REAL HOST, JUST A TEMPLATE!
+	}
+#
+##	
+# generic VMware service definition.
+##
+define service {
+		name                            vmware-service ; The 'name' of this service template
+		active_checks_enabled           1       ; Active service checks are enabled
+		passive_checks_enabled          1       ; Passive service checks are enabled/accepted
+		parallelize_check               1       ; Active service checks should be parallelized (disablin
+		obsess_over_service             1       ; We should obsess over this service (if necessary)
+		check_freshness                 0       ; Default is to NOT check service 'freshness'
+		notifications_enabled           1       ; Service notifications are enabled
+		event_handler_enabled           1       ; Service event handler is enabled
+		flap_detection_enabled          1       ; Flap detection is enabled
+		failure_prediction_enabled      1       ; Failure prediction is enabled
+		process_perf_data               1       ; Process performance data
+		retain_status_information       1       ; Retain status information across program restarts
+		retain_nonstatus_information    1       ; Retain non-status information across program restarts
+		notification_interval           0       ; Only send notifications on status chan
+		is_volatile                     0
+		check_period                    Productive
+		normal_check_interval           5
+		retry_check_interval            1
+		max_check_attempts              4
+		notification_period             Productive
+		notification_options            w,u,c,r
+		contact_groups                  admins
+		register                        0       ; DONT REGISTER THIS DEFINITION - ITS NOT A REAL SERVICE
+	}
+#
+##
+# Generic printer definition.
+##
+define host {
+		name                            printer        ; The name of this host template
+		notifications_enabled           1              ; Host notifications are enabled
+		event_handler_enabled           1              ; Host event handler is enabled
+		flap_detection_enabled          1              ; Flap detection is enabled
+		failure_prediction_enabled      1              ; Failure prediction is enabled
+		process_perf_data               1              ; Process performance data
+		retain_status_information       1              ; Retain status information across program restarts
+		retain_nonstatus_information    1              ; Retain non-status information across program restarts
+		check_command                   check-host-alive
+		max_check_attempts              10
+		notification_interval           0
+		notification_period             Printer-Active
+		notification_options            d,u,r
+		contact_groups                  admins
+		register                        0       ; DONT REGISTER THIS DEFINITION - ITS NOT A REAL HOST, JUST A TEMPLATE!
+	}
+
+«ENDFILE»
+«ENDDEFINE»

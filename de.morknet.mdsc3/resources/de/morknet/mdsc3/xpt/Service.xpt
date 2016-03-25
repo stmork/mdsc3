@@ -1,0 +1,114 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+«IMPORT de::morknet::mdsc3::xpt::service»
+
+«DEFINE service FOR Host»
+«EXPAND service(this) FOREACH services»
+«ENDDEFINE»
+
+«REM»
+«ENDREM»
+«DEFINE service(Host host) FOR Apache»
+«EXPAND Apache::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR AppServer»
+«EXPAND AppServer::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR APC»
+«EXPAND APC::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR CUPS»
+«EXPAND CUPS::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR DHCP»
+«EXPAND DHCP::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR DNS»
+«EXPAND DNS::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR LDAP»
+«EXPAND LDAP::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR Mail»
+«EXPAND Mail::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR MRTG»
+«EXPAND MRTG::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR MySQL»
+«EXPAND MySQL::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR Nagios»
+«EXPAND Nagios::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR NFS»
+«EXPAND NFS::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR NTP»
+«REM»
+«Nothing to do!»
+«ENDREM»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR PAM»
+«EXPAND PAM::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR Samba»
+«REM»
+«Nothing to do!»
+«ENDREM»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR SMART»
+«EXPAND SMART::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR SNMP»
+«EXPAND SNMP::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR SSH»
+«EXPAND SSH::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR VM»
+«REM»
+«Nothing to do!»
+«ENDREM»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR VMWare»
+«EXPAND VM::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR VServer»
+«EXPAND VM::service(host)»
+«ENDDEFINE»
+
+«DEFINE service(Host host) FOR KVM»
+«EXPAND VM::service(host)»
+«ENDDEFINE»
+
+«REM»
+Catcher!
+«ENDREM»
+«DEFINE service(Host host) FOR HostService»
+«ERROR "Service not evaluated: " + this.metaType.name»
+«ENDDEFINE»

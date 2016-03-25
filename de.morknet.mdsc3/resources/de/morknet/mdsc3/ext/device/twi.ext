@@ -1,0 +1,32 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::host;
+
+cached List[TWI] get3wareController(Host host) :
+	host.devices.typeSelect(TWI);
+
+cached Set[Volume] get3wareVolumes(Host host) :
+	get3wareController(host).volumes;
+
+cached Boolean has3ware(Host host) :
+	(host.devices.exists(d|TWI.isInstance(d))) && (!isVirtualHost(host));
+
+String getOpt3wareScript(Host host) :
+	"/usr/local/sbin/opt3ware.sh";
+
+String get3wareCert(Host host) :
+	"/etc/3dm2/3dm2.pem";
+
+String twi_cert(Host host) :
+	"/etc/3dm2/3dm2.cnf";
+
+String twi_config(Host host) :
+	"/etc/3dm2/3dm2.conf";
+
+String twi_bbu_test(Host host) :
+	"/etc/cron.daily/twi.sh";

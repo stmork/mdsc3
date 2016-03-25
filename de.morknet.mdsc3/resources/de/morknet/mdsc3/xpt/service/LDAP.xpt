@@ -1,0 +1,330 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::util::constants»
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::SSL»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+«EXTENSION de::morknet::mdsc3::ext::service::LDAP»
+
+«DEFINE service(Host host) FOR LDAP»
+«EXPAND config(host)»
+«EXPAND AppArmor(host)»
+«EXPAND backup(host)»
+«IF !master»
+«EXPAND reset(host)»
+«ENDIF»
+«EXPAND restore(host)»
+«EXPAND slapdconv(host)»
+«ENDDEFINE»
+
+«DEFINE config(Host host) FOR LDAP»
+«FILE config(host, config(this)) CONFIG»
+«EXPAND tools::ConfigHeader(config(this))»
+# Defining schemas and schema file locations
+################################################################
+include         «basedir(this)»/schema/misc.schema
+include         «basedir(this)»/schema/core.schema
+include         «basedir(this)»/schema/cosine.schema
+include         «basedir(this)»/schema/inetorgperson.schema
+include         «basedir(this)»/schema/nis.schema
+include         «basedir(this)»/schema/samba3.schema
+include         «basedir(this)»/schema/mozillaOrgPerson.schema
+#
+pidfile         /var/run/slapd/slapd.pid
+argsfile        /var/run/slapd/slapd.args
+#
+# Defining our database and admin user + password
+################################################################
+modulepath      /usr/lib/ldap
+moduleload      back_bdb
+«IF isSyncRepl(host)»
+moduleload      syncprov
+«ENDIF»
+#
+database        bdb
+suffix          "«this.baseDN»"
+rootdn          "cn=Manager,«this.baseDN»"
+rootpw          «cryptCredential(this.credentials)»
+directory       «workdir(this)»
+«IF debug»
+#loglevel 0
+«ELSE»
+loglevel 0
+«ENDIF»
+#loglevel 136 # FOR TLS connection logging
+#
+cachesize      32768
+sizelimit  unlimited
+tool-threads       «getCpuCount(host) * 4»
+checkpoint       128 15
+# check point whenever 128k data bytes written or 
+# 15 minutes has elapsed whichever occurs first
+#
+dbconfig set_cachesize       0 134217728 0
+dbconfig set_lg_bsize        524288
+dbconfig set_lk_max_objects    5000
+dbconfig set_lk_max_locks      5000
+dbconfig set_lk_max_lockers    5000
+dbconfig set_flags  DB_LOG_AUTOREMOVE
+#
+#index objectclass,userpassword,createtimestamp,creatorsname none
+#index default
+#
+# Indexing for faster queries ( bad indexes can slow things up )
+#################################################################
+#
+index   objectClass           eq
+index   uidNumber             eq
+index   gidNumber             eq
+index   loginShell            eq
+index   cn                    eq,pres,sub
+index   sn                    eq,pres,sub
+index   displayName           eq,pres,sub
+index   uid                   eq,pres,sub
+index   memberUid             eq,pres,sub
+index   uniqueMember          eq,pres
+index   sambaSID              eq 
+index   sambaPrimaryGroupSID  eq
+index   sambaGroupType        eq
+index   sambaSIDList          eq
+index   sambaDomainName       eq
+#
+index   entryCSN              eq
+index   entryUUID             eq
+index   default               sub
+#
+«IF this.master»
+«LET getAllLdapSlaveHosts(host) AS slaves»
+«IF slaves.size > 0»
+######################################################################
+##
+# REPLICATIONS
+«IF isSyncRepl(host)»
+#
+overlay syncprov
+syncprov-checkpoint 100 10
+«ELSE»
+replogfile      «slurpdir()»/slapd.replog
+«ENDIF»
+
+«ENDIF»
+«FOREACH slaves AS slave»
+«IF !isSyncRepl(this, getLdap(slave))»
+#
+replica         host=«fqhn(slave)»
+        tls=yes
+        binddn="cn=Manager,«this.baseDN»" 
+        bindmethod=simple
+        credentials=«getLdap(slave).credentials»
+«ENDIF»
+«ENDFOREACH»
+«ENDLET»
+«ELSE»
+«IF isSyncRepl(host)»
+#
+syncrepl rid=100
+	provider=ldaps://«fqhn(getLdapMaster(host))»
+	searchbase="«this.baseDN»"
+	type=refreshAndPersist
+	retry="60 10 300 +"
+	binddn="cn=Manager,«this.baseDN»"
+	bindmethod=simple
+	credentials=«getLdap(getLdapMaster(host)).credentials»
+	schemachecking=off
+	starttls=no
+«ELSE»
+updatedn        "cn=Manager,«this.baseDN»"
+«ENDIF»
+#
+updateref       ldaps://«fqhn(getLdapMaster(host))»
+«ENDIF»
+#
+# Defining Access Control Lists for access to various parts of our
+# database. We can live without ACL's aswell, but some security should
+# be in place.
+##
+##
+######################################################################
+access to attrs=userPassword,sambaLMPassword,sambaNTPassword
+	by dn="cn=Manager,«baseDN»" write
+	by self write
+	by anonymous auth
+	by * none
+#
+access to *
+	by dn="cn=Manager,«baseDN»" write
+	by self write
+	by users read
+	by * read
+#
+######################################################################
+TLSVerifyClient         never
+TLSCACertificateFile    «getSslCaCert(host)»
+TLSCertificateFile      «getSslCert(host)»
+TLSCertificateKeyFile   «getSslKey(host)»
+TLSCipherSuite          NONE:+VERS-TLS1.2:+VERS-TLS1.1:+VERS-TLS1.0:+COMP-ALL:+DHE-RSA:+AES-256-CBC:+CAMELLIA-256-CBC:+AES-128-CBC:+3DES-CBC:+RSA:+SHA1:+SHA256:+SHA384:+SHA512
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE dbconfig(Host host) FOR LDAP»
+touch «dbconfig(this)»
+echo "set_cachesize  0   134217728  0" >>«dbconfig(this)»
+echo "set_lg_bsize          524288" >>«dbconfig(this)»
+echo "set_lk_max_objects      5000" >>«dbconfig(this)»
+echo "set_lk_max_locks        5000" >>«dbconfig(this)»
+echo "set_lk_max_lockers      5000" >>«dbconfig(this)»
+echo "set_flags  DB_LOG_AUTOREMOVE" >>«dbconfig(this)»
+«ENDDEFINE»
+
+«DEFINE AppArmor(Host host) FOR LDAP»
+«FILE config(host, AppArmor(this)) CONFIG -»«EXPAND tools::ConfigHeader(AppArmor(this))»
+«getSslBase(host)»/certs/ r,
+«getSslBase(host)»/certs/* r,
+«getSslBase(host)»/*.pem r,
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»
+«ENDREM»
+
+«DEFINE backup(Host host) FOR LDAP»
+«FILE config(host, backup(this)) CONFIG»
+«EXPAND tools::ConfigShell(backup(this))»
+#
+if [ -f /etc/default/backup ]
+then
+	. /etc/default/backup
+else
+	logger -t BACKUP "No backup configuration found."
+	exit 5
+fi
+#
+HOST=`hostname`
+LDIF="$MOUNT_POINT/$HOST.ldif"
+#
+if [ "$MOUNT" = yes ]
+then
+	umount $MOUNT_POINT 2>/dev/null
+	mount $MOUNT_POINT || exit 5
+fi
+# 
+/usr/sbin/slapcat -l $LDIF 2>/dev/null
+#
+if [ "$MOUNT" = yes ]
+then
+	umount $MOUNT_POINT
+fi
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE reset(Host host) FOR LDAP»
+«FILE config(host, reset(this)) CONFIG»
+«EXPAND tools::ConfigShell(reset(this))»
+#
+«init(this)» stop
+#
+test -d «workdir(this)» || mkdir -p «workdir(this)»
+rm -rf «workdir(this)»/*
+#
+«IF isUbuntu(host) || isDebian(host)»
+«EXPAND dbconfig(host)»
+«ENDIF»
+«IF isUbuntu(host) || isDebian(host)»
+#
+. /etc/default/slapd
+if [ "x$SLAPD_USER" != "x" ]
+then
+	chown -R $SLAPD_USER «workdir(this)»
+fi
+if [ "x$SLAPD_GROUP" != "x" ]
+then
+	chgrp -R $SLAPD_GROUP «workdir(this)»
+fi
+«ENDIF»
+#
+«init(this)» start
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE restore(Host host) FOR LDAP»
+«FILE config(host, restore(this)) CONFIG»
+«EXPAND tools::ConfigShell(restore(this))»
+#
+if [ -f /etc/default/backup ]
+then
+	. /etc/default/backup
+else
+	logger -t BACKUP "No backup configuration found."
+	exit 5
+fi
+#
+LDIF=$MOUNT_POINT/«getLdapMaster(host).name».ldif
+#
+if [ "$MOUNT" = yes ]
+then
+	umount $MOUNT_POINT
+	mount $MOUNT_POINT || exit 1
+fi
+test -e $LDIF || exit 1
+#
+«init(this)» stop
+#
+test -d «workdir(this)» || mkdir -p «workdir(this)»
+rm -rf «workdir(this)»/*
+#
+«IF isUbuntu(host) || isDebian(host)»
+«EXPAND dbconfig(host)»
+«ENDIF»
+slapadd -l $LDIF || exit 1
+«IF isUbuntu(host) || isDebian(host)»
+#
+. /etc/default/slapd
+if [ "x$SLAPD_USER" != "x" ]
+then
+	chown -R $SLAPD_USER «workdir(this)»
+fi
+if [ "x$SLAPD_GROUP" != "x" ]
+then
+	chgrp -R $SLAPD_GROUP «workdir(this)»
+fi
+«ENDIF»
+#
+«init(this)» start
+#
+if [ "$MOUNT" = yes ]
+then
+	umount $MOUNT_POINT
+fi
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE slapdconv(Host host) FOR LDAP»
+«IF isConfDir(host, this)» 
+«FILE config(host, slapdConv(this)) CONFIG -»
+«EXPAND tools::ConfigShell(slapdConv(this))»
+#
+LDAP_CONF=«config()»
+LDAP_DIR=«configDir()»
+BAD_LDIF=`ls $LDAP_DIR/cn\=config/olcDatabase\=*bdb.ldif`
+#
+«init(this)» stop
+rm -rf $LDAP_DIR
+mkdir  $LDAP_DIR
+slaptest -f $LDAP_CONF -F $LDAP_DIR
+sed -e s/uri=\"\"//g  $BAD_LDIF >/tmp/bdb.ldif && mv /tmp/bdb.ldif $BAD_LDIF
+«IF !debug»
+echo "olcLoglevel: 0" >>$LDAP_DIR/cn\=config.ldif
+«ENDIF»
+chown -R openldap.openldap $LDAP_DIR
+«init(this)» start
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»

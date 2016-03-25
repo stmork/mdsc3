@@ -1,0 +1,39 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::model;
+extension de::morknet::mdsc3::ext::util::tools;
+
+Boolean hasApc(Host host) :
+	host.services.exists(s|APC.isInstance(s));
+
+APC getApc(Host host) :
+	host.services.typeSelect(APC).first();
+
+Host getApcHost(Host host) :
+	getApc(host).host;
+
+Boolean isApcMaster(Host host) :
+	host.services.typeSelect(APC).exists(apc|apc.host == null);
+
+List[Host] getApcHosts(Network nw) :
+	null;
+
+Boolean isMaster(APC apc) :
+	apc.host == null;
+
+List[Host] getApcMasterList(Model model) :
+	getAllHosts(model).select(e|isApcMaster(e));
+
+List[Host] getApcSlaveList(Host master) :
+	getAllHosts(master).select(host|getApcHost(host) == master);
+
+String apc_config(APC apc) :
+	"/etc/apcupsd/apcupsd.conf";
+
+String init(APC service) :
+	"/etc/init.d/apcupsd";

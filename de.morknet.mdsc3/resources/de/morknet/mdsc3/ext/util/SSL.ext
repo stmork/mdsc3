@@ -1,0 +1,29 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::constants;
+
+cached String getCrlBase(Host host) :
+	getSslBase(host) + "/crl";
+
+cached String getSslCaCert(Host host) :
+	getSslBase(host) + "/cacert.pem";
+
+cached String getSslCaPath(Host host) :
+	getSslBase(host) + "/certs";
+
+cached String getSslCaChainCert(Host host) :
+	getSslBase(host) + "/cachaincert.pem";
+
+cached String getSslCert(Host host) :
+	getSslBase(host) + "/" + host.name + "-cert.pem";
+	
+cached String getSslKey(Host host) :
+	getSslBase(host) + "/" + host.name + "-key.pem";
+
+cached String getSslCrl(Host host) :
+	getCrlBase(host) + "/" + getInfrastructure() + ".pem";

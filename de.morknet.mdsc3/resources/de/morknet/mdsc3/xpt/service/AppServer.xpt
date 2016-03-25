@@ -1,0 +1,298 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::SSL»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+«EXTENSION de::morknet::mdsc3::ext::service::AppServer»
+«EXTENSION de::morknet::mdsc3::ext::service::MySQL»
+
+«DEFINE service(Host host) FOR AppServer»
+«EXPAND java(host)»
+«EXPAND script(host)»
+«EXPAND logrotate(host)»
+«ENDDEFINE»
+
+«DEFINE script(Host host) FOR JBoss»
+«EXPAND initscript(host, path)»
+«EXPAND confscript(host)»
+«ENDDEFINE»
+
+«DEFINE script(Host host) FOR Wildfly»
+«EXPAND initscript(host, path)»
+«EXPAND confscript(host)»
+«ENDDEFINE»
+
+«DEFINE script(Host host) FOR Tomcat»
+«EXPAND initscript(host, path)»
+«EXPAND confscript(host)»
+«ENDDEFINE»
+
+«DEFINE script(Host host) FOR Glassfish»
+«EXPAND initscript(host, path)»
+«ENDDEFINE»
+
+«DEFINE script(Host host) FOR WebSphere»
+«EXPAND initscript(host)»
+«ENDDEFINE»
+
+«DEFINE script(Host host) FOR AppServer»
+«ERROR "Abstract class should never called!"»
+«ENDDEFINE»
+
+«REM»
+« ===================== BASH configuration scripts ===================== »
+«ENDREM»
+
+«DEFINE confscript(Host host) FOR Wildfly»
+«FILE config(host, confscript(this)) CONFIG»
+«EXPAND tools::ConfigShell(confscript(this))»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE confscript(Host host) FOR JBoss»
+«FILE config(host, confscript(this)) CONFIG»
+«EXPAND tools::ConfigShell(confscript(this))»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE confscript(Host host) FOR Tomcat»
+«FILE config(host, confscript(this)) CONFIG»
+«EXPAND tools::ConfigShell(confscript(this))»
+#
+NAME=«typeName().toLowerCase()»
+#
+if [ -r /etc/default/$NAME ]
+then
+	. /etc/default/$NAME
+else
+	«asHome()»=«path»
+fi
+export «asHome()»
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»
+« ===================== AppServer init scripts ===================== »
+«ENDREM»
+
+«DEFINE initscript(Host host) FOR WebSphere»
+«IF isUbuntu(host) || isDebian(host)»
+«FILE config(host, init(this)) CONFIG»
+«EXPAND tools::ConfigShell(init(this))»
+#
+### BEGIN INIT INFO
+# Provides:          «typeName()»
+# Required-Start:    $local_fs $remote_fs«IF hasMySQL(host)» mysql«ENDIF»
+# Required-Stop:     $local_fs $remote_fs«IF hasMySQL(host)» mysql«ENDIF»
+# Default-Start:     2 3 4 5
+# Default-Stop:      S 0 1 6
+# Short-Description: «typeName()»
+# Description:       IBM «typeName()» Application Server
+#                    placed in /etc/init.d.
+### END INIT INFO
+#
+DESC="IBM «typeName()» Application Server"
+SCRIPTNAME=$0
+NAME=«typeName().toLowerCase()»
+#
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
+. /lib/lsb/init-functions
+#
+# Read configuration variable file if it is present
+if [ -r /etc/default/$NAME ]
+then
+	. /etc/default/$NAME
+else
+	log_failure_msg "Need configuration for $NAME!"
+	exit 1
+fi
+#
+DAEMON_START=$WAS_HOME/AppServer/profiles/AppSrv01/bin/startServer.sh
+DAEMON_STOP=$WAS_HOME/AppServer/profiles/AppSrv01/bin/stopServer.sh
+#
+# Load the VERBOSE setting and other rcS variables
+[ -f /etc/default/rcS ] && . /etc/default/rcS
+#
+case "$1" in
+	start)
+		log_daemon_msg "Starting $DESC"
+		start-stop-daemon --start --quiet -c $WAS_USER -g $WAS_GROUP --exec $DAEMON_START >/dev/null -- $WAS_SERVER $WAS_OPTS
+		log_end_msg $?
+		;;
+#
+	stop)
+		log_daemon_msg "Stopping $DESC"
+		start-stop-daemon --start --quiet  --exec $DAEMON_STOP >/dev/null -- $WAS_SERVER -username $WAS_LOGIN -password $WAS_PASSWORD $WAS_OPTS
+		log_end_msg $?
+		;;
+#
+	restart)  
+		$SCRIPTNAME stop
+		$SCRIPTNAME start
+		;;
+#
+	*)
+		log_success_msg "Usage: $SCRIPTNAME {start|stop|restart}"
+		exit 1
+		;;
+esac
+«ENDFILE»
+«ELSE»
+«ERROR host.name + " muss ein Ubuntu oder Debian sein!"»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE initscript(Host host, String path) FOR AppServer»
+«IF isUbuntu(host) || isDebian(host)»
+«IF path != null»
+«FILE config(host, init(this)) CONFIG»
+«EXPAND tools::ConfigShell(init(this))»
+#
+### BEGIN INIT INFO
+# Provides:          «typeName()»
+# Required-Start:    $local_fs $remote_fs«IF hasMySQL(host)» mysql«ENDIF»
+# Required-Stop:     $local_fs $remote_fs«IF hasMySQL(host)» mysql«ENDIF»
+# Default-Start:     2 3 4 5
+# Default-Stop:      S 0 1 6
+# Short-Description: «typeName()»
+# Description:       «typeName()» Application Server
+#                    placed in /etc/init.d.
+### END INIT INFO
+#
+DESC="«typeName()» Application server"
+SCRIPTNAME=$0
+export «asHome()»=«path»
+NAME=«typeName().toLowerCase()»
+#
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
+. /lib/lsb/init-functions
+#
+# Read configuration variable file if it is present
+if [ -r /etc/default/$NAME ]
+then
+	. /etc/default/$NAME
+else
+	log_failure_msg "Need configuration for «typeName()»!"
+	exit 1
+fi
+#
+«IF Tomcat.isInstance(this)»
+if [ ! -d $JRE_HOME ]
+then
+	log_failure_msg "JRE_HOME not set correctly!"
+	exit 1
+fi
+#
+«ENDIF»
+if [ -r /etc/default/locale ]
+then
+	. /etc/default/locale
+	export LANG
+fi
+#
+# Load the VERBOSE setting and other rcS variables
+[ -f /etc/default/rcS ] && . /etc/default/rcS
+#
+case "$1" in
+	start)
+		log_daemon_msg "Starting $DESC"
+		start-stop-daemon --start --quiet -c $«asUser()» -g $«asGroup()» -b --exec «startup()» -- «startupOpts()» || log_end_msg 1
+		log_end_msg 0
+		;;
+#
+	stop)
+		log_daemon_msg "Stopping $DESC"
+		start-stop-daemon --start --retry=TERM/30/KILL/5 -c $«asUser()» -g $«asGroup()» --exec «shutdown()» -- «shutdownOpts()» || log_end_msg 1
+		log_end_msg 0
+		;;
+#
+	restart)
+		$SCRIPTNAME stop
+		sleep 10
+		$SCRIPTNAME start
+		;;
+#
+	*)
+		log_success_msg "Usage: $SCRIPTNAME {start|stop|restart}"
+		exit 1
+		;;
+esac
+«ENDFILE»
+«ENDIF»
+«ELSE»
+«ERROR host.name + " muss ein Ubuntu oder Debian sein!"»
+«ENDIF»
+«ENDDEFINE»
+
+«REM»
+« ===================== logrotate ===================== »
+«ENDREM»
+
+«DEFINE logrotate(Host host) FOR JBoss»
+«FILE config(host, logrotate(this)) CONFIG»«EXPAND tools::ConfigShell(logrotate(this))»
+test -d «path»/ && find «path»/ -name "server.log.*" -type f -mtime +30 -exec rm -f "{}" \;
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE logrotate(Host host) FOR Tomcat»
+«FILE config(host, logrotate(this)) CONFIG»«EXPAND tools::ConfigShell(logrotate(this))»
+test -d «path»/ && find «path»/logs/ \( -iname "*.log" -or -iname "*.txt" \) -mtime +30 -type f -exec rm -f "{}" \;
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE logrotate(Host host) FOR AppServer»
+«ENDDEFINE»
+
+«REM»
+« ===================== Java certificate import ===================== »
+«ENDREM»
+
+«DEFINE java(Host host) FOR AppServer»
+«IF isUbuntu(host) || isDebian(host)»
+«FILE config(host, update_java(this)) CONFIG»
+«EXPAND tools::ConfigShell(update_java(this))»
+#
+if [ $# -lt 1 ]
+then
+	echo "Usage:"
+	echo $0 jdk-installer
+	exit 1
+fi
+#
+PKG=$1
+JVM=/usr/lib/jvm
+DST=$JVM/java-6-oracle
+#
+cd /tmp
+rm -rf jdk1.6* $JVM/jdk1.6* $DST
+#
+if [ ! -x "$PKG" ]
+then
+	echo "Missing absolute path to $PKG!"
+	exit 1
+fi
+#
+chmod 750 $PKG
+$PKG
+JDK=`find /tmp/ -maxdepth 1 -type d -name "jdk*" | sort |tail -n1`
+mv $JDK $DST
+#
+$DST/bin/keytool -import -trustcacerts -alias "morknet-ca"\
+	-file «getSslCaCert(host)»\
+	-keystore $DST/jre/lib/security/cacerts -storepass "changeit"
+#
+test -f $HOME/conf/net.properties && cp $HOME/conf/net.properties $DST/jre/lib
+«ENDFILE»
+«ELSE»
+«ERROR host.name + " muss ein Ubuntu oder Debian sein!"»
+«ENDIF»
+«ENDDEFINE»

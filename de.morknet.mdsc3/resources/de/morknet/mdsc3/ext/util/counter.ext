@@ -1,0 +1,8 @@
+Void setValue(String container, String value) :
+	JAVA de.morknet.mdsc3.util.Counter.setValue(java.lang.String, java.lang.String);
+
+Void addValue(String container, String value) :
+	JAVA de.morknet.mdsc3.util.Counter.addValue(java.lang.String, java.lang.String);
+	
+Integer getValue(String container) :
+	JAVA de.morknet.mdsc3.util.Counter.getValue(java.lang.String);

@@ -1,0 +1,27 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::host;
+extension de::morknet::mdsc3::ext::util::os;
+
+Boolean hasSmart(Host host) :
+	(host.services.exists(s|SMART.isInstance(s))) && (!isVirtualHost(host));
+
+List[Drive] getDrives(SMART smart) :
+	getDrives(getHost(smart));
+
+List[Drive] getDrives(Host host) :
+	host.eAllContents.typeSelect(Drive).sortBy(e|e.number);
+	
+String smartd(SMART smart) :
+	"/etc/smartd.conf";
+
+String mailscript(SMART smart) :
+	"/root/bin/smartmail.sh";
+
+String init(SMART service) :
+	isSuSE(getHost(service)) ? "/etc/init.d/smartd" : "/etc/init.d/smartmontools";

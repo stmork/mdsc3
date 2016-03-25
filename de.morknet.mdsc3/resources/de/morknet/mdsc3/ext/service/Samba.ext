@@ -1,0 +1,34 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::host;
+extension de::morknet::mdsc3::ext::util::os;
+extension de::morknet::mdsc3::ext::util::network;
+
+private Boolean hasSamba(Host host) :
+	host.services.exists(s|Samba.isInstance(s));
+
+cached Samba getSamba(Host host) :
+	host.services.typeSelect(Samba).first();
+	
+String getNetBiosName(Host host) :
+	getSamba(host).netbiosname;
+
+cached List[Host] getSambaHosts(Host host) :
+	getSambaHosts(getBaseNetwork(host));
+
+cached List[Host] getSambaHosts(Network nw) :
+	getHosts(nw).select(h|hasSamba(h));
+
+cached Host findPDC(Host host) :
+	getSambaHosts(host).select(h|getSamba(h).mode == SMBMODE::PDC).first();
+
+cached Host findBDC(Host host) :
+	getSambaHosts(host).select(h|getSamba(h).mode == SMBMODE::BDC).first();
+
+cached String init(Samba service) :
+	isSuSE(getHost(service)) ? "/etc/init.d/smb" : "/etc/init.d/samba";

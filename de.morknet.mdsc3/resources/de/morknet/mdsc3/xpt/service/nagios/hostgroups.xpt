@@ -1,0 +1,370 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::device::twi»
+«EXTENSION de::morknet::mdsc3::ext::device::lsi»
+«EXTENSION de::morknet::mdsc3::ext::device::ipmi»
+
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::model»
+«EXTENSION de::morknet::mdsc3::ext::util::network»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«EXTENSION de::morknet::mdsc3::ext::service::Apache»
+«EXTENSION de::morknet::mdsc3::ext::service::AppServer»
+«EXTENSION de::morknet::mdsc3::ext::service::APC»
+«EXTENSION de::morknet::mdsc3::ext::service::DNS»
+«EXTENSION de::morknet::mdsc3::ext::service::DHCP»
+«EXTENSION de::morknet::mdsc3::ext::service::LDAP»
+«EXTENSION de::morknet::mdsc3::ext::service::Mail»
+«EXTENSION de::morknet::mdsc3::ext::service::NTP»
+«EXTENSION de::morknet::mdsc3::ext::service::Nagios»
+«EXTENSION de::morknet::mdsc3::ext::service::SMART»
+«EXTENSION de::morknet::mdsc3::ext::service::SNMP»
+«EXTENSION de::morknet::mdsc3::ext::service::SSH»
+
+«DEFINE groups(Host host) FOR Nagios»
+«LET getAllMachines(host).reject(m|isDummy(m)) AS machines»
+«LET machines.typeSelect(Host) AS hosts»
+«FILE config(host, groupconf(this)) CONFIG»
+«EXPAND tools::ConfigHeader(groupconf(this))»
+# A simple wildcard hostgroup
+define hostgroup {
+		hostgroup_name  all
+		alias           All Servers
+		members         *
+	}
+#
+define hostgroup {
+		hostgroup_name  ping-servers
+		alias           Pingable servers
+		members         *
+	}
+#
+«LET machines.reject(m|isExtern(host, m)) AS hosts»
+define hostgroup {
+		hostgroup_name  internal-ping-servers
+		alias           All internal pingable servers
+		members         «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDLET»
+
+«LET machines.select(m|isExtern(host, m)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name  external-ping-servers
+		alias           All external pingable servers
+		members         «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+#
+«EXPAND printers(machines.typeSelect(Printer))»
+«EXPAND switches(machines.typeSelect(Switch))»
+«EXPAND twi(hosts)»
+«EXPAND lsi(hosts)»
+«EXPAND ipmi(hosts)»
+«EXPAND apache(hosts)»
+«EXPAND apcups(hosts)»
+«EXPAND apcups_master(hosts)»
+«EXPAND bind9(hosts, host)»
+«EXPAND bea(hosts)»
+«EXPAND jboss(hosts)»
+«EXPAND was(hosts)»
+«EXPAND ldap(hosts)»
+«EXPAND ldaps(hosts)»
+«EXPAND ntp(hosts, host)»
+«EXPAND snmp(machines)»
+«EXPAND ssh(hosts)»
+«ENDFILE»
+«ENDLET»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE twi(List[Host] machines) FOR Nagios»
+«LET machines.typeSelect(Host).select(m|has3ware(m) && (!isSuSE(m))) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name 3ware-servers
+		alias          All 3ware RAID servers
+		members        «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE lsi(List[Host] machines) FOR Nagios»
+«LET machines.typeSelect(Host).select(m|hasLsi(m) && (!isSuSE(m))) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name lsi-servers
+		alias          All LSI MEGARAID servers
+		members        «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE ipmi(List[Host] machines) FOR Nagios»
+«LET machines.typeSelect(Host).select(m|hasIPMI(m)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name ipmi-servers
+		alias          All hosts with IPMI
+		members        «FOREACH hosts AS host SEPARATOR ","»«ipmi(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE apache(List[Host] machines) FOR Nagios»
+«LET machines.select(m|hasApache(m)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name http-servers
+		alias          All Apache servers
+		members        «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE apcups(List[Host] machines) FOR Nagios»
+«LET machines.select(m|hasApc(m)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name apcups-servers
+		alias          All APC ups servers
+		members        «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE apcups_master(List[Host] machines) FOR Nagios»
+«LET machines.select(m|isApcMaster(m)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name apcups-master-servers
+		alias          All APC ups master servers
+		members        «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE bind9(List[Host] machines, Host host) FOR Nagios»
+«LET machines.reject(m|isExtern(host, m)).select(m|hasBind(m)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name bind-servers
+		alias          All DNS servers
+		members        «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE bea(List[Host] machines) FOR Nagios»
+«LET machines.select(m|hasBEA(m)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name bea-servers
+		alias          All BEA servers
+		members        «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE jboss(List[Host] machines) FOR Nagios»
+«LET machines.select(m|hasJBoss(m) && isReferenced(m)).reject(e|isLocalhost(e)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name jboss-servers
+		alias          All JBoss servers
+		members        «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE was(List[Host] machines) FOR Nagios»
+«LET machines.select(m|hasWebSphere(m)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name was-servers
+		alias          All WebSphere servers
+		members        «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE ldap(List[Host] machines) FOR Nagios»
+«LET machines.select(m|hasLdap389(m)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name ldap-servers
+		alias          All LDAP servers
+		members        «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE ldaps(List[Host] machines) FOR Nagios»
+«LET machines.select(m|hasLdap636(m)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name ldaps-servers
+		alias          All LDAPS servers
+		members        «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE ntp(List[Host] machines, Host host) FOR Nagios»
+«LET machines.reject(m|isExtern(host, m)).select(m|hasNtp(m)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name ntp-servers
+		alias          All NTP servers
+		members        «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE snmp(List[Machine] machines) FOR Nagios»
+«LET machines.typeSelect(Host).select(m|hasSnmpd(m)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name snmp-servers
+		alias          All SNMP servers
+		members        «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+
+«LET machines.typeSelect(Host).select(m|condSnmpMem(m)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name snmp-meminfo-servers
+		alias          All SNMP servers
+		members        «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«LET hosts.reject(h|isVirtualHost(h)) AS swaps»
+«IF swaps.size > 0»
+#
+define hostgroup {
+		hostgroup_name snmp-swap-servers-native
+		alias          All SNMP servers
+		members        «FOREACH swaps AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«LET hosts.select(h|isVirtualHost(h)) AS swaps»
+«IF swaps.size > 0»
+#
+define hostgroup {
+		hostgroup_name snmp-swap-servers-virtual
+		alias          All SNMP servers
+		members        «FOREACH swaps AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDLET»
+
+«LET machines.typeSelect(Host).select(m|condSnmpCpu(m)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name snmp-cpuinfo-servers
+		alias          All SNMP servers
+		members        «FOREACH hosts AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE ssh(List[Host] machines) FOR Nagios»
+«LET machines.select(m|hasSshd(m)) AS hosts»
+«IF hosts.size > 0»
+#
+define hostgroup {
+		hostgroup_name ssh-servers
+		alias          All SSH servers
+		members        «FOREACH hosts.select(h|getSSH(h).port == 22) AS host SEPARATOR ","»«fqhn(host)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE printers(List[Printer] printers) FOR Nagios»
+«IF printers.size > 0»
+#
+define hostgroup {
+		hostgroup_name printers
+		alias          All printers
+		members        «FOREACH printers AS printer SEPARATOR ","»«fqhn(printer)»«ENDFOREACH»
+	}
+«ENDIF»
+«LET printers.reject(p|p.ssl) AS http_printers»
+«IF http_printers.size > 0»
+#
+define hostgroup {
+		hostgroup_name http-printers
+		alias          All HTTP printers
+		members        «FOREACH http_printers AS printer SEPARATOR ","»«fqhn(printer)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«LET printers.select(p|p.ssl) AS http_printers»
+«IF http_printers.size > 0»
+#
+define hostgroup {
+		hostgroup_name https-printers
+		alias          All HTTPS printers
+		members        «FOREACH http_printers AS printer SEPARATOR ","»«fqhn(printer)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE switches(List[Switch] switches) FOR Nagios»
+«IF switches.size > 0»
+#
+define hostgroup {
+		hostgroup_name switches
+		alias          All switches
+		members        «FOREACH switches AS swt SEPARATOR ","»«fqhn(swt)»«ENDFOREACH»
+	}
+«ENDIF»
+«ENDDEFINE»
+
+

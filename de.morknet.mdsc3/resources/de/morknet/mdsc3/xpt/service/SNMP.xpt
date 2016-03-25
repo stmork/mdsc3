@@ -1,0 +1,832 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::device::twi»
+«EXTENSION de::morknet::mdsc3::ext::device::lsi»
+
+«EXTENSION de::morknet::mdsc3::ext::service::APC»
+«EXTENSION de::morknet::mdsc3::ext::service::Mail»
+«EXTENSION de::morknet::mdsc3::ext::service::SNMP»
+«EXTENSION de::morknet::mdsc3::ext::service::SMART»
+
+«EXTENSION de::morknet::mdsc3::ext::util::constants»
+«EXTENSION de::morknet::mdsc3::ext::util::counter»
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::network»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«DEFINE service(Host host) FOR SNMP»
+«EXPAND config(host)»
+«IF hasApc(host)»
+«EXPAND checkApc(host)»
+«ENDIF»
+«IF isApcMaster(host)»
+«EXPAND apc_load(host)»
+«EXPAND apc_charge(host)»
+«EXPAND apc_timeleft(host)»
+«ENDIF»
+«IF has3ware(host)»
+«EXPAND check3ware(host)»
+«ENDIF»
+«IF hasLsi(host)»
+«EXPAND checkLsi(host)»
+«ENDIF»
+«EXPAND hdage(host)»
+«EXPAND hdreallocated(host)»
+«EXPAND hdtemp(host)»
+«EXPAND checkSmart(host)»
+«EXPAND checkMce(host)»
+«EXPAND checkSwap(host)»
+«EXPAND listConnections(host)»
+«EXPAND sudoers(host)»
+«ENDDEFINE»
+
+«DEFINE config(Host host) FOR SNMP»
+«FILE config(host, config(this)) CONFIG»
+«EXPAND tools::ConfigHeader(config(this))»
+access MyROGroup ""      any       noauth    exact  all    none   none
+access MyROSystem ""     any       noauth    exact  system none   none
+access MyRWGroup ""      any       noauth    exact  all    all    none
+com2sec readonly  default         public
+#
+# disk OID: 1.3.6.1.4.1.2021.9.1 (partition fill level)
+«FOREACH getPartitions(host) AS part»
+disk «part.name» «100 - part.filllevel»%
+«ENDFOREACH»
+#
+# exec OID: 1.3.6.1.4.1.2021.8.1 custom states
+# exec OID: 1.3.6.1.4.1.2021.8.1.1 indices
+# exec OID: 1.3.6.1.4.1.2021.8.1.2 command names
+# exec OID: 1.3.6.1.4.1.2021.8.1.3 command calls
+# exec OID: 1.3.6.1.4.1.2021.8.1.100 exit state
+# exec OID: 1.3.6.1.4.1.2021.8.1.101 stdout
+# exec OID: 1.3.6.1.4.1.2021.13.16.2.1.3 CPU temp
+
+«IF hasZimbra(host)»
+#
+# exec OID: 1.3.6.1.4.1.2021.8.1 (IMAPS connection count)
+exec connections «connections(host)»
+«ENDIF»
+
+«IF hasSmart(host)»
+#
+# exec OID: 1.3.6.1.4.1.2021.8.1 (SMART status)
+«FOREACH getDrives(host) AS drive»
+#
+exec check_age_«drive.number»         «hdage(host)»            «drive.device»    «drive.channel»
+exec check_temp_«drive.number»        «hdtemp(host)»           «drive.device»    «drive.channel»
+exec check_reallocated_«drive.number» «hdreallocated(host)»    «drive.device»    «drive.channel»
+exec check_smart_«drive.number»       «checkSmart(host)»   -d «drive.device» -t «drive.channel» -c «drive.eContainer.metaType.name»
+«ENDFOREACH»
+«ENDIF»
+#
+«setValue("array_idx", "0")»
+# exec OID: 1.3.6.1.4.1.2021.8.1 (3ware array status)
+«FOREACH get3wareController(host) AS twi»
+«FOREACH twi.volumes AS array»
+exec check_3ware_u«getValue("array_idx")» «check3ware(host)» -a «array.number»
+«addValue("array_idx", "1")»
+«ENDFOREACH»
+«ENDFOREACH»
+#
+# exec OID: 1.3.6.1.4.1.2021.8.1 (LSI megaraid array status)
+«FOREACH getLsiController(host) AS lsi»
+«FOREACH lsi.volumes AS array»
+exec check_lsi_u«getValue("array_idx")» «checkLsi(host)» -a «array.number» -c «lsi.number»
+«addValue("array_idx", "1")»
+«ENDFOREACH»
+«ENDFOREACH»
+
+«IF !isVirtualHost(host)»
+#
+# exec OID: 1.3.6.1.4.1.2021.8.1 (machine check exception)
+exec check_mce «checkMce(host)»
+«ENDIF»
+
+«IF hasApc(host)»
+#
+# exec OID: 1.3.6.1.4.1.2021.8.1 (APC status)
+exec check_apc «checkApc(host)»
+«ENDIF»
+
+«IF isApcMaster(host)»
+«LET getApc(host) AS apc»
+#
+# exec OID: 1.3.6.1.4.1.2021.8.1 (APC status checks)
+exec apc_load     /usr/local/sbin/apc_load.sh
+exec apc_timeleft /usr/local/sbin/apc_timeleft.sh
+exec apc_charge   /usr/local/sbin/apc_charge.sh
+«ENDLET»
+«ENDIF»
+
+#
+group MyROGroup usm        readonly
+group MyROGroup v1         readonly
+group MyROGroup v2c        readonly
+group MyROSystem usm       paranoid
+group MyROSystem v1        paranoid
+group MyROSystem v2c       paranoid
+group MyRWGroup usm        readwrite
+group MyRWGroup v1         readwrite
+group MyRWGroup v2c        readwrite
+#
+agentaddress «getIpAddress(host)»
+«FOREACH getWatchList(host) AS watcher»
+rocommunity public «getIpAddress(watcher)»
+«ENDFOREACH»
+#
+syscontact Sysadmin («adminmail()»)
+syslocation «getLocation(getBaseNetwork(host)).name»
+sysservices 72
+#
+view all    included  .1                               80
+view system included  .iso.org.dod.internet.mgmt.mib-2.system
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE hdtemp(Host host) FOR SNMP»
+«IF hasSmart(host)»
+«FILE config(host, hdtemp(host)) CONFIG»
+«EXPAND tools::ConfigShell(hdtemp(host))»
+#
+device=$1
+channel=$2
+#
+if [ "$channel" == "scsi" ]
+then
+  temp=`sudo /usr/sbin/smartctl -A -T permissive -d $channel $device |fgrep "Current Drive Temp" | cut -b30-33 | sed -e "s/ //g"`
+else
+  temp=`sudo /usr/sbin/smartctl -A -T permissive -d $channel $device |fgrep "194 Temp" | cut -b86-89 | sed -e "s/ //g"`
+fi
+#
+test -z $temp && temp=20
+echo $temp
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE hdreallocated(Host host) FOR SNMP»
+«IF hasSmart(host)»
+«FILE config(host, hdreallocated(host)) CONFIG»
+«EXPAND tools::ConfigShell(hdreallocated(host))»
+#
+device=$1
+channel=$2
+#
+if [ "$channel" != "scsi" ]
+then
+  sudo /usr/sbin/smartctl -A -T permissive -d $channel $device |fgrep "  5 " | cut -b86-89 | sed -e "s/ //g"
+fi
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE hdage(Host host) FOR SNMP»
+«IF hasSmart(host)»
+«FILE config(host, hdage(host)) CONFIG»
+«EXPAND tools::ConfigShell(hdage(host))»
+#
+device=$1
+channel=$2
+#
+if [ "$channel" != "scsi" ]
+then
+	age=`sudo /usr/sbin/smartctl -A -T permissive -d $channel $device |fgrep "  9 Power_On_Hours" | cut -b86-93 | sed -e "s/ //g"`
+fi
+#
+echo $age
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE sudoers(Host host) FOR SNMP»
+«FILE config(host, sudoers(host)) CONFIG»
+«EXPAND tools::ConfigHeader(sudoers(host))»
+«IF hasSmart(host)»
+snmp	ALL = NOPASSWD: /usr/sbin/smartctl
+«ENDIF»
+«IF has3ware(host)»
+snmp	ALL = NOPASSWD: /usr/sbin/tw_cli
+«ENDIF»
+«IF hasLsi(host)»
+snmp	ALL = NOPASSWD: /usr/sbin/megacli
+«ENDIF»
+snmp	ALL = NOPASSWD: /bin/grep
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE checkApc(Host host) FOR SNMP»
+«IF hasApc(host)»
+«FILE config(host, checkApc(host)) CONFIG»
+«EXPAND tools::ConfigShell(checkApc(host))»
+#
+«EXPAND states»
+#
+OUT=/tmp/apc-check.out
+apcaccess 2>/dev/null >$OUT
+if [ "$?" != "0" ]
+then
+	echo "APC unavailable!"
+	exit $STATE_UNKNOWN
+fi
+#
+STATUS=`grep STATUS $OUT|cut -d":" -f2|cut -c2-`
+echo $STATUS
+rm $OUT
+#
+case "$STATUS" in
+	*NO*)
+		exit $STATE_CRITICAL
+		;;
+#
+	CHARGING)
+		exit $STATE_WARNING  
+		;;
+#
+	*LOWBATT*)
+		exit $STATE_WARNING  
+		;;
+#
+	ONLINE*) 
+		exit $STATE_OK
+		;;
+#
+	*)
+		exit $STATE_CRITICAL
+		;;
+esac
+#
+exit $STATE_UNKNOWN
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE apc_load(Host host) FOR SNMP»
+«FILE config(host, apc_load(host)) CONFIG»
+«EXPAND tools::ConfigShell(apc_load(host))»
+#
+«EXPAND states»
+#
+OUT=/tmp/apc-load.out
+apcaccess 2>/dev/null >$OUT
+if [ "$?" != "0" ]
+then
+	echo "APC unavailable!"
+	exit $STATE_UNKNOWN
+fi
+#
+grep LOADPCT $OUT|cut -c12-16|sed 's/ //g'
+rm $OUT
+exit $STATE_OK
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE apc_charge(Host host) FOR SNMP»
+«FILE config(host, apc_charge(host)) CONFIG»
+«EXPAND tools::ConfigShell(apc_charge(host))»
+#
+«EXPAND states»
+#
+OUT=/tmp/apc-charge.out
+apcaccess 2>/dev/null >$OUT
+if [ "$?" != "0" ]
+then
+	echo "APC unavailable!"
+	exit $STATE_UNKNOWN
+fi
+#
+grep BCHARGE $OUT|cut -c12-16|sed 's/ //g'
+rm $OUT
+exit $STATE_OK
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE apc_timeleft(Host host) FOR SNMP»
+«FILE config(host, apc_timeleft(host)) CONFIG»
+«EXPAND tools::ConfigShell(apc_timeleft(host))»
+#
+«EXPAND states»
+#
+OUT=/tmp/apc-timeleft.out
+apcaccess 2>/dev/null >$OUT
+if [ "$?" != "0" ]
+then
+	echo "APC unavailable!"
+	exit $STATE_UNKNOWN
+fi
+#
+grep TIMELEFT $OUT|cut -c12-16|sed 's/ //g'
+rm $OUT
+exit $STATE_OK
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE checkMce(Host host) FOR SNMP»
+«IF !isVirtualHost(host)»
+«FILE config(host, checkMce(host)) CONFIG»
+«EXPAND tools::ConfigShell(checkMce(host))»
+#
+«EXPAND states»
+#
+which mcelog >/dev/null || exit $STATE_UNKNOWN  
+#
+count=`sudo grep "Machine check events" «getSyslog(host)»|fgrep -v sudo|wc -l`
+echo "$count time(s)."
+#
+case "$count" in
+		0)
+			exit $STATE_OK
+			;;
+#
+		1)
+			exit $STATE_WARNING
+			;;
+#
+		*)
+			exit $STATE_CRITICAL
+			;;
+esac
+#
+exit $STATE_UNKNOWN
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE checkSmart(Host host) FOR SNMP»
+«IF hasSmart(host)»
+«FILE config(host, checkSmart(host)) CONFIG»
+«EXPAND tools::ConfigShell(checkSmart(host))»
+#
+«EXPAND states»
+#
+CAT="/bin/cat"
+#
+print_usage()
+{
+	echo "Usage: $PROGNAME -d device [-t type] [-c controller] [-v]"
+	echo "Usage: $PROGNAME --help"
+	echo "Usage: $PROGNAME --version"
+	echo ""
+	echo "Options:"
+	echo " -v, --verbose"
+	echo "    Show details (Nagios may truncate output)"
+}
+#
+print_help() {
+#	print_revision $PROGNAME $REVISION
+	echo ""
+	print_usage
+	echo ""
+	echo "S.M.A.R.T check plugin for Nagios"
+	echo ""
+}
+#
+if [ $# -lt 1 ]
+then
+	print_usage
+	exit $STATE_UNKNOWN
+fi
+#
+verbose=0
+exitstatus=$STATE_WARNING #default
+#
+while test -n "$1"
+do
+	case "$1" in
+		--help)
+			print_help
+			exit $STATE_OK
+			;;
+#
+		-h)
+			print_help
+			exit $STATE_OK
+			;;
+#
+		-d)
+			device=$2
+			shift
+			;;
+#
+		-t)
+			type="-d $2"
+			shift
+			;;
+#
+		-c)
+			controller="$2"
+			shift
+			;;
+#
+		-v)
+			verbose=1
+			;;
+#
+		--verbose)
+			verbose=1
+			;;
+#
+		*)
+			echo "Unknown argument: $1"
+			print_usage
+			exit $STATE_UNKNOWN
+			;;
+	esac
+	shift
+done
+#
+if [ -z "$device" ]
+then
+    print_usage
+    exit $STATE_UNKNOWN
+fi
+«REM»
+#
+#if [ ! -e $device ] ; then
+#    echo "Unknown device \"$device\""
+#    exit $STATE_UNKNOWN
+#fi
+«ENDREM»
+#
+ERR=/tmp/check_smart_err.$$
+OUT=/tmp/check_smart_out.$$
+#
+#/usr/sbin/smartctl -T permissive -H $type $device | grep -v "^smartctl version" | grep -v "^Home page is" | grep -v "^$" | grep -v "^==="
+sudo /usr/sbin/smartctl -T permissive -H $type $device  2>&1 >$OUT
+resultcode=$?
+#
+grep "^SMART overall-health" $OUT
+#
+«REM»
+#echo "resultcode = $resultcode"
+«ENDREM»
+rm -f $OUT
+#
+if [ "$resultcode" = "0" ]
+then
+    exit 0
+fi
+#
+bit0=$(($resultcode &   1))
+bit1=$(($resultcode &   2))
+bit2=$(($resultcode &   4))
+bit3=$(($resultcode &   8))
+bit4=$(($resultcode &  16))
+bit5=$(($resultcode &  32))
+bit6=$(($resultcode &  64))
+bit7=$(($resultcode & 128))
+«REM»
+#
+#echo "bit0 = $bit0"
+#echo "bit1 = $bit1"
+#echo "bit2 = $bit2"
+#echo "bit3 = $bit3"
+#echo "bit4 = $bit4"
+#echo "bit5 = $bit5"
+#echo "bit6 = $bit6"
+#echo "bit7 = $bit7"
+«ENDREM»
+#
+if [ "$bit0" != "0" -o "$bit1" != "0" ]
+then
+	exit $STATE_UNKNOWN
+fi
+#
+if [ "$bit4" != "0" -o "$bit5" != "0" ]
+then
+	exit $STATE_WARNING
+fi
+#
+if ( [ "$resultcode" == "4" ] && [ "$controller" == "mdsc3::LSI" ] )
+then
+	exit $STATE_OK
+fi
+#
+exit $STATE_CRITICAL
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE checkSwap(Host host) FOR SNMP»
+«FILE config(host, checkSwap(host)) CONFIG»
+«EXPAND tools::ConfigShell(checkSwap(host))»
+#
+FQHN=$1
+WLIMIT=$2
+CLIMIT=$3
+#
+SECRET=public
+#
+«EXPAND states»
+#
+RESULT=UNKNOWN
+STATE=$STATE_UNKNOWN
+#
+if [ $# -lt 3 ]
+then
+	echo "$0 <fqhn> <warning limit> <critical limit>"
+else
+	RESULT=CRITICAL
+	STATE=$STATE_CRITICAL
+#
+	if ping -c1 $FQHN >/dev/null
+	then
+		set -e
+#
+		totalmem=`snmpget -v 1 -O vqU -c "$SECRET" "$FQHN" 1.3.6.1.4.1.2021.4.3.0`
+		freemem=`snmpget -v 1 -O vqU -c "$SECRET" "$FQHN" 1.3.6.1.4.1.2021.4.4.0`
+#
+		SWAP_USED=`echo "($totalmem - $freemem)" | bc -iq | tail -n1`
+#
+		if [ $SWAP_USED -lt $WLIMIT ]
+		then
+			RESULT=OK
+			STATE=$STATE_OK
+		elif [ $SWAP_USED -lt $CLIMIT ]
+		then
+			RESULT=WARNING
+			STATE=$STATE_WARNING
+		else
+			RESULT=CRITICAL
+			STATE=$STATE_CRITICAL
+		fi
+	fi
+fi
+#
+echo "SWAP $RESULT - $SWAP_USED"
+exit $STATE
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE checkLsi(Host host) FOR SNMP»
+«IF getLsiController(host).volumes.size > 0»
+«FILE config(host, checkLsi(host)) CONFIG»
+«EXPAND tools::ConfigShell(checkLsi(host))»
+#
+«EXPAND states»
+CAT="/bin/cat"
+#
+PROGNAME=`basename $0`
+#
+print_usage() {
+	echo "Usage: $PROGNAME -a arraynumber -c controllernumber [-v]"
+	echo "Usage: $PROGNAME --help"
+	echo "Usage: $PROGNAME --version"
+	echo ""
+	echo "Options:"
+	echo " -v, --verbose"
+	echo "    Show details (Nagios may truncate output)"
+}
+#
+print_help() {
+#	print_revision $PROGNAME $REVISION
+	echo ""
+	print_usage
+	echo ""
+	echo "3ware check plugin for Nagios"
+	echo ""
+}
+#
+if [ $# -lt 1 ]; then
+	print_usage
+	exit $STATE_UNKNOWN
+fi
+#
+verbose=0
+exitstatus=$STATE_WARNING #default
+array=0
+controller=0
+#
+while test -n "$1"; do
+	case "$1" in
+		--help)
+			print_help
+			exit $STATE_OK
+			;;
+#
+		-h)
+			print_help
+			exit $STATE_OK
+			;;
+#
+		-a)
+			array=$2
+			shift
+			;;
+#
+		-c)
+			controller=$2
+			shift
+			;;
+#
+		-v)
+			verbose=1
+			;;
+#
+		--verbose)
+			verbose=1
+			;;
+#
+		*)
+			echo "Unknown argument: $1"
+			print_usage
+			exit $STATE_UNKNOWN
+			;;
+	esac
+	shift
+done
+#
+if [ -z "$array" ]
+then
+	print_usage
+	exit $STATE_UNKNOWN
+fi
+#
+if [ -z "$controller" ] ; then
+	print_usage
+	exit $STATE_UNKNOWN
+fi
+#
+ERR=/tmp/check_lsi_err.$$
+OUT=/tmp/check_lsi_out.$$
+#
+sudo megacli -LDInfo -L$array -A$controller >$OUT 2>$ERR
+resultcode=$?
+exitcode=$STATE_OK
+#
+result=`fgrep State $OUT|cut -d":" -f2| sed -e "s/ //g"`
+#
+if [ "$resultcode" != "0" ]
+then
+	echo "Unknown error"
+	exitcode=$STATE_UNKNOWN
+else
+	echo $result
+	if [ "$result" != "Optimal" ]
+	then
+		exitcode=$STATE_CRITICAL
+	fi
+fi
+#
+rm -f $ERR $OUT  
+exit $exitcode
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE check3ware(Host host) FOR SNMP»
+«IF get3wareController(host).volumes.size > 0»
+«FILE config(host, check3ware(host)) CONFIG»
+«EXPAND tools::ConfigShell(check3ware(host))»
+#
+«EXPAND states»
+CAT="/bin/cat"
+#
+PROGNAME=`basename $0`
+#
+print_usage() {
+	echo "Usage: $PROGNAME -a arraynumber -c controllernumber [-v]"
+	echo "Usage: $PROGNAME --help"
+	echo "Usage: $PROGNAME --version"
+	echo ""
+	echo "Options:"
+	echo " -v, --verbose"
+	echo "    Show details (Nagios may truncate output)"
+}
+#
+print_help() {
+#	print_revision $PROGNAME $REVISION
+	echo ""
+	print_usage
+	echo ""
+	echo "3ware check plugin for Nagios"
+	echo ""
+}
+#
+if [ $# -lt 1 ]; then
+	print_usage
+	exit $STATE_UNKNOWN
+fi
+#
+verbose=0
+exitstatus=$STATE_WARNING #default
+array=u0
+controller=c`sudo tw_cli show |head -n4|tail -n1 |fgrep c|cut -c2-2`
+#
+while test -n "$1"; do
+	case "$1" in
+		--help)
+			print_help
+			exit $STATE_OK
+			;;
+#
+		-h)
+			print_help
+			exit $STATE_OK
+			;;
+#
+		-a)
+			array=u$2
+			shift
+			;;
+#
+		-c)
+			controller=c$2
+			shift
+			;;
+#
+		-v)
+			verbose=1
+			;;
+#
+		--verbose)
+			verbose=1
+			;;
+#
+ 		*)
+			echo "Unknown argument: $1"
+			print_usage
+			exit $STATE_UNKNOWN
+			;;
+	esac
+	shift
+done
+#
+if [ -z "$array" ]
+then
+	print_usage
+	exit $STATE_UNKNOWN
+fi
+#
+if [ -z "$controller" ] ; then
+	print_usage
+	exit $STATE_UNKNOWN
+fi
+#
+ERR=/tmp/check_3ware_err.$$
+OUT=/tmp/check_3ware_out.$$
+#
+sudo tw_cli /$controller/$array show >$OUT 2> $ERR
+#
+resultcode=$?
+exitcode=$STATE_OK
+#echo "resultcode = $resultcode"
+#
+if [ "$resultcode" != "0" ]
+then
+	awk -- '/.+/ { print }' $ERR
+#
+	exitcode=$STATE_UNKNOWN
+else
+	result=`awk -v array=$array -- '{if ($1 == array) print $3}' $OUT`
+#
+	echo $result
+#
+	if [ "$result" = "REBUILDING" ]
+	then
+		exitcode=$STATE_WARNING
+	elif [ "$result" = "MIGRATING" ]
+	then
+		exitcode=$STATE_WARNING
+	elif [ "$result" = "INITIALIZING" ]
+	then
+		exitcode=$STATE_WARNING
+	elif [ "$result" != "OK" ]
+	then
+		exitcode=$STATE_CRITICAL
+	fi
+fi
+#
+rm -f $ERR $OUT
+
+exit $exitcode
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE listConnections(Host host) FOR SNMP»
+«IF hasZimbra(host)»
+«FILE config(host, connections(host)) CONFIG»
+«EXPAND tools::ConfigShell(connections(host))»
+#
+netstat -an|fgrep ":993"|wc -l
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE states FOR SNMP»
+STATE_OK=0
+STATE_WARNING=1
+STATE_CRITICAL=2
+STATE_UNKNOWN=3
+STATE_DEPENDENT=4
+#
+PROGNAME=`basename $0`
+«ENDDEFINE»

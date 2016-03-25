@@ -1,0 +1,53 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+Boolean isSuSE(Host host) :
+	host.os.toString().startsWith("SuSE") || host.os.toString().startsWith("SLES");
+	
+Boolean isRedHat(Host host) :
+	(host.os == OS::Red_Hat);
+
+Boolean isDebian(Host host) :
+	(host.os == OS::Debian6) ||
+	(host.os == OS::Debian7) ||
+	(host.os == OS::Debian8);
+
+Boolean isUbuntu(Host host) :
+	(host.os == OS::Ubuntu_12_04) ||
+	(host.os == OS::Ubuntu_14_04);
+
+Boolean isLinux(Host host) :
+	isSuSE(host) || isDebian(host) || isUbuntu(host) || isRedHat(host);
+
+Boolean isWindows(Host host) :
+	host.os.toString().startsWith("Windows");
+
+Boolean isWindowsServer(Host host) :
+	(host.os == OS::Windows_2K3) ||
+	(host.os == OS::Windows_2K8) ||
+	(host.os == OS::Windows_2K12);
+
+Boolean isMac(Host host) :
+	(host.os == OS::Mac_10_6) ||
+	(host.os == OS::Mac_10_7) ||
+	(host.os == OS::Mac_10_8) ||
+	(host.os == OS::Mac_10_9) ||
+	(host.os == OS::Mac_10_10);
+
+Boolean isMinUbuntuPrecise(Host host) :
+	(host.os == OS::Ubuntu_12_04) ||
+	(host.os == OS::Ubuntu_14_04);
+
+Boolean isMinUbuntuTrusty(Host host) :
+	(host.os == OS::Ubuntu_14_04);
+
+Boolean isMinDebianWheezy(Host host) :
+	(host.os == OS::Debian7) ||
+	(host.os == OS::Debian8);
+
+Boolean isMinDebianJessie(Host host) :
+	(host.os == OS::Debian8);

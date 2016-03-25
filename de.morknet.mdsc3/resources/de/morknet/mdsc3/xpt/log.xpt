@@ -1,0 +1,276 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+«IMPORT emf»
+
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::model»
+«EXTENSION de::morknet::mdsc3::ext::util::network»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+
+«EXTENSION de::morknet::mdsc3::ext::service::APC»
+«EXTENSION de::morknet::mdsc3::ext::service::DNS»
+«EXTENSION de::morknet::mdsc3::ext::service::LDAP»
+«EXTENSION de::morknet::mdsc3::ext::service::SSH»
+
+«DEFINE main FOR Model»
+«EXPAND log FOREACH getAllLocations()»
+«EXPAND cssh::cssh»
+«EXPAND hosts»
+«EXPAND printers»
+«EXPAND switches»
+«EXPAND ups»
+
+«FILE "output.txt"-»
+Model
+  LDAP master: «getLdapMaster().name»
+  LDAP slave:  «getAllLdapSlaveHosts().name»
+«FOREACH getRouters() AS router»
+  Router:      «router.name» with networks: «getNetworks(router).name»
+«ENDFOREACH»
+«EXPAND Element FOREACH this.eRootContainer.allRootElements().eContents»
+«ENDFILE-»
+«ENDDEFINE»
+
+«REM»
+«««««««««««««««««««« Log APC UPS wiring »»»»»»»»»»»»»»»»»»»»»»»»»»»
+«ENDREM»
+
+«DEFINE ups FOR Model»
+«FILE "APC.log"-»
+APC list:
+«FOREACH getApcMasterList().sortBy(e|e.name) AS master»
+#
+  «fqhn(master)» (delay «getApc(master).delay»s):
+«FOREACH getApcSlaveList(master).reject(e|isVirtualHost(e)).sortBy(e|e.name) AS slave»
+    «fqhn(slave)» «getApc(slave).delay»s
+«FOREACH getAllHosts().select(e|e.hasApc() && (e.parent == slave)) AS vm»
+      «fqhn(vm)» «getApc(vm).delay»s
+«ENDFOREACH»
+«ENDFOREACH»
+«ENDFOREACH»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE hosts FOR Model»
+«LET getAllHosts(this) AS hosts»
+«FILE "hosts.txt"-»
+«FOREACH hosts AS host-»
+Host: «host.name» «getIpAddress(host)» «fqhn(host)»
+«ENDFOREACH»
+«ENDFILE»
+
+«FILE "hosts-linux.txt"-»
+«FOREACH hosts.select(e|e.isLinux()) AS host-»
+Host: «host.name» «getIpAddress(host)» «fqhn(host)»
+«ENDFOREACH»
+«ENDFILE»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE switches FOR Model»
+«FILE "switches.txt"-»
+«FOREACH getAllSwitches(this) AS swt-»
+Switch: «swt.name» «getIpAddress(swt)» «fqhn(swt)»
+«ENDFOREACH»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE printers FOR Model»
+«FILE "printers.txt"-»
+«FOREACH getAllPrinters(this) AS printer-»
+Printer: «printer.name» «getIpAddress(printer)» «fqhn(printer)»
+«ENDFOREACH»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE log FOR Location»
+«FILE "structure-" + name + ".log"»
+Location «this.name»
+   DNS:      «getBindHostsExt(this, null).name»
+   LDAPs:    «getLdapHosts().name»    
+   Networks: «networks.name»
+«EXPAND log FOREACH networks.sortBy(n|n.name)»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE log FOR Network»
+= Segment «this.name» «IF isVPN()»(VPN) «ENDIF»=
+«EXPAND log FOREACH getMachines(this).sortBy(m|m.name)»
+«ENDDEFINE»
+
+«DEFINE log FOR Printer»
+    ---------------------------------------------
+    Printer «this.name» location=«getLocationName()»
+«EXPAND log FOREACH devices.sortBy(d|d.metaType.name)»
+«EXPAND log FOREACH services.sortBy(s|s.metaType.name)»
+«ENDDEFINE»
+
+«DEFINE log FOR Host»
+    ---------------------------------------------
+    Host «this.name» location=«getLocationName()» virtual=«isVirtualHost()» deploy=«deploy» «bits64 ? "64 Bit" : "32 Bit"»
+         Linux=«isLinux()» Windows=«isWindows()» Mac=«isMac()» Ubuntu=«isUbuntu()» Debian=«isDebian()» («this.os.toString()»)
+«EXPAND log FOREACH devices»
+«EXPAND log FOREACH services»
+«ENDDEFINE»
+
+«DEFINE log FOR Machine»
+«ENDDEFINE»
+
+«DEFINE log FOR HostDevice»
+      Service «this.metaType.name» «this.metaType.name»
+«ENDDEFINE»
+
+«DEFINE log FOR PrinterDevice»
+      Service «this.metaType.name» «this.metaType.name»
+«ENDDEFINE»
+
+«DEFINE log FOR HostService»
+      Service «this.metaType.name» «this.metaType.name»
+«ENDDEFINE»
+
+«DEFINE log FOR PrinterService»
+      Service «this.metaType.name» «this.metaType.name»
+«ENDDEFINE»
+
+«DEFINE log FOR DHCP»
+      DHCPD master=«this.master»
+«ENDDEFINE»
+
+«DEFINE log FOR DNS»
+      DNS master=«this.master»
+«ENDDEFINE»
+
+«DEFINE log FOR PAM»
+      PAM «this.metaType.name»
+«ENDDEFINE»
+
+«DEFINE log FOR LDAP»
+      LDAP master=«master» basedn=«baseDN» credential=«credentials» secure=«security»
+«ENDDEFINE»
+
+«DEFINE log FOR APC»
+      APCUPSD master=«host == null» delay=«delay»
+«ENDDEFINE»
+
+«DEFINE log FOR SMART»
+      SMART
+«ENDDEFINE»
+
+«DEFINE log FOR NIC»
+      NIC «name» MAC=«this.mac» connected=«this.network != null» IP=«this.ipaddr» DHCP=«this.dhcp»
+«ENDDEFINE»
+
+«DEFINE log FOR CPU»
+      CPU «name» count: «this.cores» «this.mhz» MHz multicore=«this.multicore» sensors=«this.sensors»
+«ENDDEFINE»
+
+«DEFINE log FOR Controller»
+      Controller «metaType.name»
+«EXPAND log FOREACH this.drives»
+«ENDDEFINE»
+
+«DEFINE log FOR Drive»
+        Harddrive «number» device=«device» channel=«channel»
+«ENDDEFINE»
+
+«DEFINE log FOR Partition»
+      Partition «name» device=«device» backup=«backup» max fill=«filllevel»
+«ENDDEFINE»
+
+«REM»
+«««««««««««««««««««« Element listing »»»»»»»»»»»»»»»»»»»»»»»»»»»
+«ENDREM»
+
+«DEFINE Element FOR EObject»
+«ERROR "Undefined type: " + metaType.name»
+«ENDDEFINE»
+
+«DEFINE Element FOR Import»
+Import «importURI»
+«ENDDEFINE»
+
+«DEFINE Element FOR Location»
+===== Location «name»
+«EXPAND Element FOREACH networks»
+«ENDDEFINE»
+
+«DEFINE Element FOR Network»
+   >> Network «name»«IF isVPN()» (VPN)«ENDIF»
+          NICs:  «FOREACH nics AS nic SEPARATOR ", "»«getHost(nic).name»«ENDFOREACH»
+          Hosts: «FOREACH getHosts(this) AS host SEPARATOR ", "»«host.name»«ENDFOREACH»
+«ENDDEFINE»
+
+«DEFINE Element FOR Host»
+===================================================================================================
+Host «name» «parent» deploy=«deploy» bits64=«bits64» LANG=«lang» LC_ALL=«lc»
+  Gast: «parent.services.typeSelect(VM).size» «parent.services.exists(e|VM.isInstance(e))»
+  Wirt: «services.exists(e|VM.isInstance(e))»
+  Base network: «getBaseNetwork().name»
+  Base NIC:     «getBaseNIC().mac»
+«EXPAND Element FOREACH devices» 
+  Services: «services.size»
+«EXPAND Element FOREACH services»
+«ENDDEFINE»
+
+«DEFINE Element FOR NIC»
+  NIC «name» «mac» «IF network != null»«((Machine)eContainer).name».«network.domain» «dhcp» «ipaddr»«ENDIF»
+«ENDDEFINE»
+
+«DEFINE Element FOR Partition»
+  Partition «name» «device» «filllevel» «snmpindex»
+«ENDDEFINE»
+
+«DEFINE Element FOR HostDevice»
+  Host device «metaType.name»
+«ENDDEFINE»
+
+«DEFINE Element FOR VM»
+  VM-Service: «metaType.name»
+«ENDDEFINE»
+
+«DEFINE Element FOR HostService»
+  Host service «metaType.name»
+«ENDDEFINE»
+
+«DEFINE Element FOR Type»
+Type «metaType.name» «name»
+«ENDDEFINE»
+
+«DEFINE Element FOR Controller»
+  Controller «metaType.name»
+«FOREACH drives.sortBy(d|d.number) AS drive»
+    Drive «drive.device» «drive.channel» «drive.number»
+«ENDFOREACH»
+«FOREACH volumes.sortBy(v|v.number) AS volume»
+    Volume «volume.device»
+«ENDFOREACH»
+«ENDDEFINE»
+
+«DEFINE Element FOR JK»
+    JK «mountpoint»@«server.host.name»
+«ENDDEFINE»
+
+«DEFINE Element FOR Connector»
+    Apache Connector: «metaType.name»
+«ENDDEFINE»
+
+«DEFINE Element FOR WordPress»
+    WordPress «path»
+«ENDDEFINE»
+
+«DEFINE Element FOR Apache»
+  Apache:
+«EXPAND Element FOREACH connections-»
+«ENDDEFINE»
+
+«DEFINE Element FOR Postfix»
+  Postfix «relay.name»
+«ENDDEFINE»
+
+«DEFINE Element FOR SSH»
+  SSH port=«port»
+«ENDDEFINE»

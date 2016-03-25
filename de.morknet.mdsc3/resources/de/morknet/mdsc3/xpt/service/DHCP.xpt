@@ -1,0 +1,114 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::network»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«EXTENSION de::morknet::mdsc3::ext::service::DHCP»
+«EXTENSION de::morknet::mdsc3::ext::service::DNS»
+«EXTENSION de::morknet::mdsc3::ext::service::NTP»
+«EXTENSION de::morknet::mdsc3::ext::service::Samba»
+
+«DEFINE service(Host host) FOR DHCP»
+«EXPAND config(host)»
+«EXPAND hosts(host)»
+«EXPAND AppArmor(host)»
+«ENDDEFINE»
+
+«DEFINE AppArmor(Host host) FOR DHCP»
+«FILE config(host, AppArmor(this)) CONFIG -»«EXPAND tools::ConfigHeader(AppArmor(this))»
+/etc/bind/dhcp.key r,
+/etc/ldap/ldap.conf r,
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE config(Host host) FOR DHCP»
+«FILE config(host, dhcp_config(this)) CONFIG»
+«EXPAND tools::ConfigHeader(dhcp_config(this))»
+# Our server is authority
+#########################################################
+server-identifier «fqhn(host)»;
+authoritative;
+#
+«IF getDhcpdSlave(host) != null»
+failover peer "dhcp-failover" {
+«IF this.master»
+  # declare this to be the primary server
+  primary;
+  address «fqhn(host)»;
+  port 520;
+  peer address «fqhn(getDhcpdSlave(host))»;
+  peer port 520;
+«ELSE»
+  # declare this to be the secondary server
+  secondary;
+  address «fqhn(host)»;
+  port 520;
+  peer address «fqhn(getDhcpdMaster(host))»;
+  peer port 520;
+«ENDIF»
+  max-response-delay 30;
+  max-unacked-updates 10;
+  load balance max seconds 3;
+«IF this.master»
+  mclt 1800;
+  split 128;
+«ENDIF»
+}
+«ENDIF»
+#
+option subnet-mask «getNetmask(host)»;
+option broadcast-address «getBroadcastAddress(host)»;
+option routers «getIpAddress(getGateway(host), getBaseNetwork(host))»;
+«LET findPDC(host) AS pdc»
+«IF pdc != null»
+option netbios-dd-server «fqhn(getNetBiosName(pdc), pdc)»;
+option netbios-name-servers «fqhn("wins", pdc)»;
+option netbios-scope "";
+option netbios-node-type 8;
+«ENDIF»
+«ENDLET»
+option domain-name "«getDomain(host)»";
+option domain-name-servers «FOREACH getBindHosts(host) AS bind SEPARATOR ","»«asIpAddress(fqhn(bind))»«ENDFOREACH»;
+option ntp-servers «FOREACH getNtpHosts(host).toSet() AS ntp SEPARATOR ","»«asIpAddress(fqhn(ntp))»«ENDFOREACH»;
+default-lease-time 14400;
+#
+include "«configGlobal(this)»";
+include "«configGeneratedHosts(this)»";
+include "«configFixedHosts(this)»";
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE hosts(Host host) FOR DHCP»
+«FILE config(host, configGeneratedHosts(this)) CONFIG»
+«EXPAND tools::ConfigHeader(configGeneratedHosts(this))»
+«FOREACH getBaseNetwork(host).getMachines().sortBy(m|m.name) AS machine»
+«LET getBaseNIC(machine) AS nic»
+«IF nic.mac != null»
+#
+host «machine.name»
+{
+  hardware ethernet «nic.mac.toLowerCase()»;
+  fixed-address «fqhn(machine)»;
+}
+«ELSE»
+«LET getNICs(machine).select(nic|nic.mac != null).first() AS nic»
+#
+host «machine.name»
+{
+  hardware ethernet «nic.mac.toLowerCase()»;
+  fixed-address «fqhn(machine)»;
+}
+«ENDLET»
+«ENDIF»
+«ENDLET»
+«ENDFOREACH»
+«ENDFILE»
+«ENDDEFINE»

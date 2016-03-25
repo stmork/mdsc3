@@ -1,0 +1,321 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«IMPORT de::morknet::mdsc3::xpt::util»
+«IMPORT de::morknet::mdsc3::xpt::service::apache»
+
+«EXTENSION de::morknet::mdsc3::ext::util::constants»
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::network»
+«EXTENSION de::morknet::mdsc3::ext::util::SSL»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+«EXTENSION de::morknet::mdsc3::ext::service::LDAP»
+«EXTENSION de::morknet::mdsc3::ext::service::Apache»
+
+«DEFINE service(Host host) FOR Apache»
+«EXPAND sslhost(host)»
+«EXPAND ssl(host)»
+«EXPAND ldap(host)»
+«EXPAND global(host)»
+«EXPAND status(host)»
+«EXPAND webalizer::usage(host)»
+«EXPAND webalizer::webalizer(host)»
+«EXPAND JK::JK(host)»
+«EXPAND Subversion::Subversion(host)»
+«EXPAND Subversion::Trac(host)»
+«ENDDEFINE»
+
+«DEFINE global(Host host) FOR Apache»
+«FILE config(host, global(this)) CONFIG»
+«EXPAND tools::ConfigHeader(global(this))»
+#
+ServerTokens    Prod
+ServerSignature off
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE ssl(Host host) FOR Apache»
+«FILE config(host, ssl(this)) CONFIG»
+«EXPAND tools::ConfigHeader(ssl(this))»
+#
+<IfModule mod_ssl.c>
+	SSLHonorCipherOrder     On
+«IF isApache24(host)»
+#
+	SSLProtocol             all -SSLv3 -TLSv1.1
+#
+#	Secure Browser connections only
+#	A+ 100%/95%/100%/100%
+	SSLCipherSuite          DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA
+#
+#	Additional Oracle Java 8
+#	A+ 100%/95%/100%/90%
+#	SSLCipherSuite          DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-GCM-SHA256
+#
+#	Additional Oracle Java 7
+#	A+ 100%/95%/100%/80%
+#	SSLCipherSuite          DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA
+#
+#	Additional Oracle Java 6
+#	A+ 100%/95%/100%/80%
+#	SSLCipherSuite          DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA:AES128-SHA
+#
+#	Additional Win XP IE8
+#	A+ 100%/95%/100%/80%
+#	SSLCipherSuite          DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA:AES128-SHA:DES-CBC3-SHA
+#
+#	Additional Win XP IE6 (not recommended!)
+#	A+ 100%/90%/100%/80%
+#	SSLProtocol             all +SSLv3 -TLSv1.1
+#	SSLCipherSuite          DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA:AES128-SHA:DES-CBC3-SHA
+«ELSEIF isMinUbuntuPrecise(host)»
+	SSLProtocol             all -SSLv2 -SSLv3
+#
+«IF !hasSubversion(this)»
+#	A- 100%/95%/80%/100%
+	SSLCipherSuite          DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:AES256-SHA256:AES256-SHA
+«ELSE»
+#	Additional Oracle Java 6-8
+#	A- 100%/95%/80%/90%
+	SSLCipherSuite          DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-SHA:AES256-SHA256:AES256-SHA:AES128-SHA
+«ENDIF»
+«ELSE»
+	SSLProtocol             all -SSLv2
+	SSLCipherSuite          ECDHE-RSA-AES256-SHA384:AES256-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH:!AESGCM:!SSLV2:!eNULL
+	SetEnvIf                User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown
+«ENDIF»
+</IfModule>
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE sslhost(Host host) FOR Apache»
+«FILE config(host, sslhost(this)) CONFIG»
+«EXPAND tools::ConfigHeader(sslhost(this))»
+«IF isApache24(host)»
+#
+<VirtualHost «fqhn(host)»:443>
+«ELSE»
+#NameVirtualHost «fqhn(host)»:443
+#
+<VirtualHost «host.name»:443>
+«ENDIF»
+	ServerName              «fqhn(host)»
+	ServerAdmin             «adminmail()»
+#
+<IfModule mod_ssl.c>
+	SSLEngine on
+	SSLCertificateFile      «getSslCert(host)»
+	SSLCertificateKeyFile   «getSslKey(host)»
+	SSLCACertificateFile    «getSslCaCert(host)»
+	SSLCertificateChainFile «getSslCaChainCert(host)»
+#	SSLCARevocationPath     «getCrlBase(host)»
+#
+	<IfModule mod_headers.c>
+		Header always set Strict-Transport-Security "max-age=31556926"
+	</IfModule>
+</IfModule>
+#
+<IfModule mod_jk.c>
+#
+	# Add jkstatus for managing runtime data
+	<Location /jkstatus/>
+		JkMount status
+«IF isApache24(host)»
+		Require all denied
+«ELSE»
+		Allow from all
+«ENDIF»
+#
+«EXPAND Apache::auth(host, "JK status", "admin")»
+	</Location>
+#
+	<IfModule mod_ssl.c>
+#		SSLOptions +StdEnvVars
+		SSLOptions +ExportCertData
+	</IfModule>
+#
+# Mount your applications
+«IF getJkList(this).exists(e|e.redirect)»
+	RewriteEngine On
+«ENDIF»
+«FOREACH getJkList(this) AS worker»
+«IF worker.vhost == null»
+	JkMount «worker.mountpoint»|/* «getLoadBalancerId(worker)»
+«ELSEIF worker.redirect»
+	RewriteRule   ^«worker.mountpoint»(.*) https://«worker.vhost»«worker.mountpoint»$1 [R,L]
+«ENDIF»
+«ENDFOREACH»
+</IfModule>
+«IF isApache24(host)»
+#
+<IfModule mod_authnz_external.c>
+	AddExternalAuth pwauth /usr/sbin/pwauth
+	SetExternalAuthMethod pwauth pipe
+</IfModule>
+«ENDIF»
+
+«IF hasTrac()»
+#
+<IfModule mod_wsgi.c>
+	WSGIScriptAlias /trac «Trac_WSGI(this)»
+</IfModule>
+«ENDIF»
+#
+	DocumentRoot «docroot»
+	<Directory «docroot»>
+		Options FollowSymLinks
+		AllowOverride FileInfo
+	</Directory>
+#
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+	CustomLog «logdir()»/access.log combined
+	ErrorLog  «logdir()»/error.log
+	ServerSignature Off
+</VirtualHost>
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE status(Host host) FOR Apache»
+«FILE config(host, status(this)) CONFIG»
+«EXPAND tools::ConfigHeader(status(this))»
+ExtendedStatus on
+<IfModule mod_status.c>
+<Location /server-status>
+	SetHandler server-status
+«IF isApache24(host)»
+	Require all denied
+«ELSE»
+	Allow from all
+«ENDIF»
+#
+«EXPAND auth(host, "Apache status", getAdminGroup())»
+</Location>
+</IfModule>
+#
+<IfModule mod_info.c>
+<Location /server-info>
+	SetHandler server-info
+«IF isApache24(host)»
+	Require all denied
+«ELSE»
+	Allow from all
+«ENDIF»
+#
+«EXPAND auth(host, "Apache status", getAdminGroup())»
+</Location>
+</IfModule>
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE ldap(Host host) FOR Apache»
+«IF getLdapHosts(host).size > 0»
+«FILE config(host, ldap(this)) CONFIG»
+«EXPAND tools::ConfigHeader(ldap(this))»
+<IfModule util_ldap.c>
+#
+LDAPTrustedMode           SSL
+LDAPSharedCacheSize   8192000
+#
+<Location /ldap-status>
+	SetHandler ldap-status
+«IF isApache24(host)»
+	Require all denied
+«ELSE»
+	Allow from all
+«ENDIF»
+#
+«EXPAND auth(host, "Apache status", getAdminGroup())»
+</Location>
+#
+</IfModule>
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE auth(Host host, String realm, String group) FOR HostService»
+	<IfModule mod_rewrite.c>
+		RewriteEngine off
+	</IfModule>
+#
+	AuthType Basic
+	AuthName "«realm»"
+
+«LET getLdapHosts(host) AS ldaps» 
+«IF ldaps.size > 0»
+«LET getLdap(getLdapMaster(host)) AS master»
+#
+	<IfModule mod_authnz_ldap.c>
+		AuthLDAPURL "«getLdapProtocol(host)»://«FOREACH ldaps AS ldaphost SEPARATOR " "»«fqhn(ldaphost)»«ENDFOREACH»/ou=Users,«master.baseDN»?uid?sub?(objectClass=*)"
+#		<LimitExcept GET PROPFIND OPTIONS REPORT>
+			Require ldap-group cn=«group»,ou=Groups,«master.baseDN»
+«IF group != getAdminGroup()»
+			Require ldap-group cn=«getAdminGroup()»,ou=Groups,«master.baseDN»
+«ENDIF»
+«IF group != getManagementGroup()»
+			Require ldap-group cn=«getManagementGroup()»,ou=Groups,«master.baseDN»
+«ENDIF»
+#		</LimitExcept>
+«IF !isApache24(host)»
+		AuthzLDAPAuthoritative off
+«ENDIF»
+		AuthBasicProvider ldap
+		AuthLDAPGroupAttribute memberUid
+		AuthLDAPGroupAttributeIsDN off
+	</IfModule>
+«ENDLET»
+«ELSE»
+#
+	# PAM authentication
+	<IfModule mod_auth_pam.c>
+		AuthUserFile /dev/null
+		AuthPAM_Enabled on
+		AuthBasicAuthoritative Off
+		Require group «getAdminGroup()»
+«IF group != getAdminGroup()»
+		Require group «getAdminGroup()»
+«ENDIF»
+«IF group != getManagementGroup()»
+		Require group «getManagementGroup()»
+«ENDIF»
+	</IfModule>
+#
+	# Shadow authentication
+	<IfModule mod_auth_shadow.c>
+		AuthShadow on
+		AuthBasicAuthoritative off
+	</IfModule>
+#
+	# External authentication
+	<IfModule mod_authnz_external.c>
+		AuthBasicProvider external
+		AuthExternal pwauth
+	</IfModule>
+#
+	<IfModule mod_authn_file.c>
+		AuthUserFile «getPasswdFile(group)»
+	</IfModule>
+#
+	Require valid-user
+
+	<IfModule mod_authz_unixgroup.c>
+		Require unix-group «getAdminGroup()»
+«IF group != getAdminGroup()»
+		Require unix-group «getAdminGroup()»
+«ENDIF»
+«IF group != getManagementGroup()»
+		Require unix-group «getManagementGroup()»
+«ENDIF»
+	</IfModule>
+«ENDIF»
+«ENDLET»
+#
+	SSLRequireSSL
+#	Require any
+«ENDDEFINE»

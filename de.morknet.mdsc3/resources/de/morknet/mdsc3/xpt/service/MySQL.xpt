@@ -1,0 +1,54 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::service::Apache»
+«EXTENSION de::morknet::mdsc3::ext::service::AppServer»
+«EXTENSION de::morknet::mdsc3::ext::service::MySQL»
+«EXTENSION de::morknet::mdsc3::ext::util::constants»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::SSL»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«DEFINE service(Host host) FOR MySQL»
+«EXPAND AppArmor(host)»
+«FILE config(host, config(this)) CONFIG»
+«EXPAND tools::ConfigHeader(config(this))»
+#
+[client]
+socket                  = /run/mysqld/mysqld.sock
+ssl-ca                  = «getSslCaCert(host)»
+#
+[mysqld_safe]
+socket                  = /run/mysqld/mysqld.sock
+ssl-ca                  = «getSslCaCert(host)»
+#
+[mysqld]
+character_set_server    = utf8  
+default-storage-engine  = InnoDB
+#
+ssl
+ssl-ca                  = «getSslCaCert(host)»
+«IF hasAppServer(host) || hasApache(host)»
+ssl-cert                = «getSslBase(host)»/localhost-cert.pem
+ssl-key                 = «getSslBase(host)»/localhost-key.pem
+«ELSE»
+ssl-cert                = «getSslCert(host)»
+ssl-key                 = «getSslKey(host)»
+«ENDIF»
+ssl-cipher              = DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:AES256-SHA:AES128-SHA
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE AppArmor(Host host) FOR MySQL»
+«FILE config(host, AppArmor(this)) CONFIG -»«EXPAND tools::ConfigHeader(AppArmor(this))»
+/etc/ssl/*.pem r,
+/SYSV** rw,
+«ENDFILE»
+«ENDDEFINE»

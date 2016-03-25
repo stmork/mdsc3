@@ -1,0 +1,36 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«IMPORT de::morknet::mdsc3::xpt::util»
+
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::network»
+«EXTENSION de::morknet::mdsc3::ext::util::tools»
+
+«EXTENSION de::morknet::mdsc3::ext::service::NFS»
+
+«DEFINE service(Host host) FOR NFS»
+«FILE config(host, config(this)) CONFIG»
+«EXPAND tools::ConfigHeader(config(this))»
+#
+[General]
+#
+Cache-Expiration = 10
+Verbosity = 0
+Pipefs-Directory = «pipefs(this)»
+Domain = «getDomain(host)»
+#
+[Mapping]
+#
+Nobody-User = nobody
+Nobody-Group = nogroup
+#
+[Translation]
+Method = nsswitch
+«ENDFILE»
+«ENDDEFINE»
+

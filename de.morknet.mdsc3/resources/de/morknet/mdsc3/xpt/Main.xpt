@@ -1,0 +1,24 @@
+«REM»
+«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		$Id$
+«ENDREM»
+
+«IMPORT mdsc3»
+
+«EXTENSION de::morknet::mdsc3::ext::util::host»
+«EXTENSION de::morknet::mdsc3::ext::util::model»
+«EXTENSION de::morknet::mdsc3::ext::util::os»
+
+«DEFINE Main FOR Model»
+«EXPAND deploy::deploy»
+«EXPAND log::main»
+«EXPAND Main FOREACH getAllHosts()»
+«EXPAND dot::Map»
+«ENDDEFINE»
+
+«DEFINE Main FOR Host»
+«EXPAND Service::service»
+«IF isLinux()»
+«EXPAND host::host»
+«ENDIF»
+«ENDDEFINE»

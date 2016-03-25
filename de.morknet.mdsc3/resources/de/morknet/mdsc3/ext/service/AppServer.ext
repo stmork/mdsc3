@@ -1,0 +1,112 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::service::Apache;
+extension de::morknet::mdsc3::ext::util::host;
+extension de::morknet::mdsc3::ext::util::model;
+extension de::morknet::mdsc3::ext::util::network;
+
+Boolean hasAppServer(Host host) :
+	host.services.exists(s|AppServer.isInstance(s));
+
+Boolean hasBEA(Host host) :
+	host.services.exists(s|BEA.isInstance(s));
+
+Boolean hasJBoss(Host host) :
+	host.services.exists(s|JBoss.isInstance(s));
+
+Boolean hasGlassfish(Host host) :
+	host.services.exists(s|Glassfish.isInstance(s));
+	
+Boolean hasWebSphere(Host host) :
+	host.services.exists(s|WebSphere.isInstance(s));
+
+
+String typeName(AppServer s) :
+	s.metaType.name.replaceAll("mdsc3::","");
+
+String init(AppServer server) :
+	"/etc/init.d/" + typeName(server).toLowerCase();
+
+String confscript(AppServer server) :
+	"/etc/profile.d/" + server.typeName().toLowerCase() + ".sh";
+
+String asHome(AppServer server) :
+	typeName(server).toUpperCase() + "_HOME";
+
+String asHome(Wildfly server) :
+	"JBOSS_HOME";
+
+String asUser(AppServer server) :
+	typeName(server).toUpperCase() + "_USER";
+
+String asGroup(AppServer server) :
+	typeName(server).toUpperCase() + "_GROUP";
+
+String asLogin(AppServer server) :
+	typeName(server).toUpperCase() + "_LOGIN";
+
+String asPassword(AppServer server) :
+	typeName(server).toUpperCase() + "_PW";
+
+String asOpts(AppServer server) :
+	typeName(server).toUpperCase() + "_OPTS";
+
+// Startup
+String startup(Tomcat server) :
+	"$" + asHome(server) + "/bin/startup.sh";
+
+String startup(Glassfish server) :
+	"$" + asHome(server) + "/bin/asadmin";
+
+String startup(AppServer server) :
+	"$" + asHome(server) + "/bin/run.sh";
+
+// Startup options
+String startupOpts(Glassfish server) :
+	"start-domain $GLASSFISH_DOMAIN $" + asOpts(server);
+
+String startupOpts(AppServer server) :
+	"$" + asOpts(server);
+
+// Shutdown
+String shutdown(Glassfish server) :
+	"$" + asHome(server) + "/bin/asadmin";
+
+String shutdown(AppServer server) :
+	"$" + asHome(server) + "/bin/shutdown.sh";
+
+// Shutdown options
+String shutdownOpts(JBoss server) :
+	"-S";
+
+String shutdownOpts(Tomcat server) :
+	"stop";
+
+String shutdownOpts(Glassfish server) :
+	"stop-domain $GLASSFISH_DOMAIN $" + asOpts(server);
+
+String shutdownOpts(AppServer server) :
+	"";
+
+Boolean isReferenced(Host h) :
+	allElements(h).typeSelect(Apache).getJkServer().reject(jk|isLocalhost(jk.host)).exists(jk|jk.host == h);
+
+String update_java(AppServer as) :
+	"/root/bin/java.sh";
+
+String logrotate(JBoss server) :
+	"/etc/cron.daily/jboss";
+
+String logrotate(Wildfly server) :
+	"/etc/cron.daily/wildfly";
+
+String logrotate(WebSphere server) :
+	"/etc/cron.daily/websphere";
+
+String logrotate(Tomcat server) :
+	"/etc/cron.daily/tomcat";

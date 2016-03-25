@@ -1,0 +1,30 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+String getInfrastructure() :
+	GLOBALVAR infrastructure;
+
+cached String getCaHome() :
+	GLOBALVAR cahome;
+
+cached String getSslBase(Host host) :
+	GLOBALVAR sslhome;
+
+String adminmail() :
+	GLOBALVAR email;
+
+cached String getBackupMountPoint(Host host) :
+	GLOBALVAR backup;
+
+cached Integer timeout(Nagios nagios) :
+	GLOBALVAR nagiostimeout;
+
+String getAdminGroup() :
+	GLOBALVAR admin_group;
+
+String getManagementGroup() :
+	GLOBALVAR management_group;

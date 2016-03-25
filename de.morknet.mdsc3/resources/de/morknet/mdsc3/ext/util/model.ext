@@ -1,0 +1,34 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+import emf;
+
+List[EObject] allElements(EObject this) :
+	this.allRootElements().eAllContents;
+
+List[EObject] allRootElements(EObject this) :
+	JAVA org.eclipse.xtext.xtend.ServiceHelper.allRootElements(org.eclipse.emf.ecore.EObject);
+
+List[Location] getAllLocations(EObject m) :
+	m.eRootContainer.allRootElements().eAllContents.typeSelect(Location).sortBy(e|e.name).sortBy(e|e.name);
+
+List[NIC] getAllNICs(EObject m) :
+	m.eRootContainer.allRootElements().eAllContents.typeSelect(NIC).select(e|e.network != null);
+
+List[NIC] getConnectedNICs(Network n) :
+	n.eRootContainer.allRootElements().eAllContents.typeSelect(NIC).select(e|e.network == n);
+
+List[Host] getAllHosts(EObject m) :
+	m.eRootContainer.allRootElements().eAllContents.typeSelect(Host).sortBy(e|e.name);
+
+List[Host] getAllPrinters(EObject m) :
+	m.eRootContainer.allRootElements().eAllContents.typeSelect(Printer).sortBy(e|e.name);
+
+List[Host] getAllSwitches(EObject m) :
+	m.eRootContainer.allRootElements().eAllContents.typeSelect(Switch).sortBy(e|e.name);
+
+List[Machine] getAllMachines(EObject m) :
+	m.eRootContainer.allRootElements().eAllContents.typeSelect(Machine).sortBy(e|e.name);

@@ -1,0 +1,33 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::host;
+extension de::morknet::mdsc3::ext::util::model;
+extension de::morknet::mdsc3::ext::util::network;
+extension de::morknet::mdsc3::ext::util::os;
+extension de::morknet::mdsc3::ext::util::tools;
+
+cached Boolean hasBind(Host host) :
+	host.services.exists(s|DNS.isInstance(s));
+
+private Set[Host] getBindHostSet(Network n) :
+	getHosts(n).select(h|hasBind(h));
+
+private Set[Host] getBindHostSet(Location loc) :
+	loc.networks.select(n|!isVPN(n)).getBindHostSet().toSet();
+
+List[Host] getBindHostsExt(Location loc, Host host) :
+	getBindHostSet(loc).sortBy(h|(host == h ? "0-" : "1-") + leftPad((1000-h.services.size).toString()) + " " + h.name);
+
+List[Host] getBindHosts(Machine m) :
+	getBindHostsExt(getLocation(getBaseNetwork(m)), m);
+
+String init(DNS service) :
+	isUbuntu(getHost(service)) ? "/etc/init.d/bind9" : "/etc/init.d/named";
+
+String AppArmor(DNS bind) :
+	"/etc/apparmor.d/local/usr.sbin.named";

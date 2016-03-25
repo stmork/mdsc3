@@ -1,0 +1,15 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::host;
+extension de::morknet::mdsc3::ext::util::os;
+
+String config(CUPS cups) :
+	"/etc/cups/cupsd.conf";
+
+String init(CUPS cups) :
+	isUbuntu(getHost(cups)) ? "service cups" : "/etc/init.d/cups";

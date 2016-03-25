@@ -1,0 +1,15 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+cached Boolean hasMySQL(Host host) :
+	host.services.exists(s|MySQL.isInstance(s));
+
+String config(MySQL db) :
+	"/etc/mysql/conf.d/001-mdsc.cnf";
+
+String AppArmor(MySQL db) :
+	"/etc/apparmor.d/local/usr.sbin.mysqld";

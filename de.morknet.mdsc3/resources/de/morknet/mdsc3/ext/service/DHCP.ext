@@ -1,0 +1,50 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
+import mdsc3;
+
+extension de::morknet::mdsc3::ext::util::host;
+extension de::morknet::mdsc3::ext::util::os;
+extension de::morknet::mdsc3::ext::util::network;
+
+private String configBase(DHCP service) :
+	isUbuntu(getHost(service)) ?
+		(isMinUbuntuPrecise(getHost(service)) ? "/etc/dhcp" : "/etc/dhcp3") :
+		"/etc";
+
+String AppArmor(DHCP service) :
+	"/etc/apparmor.d/local/usr.sbin.dhcpd";
+
+String dhcp_config(DHCP service) :
+	configBase(service) + "/dhcpd.conf";
+
+String configGlobal(DHCP service) :
+	configBase(service) + "/global.conf";
+
+String configGeneratedHosts(DHCP service) :
+	configBase(service) + "/generated-hosts.conf";
+
+String configFixedHosts(DHCP service) :
+	configBase(service) + "/fixed-hosts.conf";
+
+cached Boolean hasDhcpd(Host host) :
+	host.services.exists(s|DHCP.isInstance(s));
+
+private List[Host] getDhcpdHosts(Network nw) :
+	getHosts(nw).select(h|hasDhcpd(h));
+
+private Boolean isDhcpMaster(Host host) :
+	host.services.typeSelect(DHCP).exists(s|s.master);
+
+Host getDhcpdMaster(Host host) :
+	getDhcpdHosts(getBaseNetwork(host)).select(s|isDhcpMaster(s)).first();
+
+Host getDhcpdSlave(Host host) :
+	getDhcpdHosts(getBaseNetwork(host)).select(s|!isDhcpMaster(s)).first();
+
+String init(DHCP service) :
+	isUbuntu(getHost(service)) ?
+		(isMinUbuntuPrecise(getHost(service)) ? "service isc-dhcp-server" : "/etc/init.d/dhcp3-server") :
+		"/etc/init.d/dhcpd";
