@@ -25,6 +25,7 @@ import de.morknet.mdsc3.Mail;
 import de.morknet.mdsc3.Mdsc3Package;
 import de.morknet.mdsc3.NIC;
 import de.morknet.mdsc3.Network;
+import de.morknet.mdsc3.OS;
 import de.morknet.mdsc3.Postfix;
 import de.morknet.mdsc3.SMART;
 import de.morknet.mdsc3.TWI;
@@ -67,18 +68,21 @@ public class MDSC3JavaValidator extends de.morknet.validation.AbstractMDSC3JavaV
 	{
 		if (host.getParent() != null)
 		{
+			int index = 0;
+
 			for (HostService service :host.getServices())
 			{
 				if (service instanceof SMART)
 				{
-					warning("Der virtuelle Gast " + host.getName() + " braucht kein SMART!", service,
-							Mdsc3Package.Literals.HOST__SERVICES, 0);
+					warning("Der virtuelle Gast " + host.getName() + " braucht kein SMART!",
+							Mdsc3Package.Literals.HOST__SERVICES, index);
 				}
 				else if (service instanceof VM)
 				{
-					error("Ein virtualisierter Rechner (" + host.getName() + ") kann nicht gleichzeitig Wirt sein!", service,
-							Mdsc3Package.Literals.HOST__SERVICES, 0);
+					error("Ein virtualisierter Rechner (" + host.getName() + ") kann nicht gleichzeitig Wirt sein!",
+							Mdsc3Package.Literals.HOST__SERVICES, index);
 				}
+				index++;
 			}
 		}
 	}
@@ -153,9 +157,9 @@ public class MDSC3JavaValidator extends de.morknet.validation.AbstractMDSC3JavaV
 			final String hostname = getMachine(ipmi).getName();
 
 			error(String.format("Host %s: Netzwerk %s passt nicht zu IP-Adresse %s!", hostname, network.getName(),ipmi.getIpaddr()),
-					Mdsc3Package.Literals.NIC__NETWORK);
+					Mdsc3Package.Literals.IPMI__NETWORK);
 			error(String.format("Host %s: IP-Adresse %s passt nicht zu Netzwerk %s!", hostname, ipmi.getIpaddr(), network.getName()),
-					Mdsc3Package.Literals.NIC__IPADDR);
+					Mdsc3Package.Literals.IPMI__IPADDR);
 		}
 	}
 
@@ -182,7 +186,22 @@ public class MDSC3JavaValidator extends de.morknet.validation.AbstractMDSC3JavaV
 			for (IPMI ipmi : ipmiList)
 			{
 				error("Gast " + host.getName() + " kann keine IPMI interfaces besitzen!", ipmi,
-						Mdsc3Package.Literals.HOST__SERVICES, 0);
+						Mdsc3Package.Literals.HOST__DEVICES, 0);
+			}
+		}
+
+		if (getConnectedNICs(host).size() == 0)
+		{
+			error("Mindestens eine Netzwerkkarte muss für " + host.getName() + " konfiguriert sein!",
+					Mdsc3Package.Literals.HOST__DEVICES);
+		}
+
+		if ((host.getName().compareToIgnoreCase("localhost") != 0) && (host.getParent() == null) && (host.getOs() != OS.DUMMY))
+		{
+			if (!hasDevice(host, CPU.class))
+			{
+				warning("Eine CPU muss für " + host.getName() + " konfiguriert sein!",
+						Mdsc3Package.Literals.HOST__DEVICES);
 			}
 		}
 
@@ -191,27 +210,9 @@ public class MDSC3JavaValidator extends de.morknet.validation.AbstractMDSC3JavaV
 			for (IPMI ipmi : ipmiList)
 			{
 				error("Host " + host.getName() + " kann nicht mehrere IPMI-Interfaces besitzen!", ipmi,
-						Mdsc3Package.Literals.HOST__SERVICES, 0);
+						Mdsc3Package.Literals.HOST__DEVICES, 0);
 			}
 		}
-
-		for (NIC nic : getConnectedNICs(host))
-		{
-			error("Mindestens eine Netzwerkkarte muss für " + host.getName() + " konfiguriert sein!", nic,
-					Mdsc3Package.Literals.HOST__DEVICES, 0);
-		}
-
-		/*
-		 * TODO: Fix this!
-		if ((host.getName().compareToIgnoreCase("localhost") != 0) && (host.getParent() == null) && (host.getOs() != OS.DUMMY))
-		{
-			if (!hasDevice(host, CPU.class))
-			{
-				warning("Eine CPU muss für " + host.getName() + " konfiguriert sein!",
-						Mdsc3Package.Literals.HOST_DEVICE);
-			}
-		}
-		 */
 
 		for (TWI twi : getDevices(host, TWI.class))
 		{
@@ -323,6 +324,11 @@ public class MDSC3JavaValidator extends de.morknet.validation.AbstractMDSC3JavaV
 	private static <T extends HostDevice> List<T> getDevices(final Host host, final Class<T> cls)
 	{
 		return EcoreUtil2.typeSelect(host.getDevices(), cls);
+	}
+
+	private static <T extends HostDevice> boolean hasDevice(final Host host, final Class<T> cls)
+	{
+		return !EcoreUtil2.typeSelect(host.getDevices(), cls).isEmpty();
 	}
 
 	private static boolean isVirtualServer(final Host host)
