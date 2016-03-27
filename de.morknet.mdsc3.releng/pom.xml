@@ -14,9 +14,8 @@
 		<tycho-version>0.21.0</tycho-version>
 		<tycho-extras-version>0.21.0</tycho-extras-version>
 		<xtext-version>2.9.2</xtext-version>
-		<antrun-version>1.8</antrun-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<eclipse.distro>luna</eclipse.distro>
+		<eclipse.distro>mars</eclipse.distro>
 	</properties>
 
 	<modules>
@@ -130,6 +129,12 @@
 					<version>${tycho-version}</version>
 					<executions>
 						<execution>
+							<id>default-p2-metadata-default</id>
+							<configuration>
+								<attachP2Metadata>false</attachP2Metadata>
+							</configuration>
+						</execution>
+						<execution>
 							<id>attached-p2-metadata</id>
 							<phase>package</phase>
 							<goals>
@@ -212,12 +217,6 @@
 		</repository>
 
 		<repository>
-			<id>xtext</id>
-			<layout>p2</layout>
-			<url>http://download.itemis.com/updates/</url>
-		</repository>
-
-		<repository>
 			<id>codehaus-snapshots</id>
 			<url>http://nexus.codehaus.org/</url>
 			<snapshots>
@@ -230,17 +229,6 @@
 	</repositories>
 
 	<pluginRepositories>
-		<pluginRepository>
-			<id>fornax</id>
-			<url>https://projects.itemis.de/nexus/content/groups/public/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
-
 		<pluginRepository>
 			<id>codehaus-snapshots</id>
 			<url>whatever</url>
