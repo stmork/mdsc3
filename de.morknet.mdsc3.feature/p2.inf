@@ -1,0 +1,5 @@
+instructions.configure=\
+org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:0,location:https${#58}//intra.morknet.de/maven/mdsc3/release/,enabled:false,name:Modelbased Server Configuration Release);\
+org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:1,location:https${#58}//intra.morknet.de/maven/mdsc3/release/,enabled:false,name:Modelbased Server Configuration Release);\
+org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:0,location:https${#58}//intra.morknet.de/maven/mdsc3/snapshot/,enabled:true,name:Modelbased Server Configuration Snapshot);\
+org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:1,location:https${#58}//intra.morknet.de/maven/mdsc3/snapshot/,enabled:true,name:Modelbased Server Configuration Snapshot);

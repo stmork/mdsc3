@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>de.morknet.mdsc3</groupId>
+		<artifactId>releng</artifactId>
+		<version>1.0.0</version>
+		<relativePath>../de.morknet.mdsc3.releng/pom.xml</relativePath>
+	</parent>
+
+	<name>Modelbased Server Configuration Update Site</name>
+	<version>3.0.0-SNAPSHOT</version>
+	<groupId>de.morknet.mdsc3</groupId>
+	<artifactId>de.morknet.mdsc3.updatesite</artifactId>
+	<packaging>eclipse-repository</packaging>
+
+	<organization>
+		<name>MORKNet</name>
+		<url>http://morknet.de/</url>
+	</organization>
+
+	<developers>
+		<developer>
+			<name>Steffen A. Mork</name>
+			<email>linux-dev@morknet.de</email>
+			<url>http://morknet.de</url>
+		</developer>
+	</developers>
+
+	<licenses>
+		<license>
+			<name>Eclipse Public License</name>
+			<url>http://www.eclipse.org/legal/epl-v10.html</url>
+		</license>
+	</licenses>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-repository-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<includeAllDependencies>false</includeAllDependencies>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-director-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>materialize-products</id>
+						<goals>
+							<goal>materialize-products</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>archive-products</id>
+						<goals>
+							<goal>archive-products</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.jboss.tools.tycho-plugins</groupId>
+				<artifactId>repository-utils</artifactId>
+				<version>0.19.0-SNAPSHOT</version>
+				<executions>
+					<execution>
+						<id>generate-facade</id>
+						<phase>package</phase>
+						<goals>
+							<goal>generate-repository-facade</goal>
+						</goals>
+						<configuration>
+							<siteTemplateFolder>templates</siteTemplateFolder>
+							<symbols>
+								<update.site.name>MDSC3 Repository</update.site.name>
+								<update.site.description>This URL can be used inside eclipse for
+									installing new software.</update.site.description>
+								<update.site.version>${project.version}</update.site.version>
+								<target.eclipse.version>${target.eclipse.version}</target.eclipse.version>
+							</symbols>
+							<associateSites>
+								<site>http://download.itemis.com/updates/releases/2.0.0/</site>
+							</associateSites>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>jboss-public-repository-group</id>
+			<name>JBoss Public Repository Group</name>
+			<url>http://repository.jboss.org/nexus/content/groups/public/</url>
+		</pluginRepository>
+		<pluginRepository>
+			<id>jboss-snapshots-repository</id>
+			<name>JBoss Snapshots Repository</name>
+			<url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
+		</pluginRepository>
+	</pluginRepositories>
+</project>
