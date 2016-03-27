@@ -1,0 +1,5 @@
+<welcomePage 
+        title="SCT-Qt-Generator"
+        format="wrap">
+        <intro>This generator produces a wrapper between the YAKINDU SCT and a Qt application.</intro>
+</welcomePage>
