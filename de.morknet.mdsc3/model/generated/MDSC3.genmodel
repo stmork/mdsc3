@@ -4,7 +4,7 @@
     editorDirectory="/de.morknet.mdsc3.editor/src" modelPluginID="de.morknet.mdsc3"
     forceOverwrite="true" modelName="MDSC3" updateClasspath="false" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
     complianceLevel="6.0" copyrightFields="false" editPluginID="de.morknet.mdsc3.edit"
-    editorPluginID="de.morknet.mdsc3.editor" runtimeVersion="2.11">
+    editorPluginID="de.morknet.mdsc3.editor" runtimeVersion="2.10">
   <genPackages prefix="Mdsc3" basePackage="de.morknet" disposableProviderFactory="true"
       fileExtensions="mdsc3" ecorePackage="MDSC3.ecore#/">
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="MDSC3.ecore#//CHARSET">
