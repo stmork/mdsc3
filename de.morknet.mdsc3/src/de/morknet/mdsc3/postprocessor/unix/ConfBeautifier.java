@@ -5,7 +5,7 @@
 **	$Author$
 **	$Id$
 **
-**	Copyright (C) 2010 Steffen A. Mork
+**	Copyright (C) 2016 Steffen A. Mork
 **
 **	This program and the accompanying materials are made available under the
 **	terms of the Eclipse Public License v1.0.
