@@ -63,6 +63,7 @@
 				<extensions>true</extensions>
 			</plugin>
 		</plugins>
+
 		<pluginManagement>
 			<plugins>
 				<!-- Avoid the generation of maven archive information in the META-INF 
