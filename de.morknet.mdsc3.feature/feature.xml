@@ -119,7 +119,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <import plugin="org.eclipse.xtext.common.types"/>
       <import plugin="org.eclipse.xtext.generator"/>
       <import plugin="org.eclipse.emf.mwe2.launch"/>
-      <import plugin="org.apache.log4j"/>
+      <import plugin="org.apache.log4j" version="1.2.15" match="greaterOrEqual"/>
       <import plugin="de.morknet.mdsc3" version="3.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.xtext.ui"/>
       <import plugin="org.eclipse.ui.editors" version="3.5.0" match="greaterOrEqual"/>

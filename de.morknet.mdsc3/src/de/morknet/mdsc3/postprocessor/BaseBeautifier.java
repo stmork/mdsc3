@@ -23,11 +23,12 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.xpand2.output.FileHandle;
 
 public abstract class BaseBeautifier {
-	private final Logger         m_Log    = Logger.getLogger(BaseBeautifier.class);
+	private final static Log     m_Log    = LogFactory.getLog(BaseBeautifier.class);
 	private final FileHandle     m_FileHandle;
 	protected StringBuffer       m_Buffer = new StringBuffer();
 	protected final List<String> m_Input  = new ArrayList<String>();
