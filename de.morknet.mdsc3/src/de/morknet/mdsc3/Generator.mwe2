@@ -46,7 +46,7 @@ Workflow
 	component = org.eclipse.xpand2.Generator
 	{
 		metaModel = org.eclipse.xtend.typesystem.emf.EmfRegistryMetaModel {}
-		expand = "de::itemis::mdsc3::xpt::Main::Main FOR ${slotname}"
+		expand = "de::morknet::mdsc3::xpt::Main::Main FOREACH ${slotname}"
 		skipOnErrors = false
 		globalVarDef =
 		{
