@@ -5,7 +5,7 @@
 **	$Author$
 **	$Id$
 **
-**	Copyright (C) 2010 Steffen A. Mork
+**	Copyright (C) 2016 Steffen A. Mork
 **
 **	This program and the accompanying materials are made available under the
 **	terms of the Eclipse Public License v1.0.
@@ -27,7 +27,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.xpand2.output.FileHandle;
 
-public abstract class BaseBeautifier {
+public abstract class BaseBeautifier
+{
 	private final static Log     m_Log    = LogFactory.getLog(BaseBeautifier.class);
 	private final FileHandle     m_FileHandle;
 	protected StringBuffer       m_Buffer = new StringBuffer();
@@ -37,7 +38,7 @@ public abstract class BaseBeautifier {
 	protected BaseBeautifier(FileHandle info)
 	{
 		m_FileHandle = info;
-	
+
 		try
 		{
 			StringReader   sr = new StringReader(m_FileHandle.getBuffer().toString());

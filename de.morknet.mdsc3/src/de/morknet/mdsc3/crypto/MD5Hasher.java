@@ -1,3 +1,20 @@
+/*
+**
+**	$Revision$
+**	$Date$
+**	$Author$
+**	$Id$
+**
+**	Copyright (C) 2016 Steffen A. Mork
+**
+**	This program and the accompanying materials are made available under the
+**	terms of the Eclipse Public License v1.0.
+**
+**	The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
+**
+**
+*/
+
 package de.morknet.mdsc3.crypto;
 
 import java.io.*;
@@ -5,8 +22,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
-public class MD5Hasher {
-
+public class MD5Hasher
+{
 	public final static String hash(Set<File> set) throws IOException
 	{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -33,8 +50,9 @@ public class MD5Hasher {
 	private static String hash(byte [] array)
 	{
 		StringBuffer result = new StringBuffer(32);
-		
-		try {
+
+		try
+		{
 			MessageDigest md5 = MessageDigest.getInstance("MD5");
 			md5.update(array);
 			try(Formatter f = new Formatter(result))
@@ -44,7 +62,9 @@ public class MD5Hasher {
 					f.format("%02x", b);
 				}
 			}
-		} catch (NoSuchAlgorithmException ex) {
+		}
+		catch (NoSuchAlgorithmException ex)
+		{
 			ex.printStackTrace();
 		}
 		System.err.println(array.length);
