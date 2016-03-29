@@ -20,7 +20,7 @@ String getDotColor(Switch m) :
 	"yellow";
 
 String getDotFile(Model m) :
-	getInfrastructure() + ".dot";
+	getInfrastructure(m) + ".dot";
 
 String getMapFile(Model m) :
-	getInfrastructure() + ".gif";
+	getInfrastructure(m) + ".gif";
