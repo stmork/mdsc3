@@ -15,7 +15,7 @@
 **
 */
 
-package de.morknet.scoping;
+package de.morknet.mdsc3.scoping;
 
 import java.util.List;
 
@@ -26,8 +26,8 @@ import org.eclipse.xtext.scoping.Scopes;
 import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
 import org.eclipse.xtext.scoping.impl.SimpleScope;
 
-import de.morknet.mdsc3.Host;
-import de.morknet.mdsc3.NIC;
+import de.morknet.mdsc3.mdsc3.Host;
+import de.morknet.mdsc3.mdsc3.NIC;
 
 /**
  * This class contains custom scoping description.

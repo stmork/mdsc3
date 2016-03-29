@@ -1,4 +1,4 @@
-package de.morknet.ui.coloring;
+package de.morknet.mdsc3.ui.coloring;
 
 import org.eclipse.xtext.ide.editor.syntaxcoloring.HighlightingStyles;
 import org.eclipse.xtext.ui.editor.syntaxcoloring.DefaultAntlrTokenToAttributeIdMapper;

@@ -15,12 +15,14 @@
 **
 */
 
-package de.morknet.formatting;
+package de.morknet.mdsc3.formatting;
 
-import com.google.inject.Inject;
 import org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter;
 import org.eclipse.xtext.formatting.impl.FormattingConfig;
-import de.morknet.services.MDSC3GrammarAccess;
+
+import com.google.inject.Inject;
+
+import de.morknet.mdsc3.services.MDSC3GrammarAccess;
 
 /**
  * This class contains custom formatting declarations.
@@ -30,11 +32,11 @@ import de.morknet.services.MDSC3GrammarAccess;
  * 
  * Also see {@link org.eclipse.xtext.xtext.XtextFormattingTokenSerializer} as an example
  */
-public class MDSC3Formatter extends AbstractDeclarativeFormatter {
-	
+public class MDSC3Formatter extends AbstractDeclarativeFormatter
+{
 	@Inject
 	private MDSC3GrammarAccess grammarAccess; 
-	
+
 	@Override
 	protected void configureFormatting(FormattingConfig c) {
 // It's usually a good idea to activate the following three statements.

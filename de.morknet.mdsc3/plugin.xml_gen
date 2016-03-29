@@ -5,8 +5,8 @@
 
   <extension point="org.eclipse.emf.ecore.generated_package">
     <package 
-       uri = "http://www.morknet.de/mdsc3" 
-       class = "de.morknet.mdsc3.Mdsc3Package"
+       uri = "http://www.morknet.de/mdsc3/MDSC3" 
+       class = "de.morknet.mdsc3.mdsc3.Mdsc3Package"
        genModel = "model/generated/MDSC3.genmodel" /> 
 	
   </extension>

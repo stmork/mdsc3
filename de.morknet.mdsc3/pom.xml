@@ -84,7 +84,19 @@
 				<configuration>
 					<filesets>
 						<fileset>
+							<directory>bin</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+						<fileset>
 							<directory>src-gen</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>model/generated</directory>
 							<includes>
 								<include>**</include>
 							</includes>
@@ -111,7 +123,7 @@
 						</goals>
 						<configuration>
 							<workflowEngine>mwe2</workflowEngine>
-							<workflowDescriptor>src/de/morknet/GenerateMDSC3.mwe2
+							<workflowDescriptor>src/de/morknet/mdsc3/GenerateMDSC3.mwe2
 							</workflowDescriptor>
 							<timestampFileName>xtext-generator.timestamp</timestampFileName>
 							<jvmSettings>

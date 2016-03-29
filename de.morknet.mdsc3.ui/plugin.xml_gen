@@ -6,48 +6,48 @@
     <extension
             point="org.eclipse.ui.editors">
         <editor
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.XtextEditor"
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.XtextEditor"
             contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
             default="true"
             extensions="mdsc3"
-            id="de.morknet.MDSC3"
+            id="de.morknet.mdsc3.MDSC3"
             name="MDSC3 Editor">
         </editor>
     </extension>
     <extension
         point="org.eclipse.ui.handlers">
         <handler
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclarationHandler"
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclarationHandler"
             commandId="org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclaration">
             <activeWhen>
                 <reference
-                    definitionId="de.morknet.MDSC3.Editor.opened">
+                    definitionId="de.morknet.mdsc3.MDSC3.Editor.opened">
                 </reference>
             </activeWhen>
         </handler>
         <handler
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.handler.ValidateActionHandler"
-            commandId="de.morknet.MDSC3.validate">
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.handler.ValidateActionHandler"
+            commandId="de.morknet.mdsc3.MDSC3.validate">
          <activeWhen>
             <reference
-                    definitionId="de.morknet.MDSC3.Editor.opened">
+                    definitionId="de.morknet.mdsc3.MDSC3.Editor.opened">
             </reference>
          </activeWhen>
       	</handler>
       	<!-- copy qualified name -->
         <handler
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedNameHandler"
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedNameHandler"
             commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedName">
             <activeWhen>
-				<reference definitionId="de.morknet.MDSC3.Editor.opened" />
+				<reference definitionId="de.morknet.mdsc3.MDSC3.Editor.opened" />
             </activeWhen>
         </handler>
         <handler
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.copyqualifiedname.OutlineCopyQualifiedNameHandler"
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.copyqualifiedname.OutlineCopyQualifiedNameHandler"
             commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.OutlineCopyQualifiedName">
             <activeWhen>
             	<and>
-            		<reference definitionId="de.morknet.MDSC3.XtextEditor.opened" />
+            		<reference definitionId="de.morknet.mdsc3.MDSC3.XtextEditor.opened" />
 	                <iterate>
 						<adapt type="org.eclipse.xtext.ui.editor.outline.IOutlineNode" />
 					</iterate>
@@ -56,22 +56,22 @@
         </handler>
     </extension>
     <extension point="org.eclipse.core.expressions.definitions">
-        <definition id="de.morknet.MDSC3.Editor.opened">
+        <definition id="de.morknet.mdsc3.MDSC3.Editor.opened">
             <and>
                 <reference definitionId="isActiveEditorAnInstanceOfXtextEditor"/>
                 <with variable="activeEditor">
                     <test property="org.eclipse.xtext.ui.editor.XtextEditor.languageName" 
-                        value="de.morknet.MDSC3" 
+                        value="de.morknet.mdsc3.MDSC3" 
                         forcePluginActivation="true"/>
                 </with>        
             </and>
         </definition>
-        <definition id="de.morknet.MDSC3.XtextEditor.opened">
+        <definition id="de.morknet.mdsc3.MDSC3.XtextEditor.opened">
             <and>
                 <reference definitionId="isXtextEditorActive"/>
                 <with variable="activeEditor">
                     <test property="org.eclipse.xtext.ui.editor.XtextEditor.languageName" 
-                        value="de.morknet.MDSC3" 
+                        value="de.morknet.mdsc3.MDSC3" 
                         forcePluginActivation="true"/>
                 </with>        
             </and>
@@ -80,33 +80,33 @@
     <extension
             point="org.eclipse.ui.preferencePages">
         <page
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.preferences.LanguageRootPreferencePage"
-            id="de.morknet.MDSC3"
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.preferences.LanguageRootPreferencePage"
+            id="de.morknet.mdsc3.MDSC3"
             name="MDSC3">
-            <keywordReference id="de.morknet.ui.keyword_MDSC3"/>
+            <keywordReference id="de.morknet.mdsc3.ui.keyword_MDSC3"/>
         </page>
         <page
-            category="de.morknet.MDSC3"
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.syntaxcoloring.SyntaxColoringPreferencePage"
-            id="de.morknet.MDSC3.coloring"
+            category="de.morknet.mdsc3.MDSC3"
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.syntaxcoloring.SyntaxColoringPreferencePage"
+            id="de.morknet.mdsc3.MDSC3.coloring"
             name="Syntax Coloring">
-            <keywordReference id="de.morknet.ui.keyword_MDSC3"/>
+            <keywordReference id="de.morknet.mdsc3.ui.keyword_MDSC3"/>
         </page>
         <page
-            category="de.morknet.MDSC3"
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.templates.XtextTemplatePreferencePage"
-            id="de.morknet.MDSC3.templates"
+            category="de.morknet.mdsc3.MDSC3"
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.templates.XtextTemplatePreferencePage"
+            id="de.morknet.mdsc3.MDSC3.templates"
             name="Templates">
-            <keywordReference id="de.morknet.ui.keyword_MDSC3"/>
+            <keywordReference id="de.morknet.mdsc3.ui.keyword_MDSC3"/>
         </page>
     </extension>
     <extension
             point="org.eclipse.ui.propertyPages">
         <page
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.preferences.LanguageRootPreferencePage"
-            id="de.morknet.MDSC3"
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.preferences.LanguageRootPreferencePage"
+            id="de.morknet.mdsc3.MDSC3"
             name="MDSC3">
-            <keywordReference id="de.morknet.ui.keyword_MDSC3"/>
+            <keywordReference id="de.morknet.mdsc3.ui.keyword_MDSC3"/>
             <enabledWhen>
 	            <adapt type="org.eclipse.core.resources.IProject"/>
 			</enabledWhen>
@@ -116,14 +116,14 @@
     <extension
         point="org.eclipse.ui.keywords">
         <keyword
-            id="de.morknet.ui.keyword_MDSC3"
+            id="de.morknet.mdsc3.ui.keyword_MDSC3"
             label="MDSC3"/>
     </extension>
     <extension
          point="org.eclipse.ui.commands">
       <command
             description="Trigger expensive validation"
-            id="de.morknet.MDSC3.validate"
+            id="de.morknet.mdsc3.MDSC3.validate"
             name="Validate">
       </command>
       <!-- copy qualified name -->
@@ -144,12 +144,12 @@
         <menuContribution
             locationURI="popup:#TextEditorContext?after=group.edit">
              <command
-                 commandId="de.morknet.MDSC3.validate"
+                 commandId="de.morknet.mdsc3.MDSC3.validate"
                  style="push"
                  tooltip="Trigger expensive validation">
             <visibleWhen checkEnabled="false">
                 <reference
-                    definitionId="de.morknet.MDSC3.Editor.opened">
+                    definitionId="de.morknet.mdsc3.MDSC3.Editor.opened">
                 </reference>
             </visibleWhen>
          </command>  
@@ -159,7 +159,7 @@
          	<command commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedName" 
          		style="push" tooltip="Copy Qualified Name">
             	<visibleWhen checkEnabled="false">
-                	<reference definitionId="de.morknet.MDSC3.Editor.opened" />
+                	<reference definitionId="de.morknet.mdsc3.MDSC3.Editor.opened" />
             	</visibleWhen>
          	</command>  
          </menuContribution>
@@ -167,7 +167,7 @@
          	<command commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedName"
             	style="push" tooltip="Copy Qualified Name">
             	<visibleWhen checkEnabled="false">
-                	<reference definitionId="de.morknet.MDSC3.Editor.opened" />
+                	<reference definitionId="de.morknet.mdsc3.MDSC3.Editor.opened" />
             	</visibleWhen>
          	</command>  
          </menuContribution>
@@ -176,7 +176,7 @@
 				style="push" tooltip="Copy Qualified Name">
          		<visibleWhen checkEnabled="false">
 	            	<and>
-	            		<reference definitionId="de.morknet.MDSC3.XtextEditor.opened" />
+	            		<reference definitionId="de.morknet.mdsc3.MDSC3.XtextEditor.opened" />
 						<iterate>
 							<adapt type="org.eclipse.xtext.ui.editor.outline.IOutlineNode" />
 						</iterate>
@@ -189,7 +189,7 @@
 		<menuContribution locationURI="popup:#TextEditorContext?endof=group.find">
 			<command commandId="org.eclipse.xtext.ui.editor.FindReferences">
 				<visibleWhen checkEnabled="false">
-                	<reference definitionId="de.morknet.MDSC3.Editor.opened">
+                	<reference definitionId="de.morknet.mdsc3.MDSC3.Editor.opened">
                 	</reference>
             	</visibleWhen>
 			</command>
@@ -197,11 +197,11 @@
 	</extension>
 	<extension point="org.eclipse.ui.handlers">
 	    <handler
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.findrefs.FindReferencesHandler"
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.findrefs.FindReferencesHandler"
             commandId="org.eclipse.xtext.ui.editor.FindReferences">
             <activeWhen>
                 <reference
-                    definitionId="de.morknet.MDSC3.Editor.opened">
+                    definitionId="de.morknet.mdsc3.MDSC3.Editor.opened">
                 </reference>
             </activeWhen>
         </handler>
@@ -212,19 +212,19 @@
 	<extension
 		point="org.eclipse.emf.ecore.extension_parser">
 		<parser
-			class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.resource.IResourceFactory"
+			class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.resource.IResourceFactory"
 			type="mdsc3">
 		</parser>
 	</extension>
 	<extension point="org.eclipse.xtext.extension_resourceServiceProvider">
         <resourceServiceProvider
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.resource.IResourceUIServiceProvider"
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.resource.IResourceUIServiceProvider"
             uriExtension="mdsc3">
         </resourceServiceProvider>
     </extension>
 
 
-    <!-- marker definitions for de.morknet.MDSC3 -->
+    <!-- marker definitions for de.morknet.mdsc3.MDSC3 -->
     <extension
             id="mdsc3.check.fast"
             name="MDSC3 Problem"
@@ -251,11 +251,11 @@
 	<extension
 		point="org.eclipse.ui.handlers">
 		<handler 
-			class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.outline.quickoutline.ShowQuickOutlineActionHandler"
+			class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.outline.quickoutline.ShowQuickOutlineActionHandler"
 			commandId="org.eclipse.xtext.ui.editor.outline.QuickOutline">
 			<activeWhen>
 				<reference
-					definitionId="de.morknet.MDSC3.Editor.opened">
+					definitionId="de.morknet.mdsc3.MDSC3.Editor.opened">
 				</reference>
 			</activeWhen>
 		</handler>
@@ -275,33 +275,33 @@
 				style="push"
 				tooltip="Open Quick Outline">
 				<visibleWhen checkEnabled="false">
-					<reference definitionId="de.morknet.MDSC3.Editor.opened"/>
+					<reference definitionId="de.morknet.mdsc3.MDSC3.Editor.opened"/>
 				</visibleWhen>
 			</command>
 		</menuContribution>
 	</extension>
-    <!-- quickfix marker resolution generator for de.morknet.MDSC3 -->
+    <!-- quickfix marker resolution generator for de.morknet.mdsc3.MDSC3 -->
     <extension
             point="org.eclipse.ui.ide.markerResolution">
         <markerResolutionGenerator
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
-            markerType="de.morknet.ui.mdsc3.check.fast">
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
+            markerType="de.morknet.mdsc3.ui.mdsc3.check.fast">
             <attribute
                 name="FIXABLE_KEY"
                 value="true">
             </attribute>
         </markerResolutionGenerator>
         <markerResolutionGenerator
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
-            markerType="de.morknet.ui.mdsc3.check.normal">
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
+            markerType="de.morknet.mdsc3.ui.mdsc3.check.normal">
             <attribute
                 name="FIXABLE_KEY"
                 value="true">
             </attribute>
         </markerResolutionGenerator>
         <markerResolutionGenerator
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
-            markerType="de.morknet.ui.mdsc3.check.expensive">
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
+            markerType="de.morknet.mdsc3.ui.mdsc3.check.expensive">
             <attribute
                 name="FIXABLE_KEY"
                 value="true">
@@ -311,11 +311,11 @@
    	<!-- Rename Refactoring -->
 	<extension point="org.eclipse.ui.handlers">
 		<handler 
-			class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.DefaultRenameElementHandler"
+			class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.DefaultRenameElementHandler"
 			commandId="org.eclipse.xtext.ui.refactoring.RenameElement">
 			<activeWhen>
 				<reference
-					definitionId="de.morknet.MDSC3.Editor.opened">
+					definitionId="de.morknet.mdsc3.MDSC3.Editor.opened">
 				</reference>
 			</activeWhen>
 		</handler>
@@ -327,7 +327,7 @@
                style="push">
             <visibleWhen checkEnabled="false">
                <reference
-                     definitionId="de.morknet.MDSC3.Editor.opened">
+                     definitionId="de.morknet.mdsc3.MDSC3.Editor.opened">
                </reference>
             </visibleWhen>
          </command>
@@ -335,29 +335,29 @@
    </extension>
    <extension point="org.eclipse.ui.preferencePages">
 	    <page
-	        category="de.morknet.MDSC3"
-	        class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.RefactoringPreferencePage"
-	        id="de.morknet.MDSC3.refactoring"
+	        category="de.morknet.mdsc3.MDSC3"
+	        class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.RefactoringPreferencePage"
+	        id="de.morknet.mdsc3.MDSC3.refactoring"
 	        name="Refactoring">
-	        <keywordReference id="de.morknet.ui.keyword_MDSC3"/>
+	        <keywordReference id="de.morknet.mdsc3.ui.keyword_MDSC3"/>
 	    </page>
 	</extension>
 
   <extension point="org.eclipse.compare.contentViewers">
-    <viewer id="de.morknet.MDSC3.compare.contentViewers"
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.compare.InjectableViewerCreator"
+    <viewer id="de.morknet.mdsc3.MDSC3.compare.contentViewers"
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.compare.InjectableViewerCreator"
             extensions="mdsc3">
     </viewer>
   </extension>
   <extension point="org.eclipse.compare.contentMergeViewers">
-    <viewer id="de.morknet.MDSC3.compare.contentMergeViewers"
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.compare.InjectableViewerCreator"
+    <viewer id="de.morknet.mdsc3.MDSC3.compare.contentMergeViewers"
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.compare.InjectableViewerCreator"
             extensions="mdsc3" label="MDSC3 Compare">
      </viewer>
   </extension>
   <extension point="org.eclipse.ui.editors.documentProviders">
-    <provider id="de.morknet.MDSC3.editors.documentProviders"
-            class="de.morknet.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.model.XtextDocumentProvider"
+    <provider id="de.morknet.mdsc3.MDSC3.editors.documentProviders"
+            class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.eclipse.xtext.ui.editor.model.XtextDocumentProvider"
             extensions="mdsc3">
     </provider>
   </extension>

@@ -1,3 +1,8 @@
+/*
+**	Copyright (C) 2016 - Steffen A. Mork
+**	$Id$
+*/
+
 Void setValue(String container, String value) :
 	JAVA de.morknet.mdsc3.util.Counter.setValue(java.lang.String, java.lang.String);
 
