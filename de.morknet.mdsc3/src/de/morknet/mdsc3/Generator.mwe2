@@ -8,7 +8,6 @@ var configGenPath
 
 var backup
 var email
-var infrastructure
 var cahome
 var sslhome
 var nagiostimeout
@@ -55,7 +54,6 @@ Workflow
 			name="cahome"            value="'${cahome}'"
 			name="sslhome"           value="'${sslhome}'"
 			name="email"             value="'${email}'"
-			name="infrastructure"    value="'${infrastructure}'"
 			name="nagiostimeout"     value="'${nagiostimeout}'"
 			name="admin_group"       value="'${admin_group}'"
 			name="management_group"  value="'${management_group}'"
