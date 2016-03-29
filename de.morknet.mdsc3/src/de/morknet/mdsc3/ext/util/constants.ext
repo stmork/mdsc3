@@ -8,8 +8,11 @@ import mdsc3;
 private Model getModel(Host host) :
 	host.eRootContainer;
 
+String getInfrastructure(Model m) :
+	m.name;
+
 String getInfrastructure(Host host) :
-	getModel(host).name;
+	getInfrastructure(getModel(host));
 
 cached String getCaHome() :
 	GLOBALVAR cahome;

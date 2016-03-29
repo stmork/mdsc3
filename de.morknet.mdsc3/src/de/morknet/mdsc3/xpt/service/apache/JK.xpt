@@ -5,7 +5,6 @@
 
 «IMPORT mdsc3»
 «IMPORT de::morknet::mdsc3::xpt::util»
-«IMPORT de::morknet::mdsc3::xpt::service»
 
 «EXTENSION de::morknet::mdsc3::ext::util::host»
 «EXTENSION de::morknet::mdsc3::ext::util::os»
