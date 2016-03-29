@@ -20,12 +20,12 @@ private Set[Host] getBindHostSet(Network n) :
 private Set[Host] getBindHostSet(Location loc) :
 	loc.networks.select(n|!isVPN(n)).getBindHostSet().toSet();
 
-List[Host] getBindHostsExt(Location loc, Host host) :
+List[Host] getSortedBindHosts(Location loc, Host host) :
 	getBindHostSet(loc).sortBy(h|(host == h ? "0-" : "1-") + leftPad((1000-h.services.size).toString()) + " " + h.name);
-/*
-List[Host] getBindHosts(Machine m) :
-	getBindHostsExt(getLocation(getBaseNetwork(m)), m);
-*/
+
+List[Host] getBindHosts(Host host) :
+	getSortedBindHosts(getLocation(getBaseNetwork(host)), host);
+
 String init(DNS service) :
 	isUbuntu(getHost(service)) ? "/etc/init.d/bind9" : "/etc/init.d/named";
 

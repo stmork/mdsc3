@@ -90,7 +90,7 @@ Printer: «printer.name» «getIpAddress(printer)» «fqhn(printer)»
 «DEFINE log FOR Location»
 «FILE "structure-" + name + ".log"»
 Location «this.name»
-   DNS:      «getBindHostsExt(this, null).name»
+   DNS:      «getSortedBindHosts(this, null).name»
    LDAPs:    «getLdapHosts().name»    
    Networks: «networks.name»
 «EXPAND log FOREACH networks.sortBy(n|n.name)»
