@@ -8,11 +8,12 @@
 «EXTENSION de::morknet::mdsc3::ext::util::host»
 «EXTENSION de::morknet::mdsc3::ext::util::model»
 «EXTENSION de::morknet::mdsc3::ext::util::os»
+«EXTENSION de::morknet::mdsc3::ext::util::constants»
 
 «DEFINE Main FOR Model»
-«EXPAND deploy::deploy»
 «EXPAND log::main»
 «EXPAND Main FOREACH getAllHosts()»
+«EXPAND deploy::deploy»
 «EXPAND dot::Map»
 «ENDDEFINE»
 

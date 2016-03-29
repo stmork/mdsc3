@@ -7,10 +7,10 @@ import mdsc3;
 import emf;
 
 List[EObject] allElements(EObject this) :
-	this.allRootElements().eAllContents;
+	allRootElements().eAllContents;
 
 List[EObject] allRootElements(EObject this) :
-	this.allRootElements();
+	this.eRootContainer;
 
 List[Location] getAllLocations(EObject m) :
 	m.eRootContainer.allRootElements().eAllContents.typeSelect(Location).sortBy(e|e.name).sortBy(e|e.name);
