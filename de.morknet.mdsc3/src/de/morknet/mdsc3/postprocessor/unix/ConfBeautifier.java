@@ -17,6 +17,8 @@
 
 package de.morknet.mdsc3.postprocessor.unix;
 
+import java.io.File;
+
 import org.eclipse.xpand2.output.FileHandle;
 
 import de.morknet.mdsc3.postprocessor.BaseBeautifier;
@@ -54,8 +56,9 @@ public class ConfBeautifier extends BaseBeautifier {
 
 	static boolean isConfiguration(FileHandle info)
 	{
-		String name = info.getAbsolutePath();
-		
+		File file = new File(info.getAbsolutePath());
+		String name = file.getName();
+
 		return
 			name.endsWith(".conf") ||
 			name.endsWith(".config") ||
@@ -66,6 +69,7 @@ public class ConfBeautifier extends BaseBeautifier {
 			name.equals("iftab") ||
 			name.equals("interfaces") ||
 			name.equals("sudoers") ||
+			name.equals("pre-commit") ||
 			name.startsWith("common-");
 	}
 }

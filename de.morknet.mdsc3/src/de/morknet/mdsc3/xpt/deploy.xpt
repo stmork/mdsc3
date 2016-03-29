@@ -74,7 +74,7 @@ echo
 #
 test -d  «HostSslBase» || mkdir -p «HostSslBase»
 cp -a ${CA_HOME}/cacert.pem «HostSslBase»
-cp -a ${CA_HOME}/«getInfrastructure(host)».pem «HostSslBase»
+cp -a ${CA_HOME}/«getInfrastructure(host).toLowerCase()».pem «HostSslBase»
 if [ -e ${CA_HOME}/«host.cafile» ]
 then
 	cp -a ${CA_HOME}/«host.cafile» «fqhn(host)»/«getSslCaChainCert(host)»
