@@ -15,7 +15,7 @@
 **
 */
 
-package de.morknet.validation;
+package de.morknet.mdsc3.validation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,24 +26,24 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.CheckType;
 
-import de.morknet.mdsc3.APC;
-import de.morknet.mdsc3.CPU;
-import de.morknet.mdsc3.Controller;
-import de.morknet.mdsc3.Host;
-import de.morknet.mdsc3.HostDevice;
-import de.morknet.mdsc3.HostService;
-import de.morknet.mdsc3.IPMI;
-import de.morknet.mdsc3.JK;
-import de.morknet.mdsc3.Machine;
-import de.morknet.mdsc3.Mail;
-import de.morknet.mdsc3.Mdsc3Package;
-import de.morknet.mdsc3.NIC;
-import de.morknet.mdsc3.Network;
-import de.morknet.mdsc3.OS;
-import de.morknet.mdsc3.Postfix;
-import de.morknet.mdsc3.SMART;
-import de.morknet.mdsc3.TWI;
-import de.morknet.mdsc3.VM;
+import de.morknet.mdsc3.mdsc3.APC;
+import de.morknet.mdsc3.mdsc3.CPU;
+import de.morknet.mdsc3.mdsc3.Controller;
+import de.morknet.mdsc3.mdsc3.Host;
+import de.morknet.mdsc3.mdsc3.HostDevice;
+import de.morknet.mdsc3.mdsc3.HostService;
+import de.morknet.mdsc3.mdsc3.IPMI;
+import de.morknet.mdsc3.mdsc3.JK;
+import de.morknet.mdsc3.mdsc3.Machine;
+import de.morknet.mdsc3.mdsc3.Mail;
+import de.morknet.mdsc3.mdsc3.Mdsc3Package;
+import de.morknet.mdsc3.mdsc3.NIC;
+import de.morknet.mdsc3.mdsc3.Network;
+import de.morknet.mdsc3.mdsc3.OS;
+import de.morknet.mdsc3.mdsc3.Postfix;
+import de.morknet.mdsc3.mdsc3.SMART;
+import de.morknet.mdsc3.mdsc3.TWI;
+import de.morknet.mdsc3.mdsc3.VM;
 import de.morknet.mdsc3.util.ExtensionFacade;
 
 /**
@@ -51,7 +51,7 @@ import de.morknet.mdsc3.util.ExtensionFacade;
  *
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
-public class MDSC3JavaValidator extends de.morknet.validation.AbstractMDSC3JavaValidator {
+public class MDSC3JavaValidator extends de.morknet.mdsc3.validation.AbstractMDSC3JavaValidator {
 
 	@Check(CheckType.FAST)
 	public void fastCheckCpu(final CPU cpu)

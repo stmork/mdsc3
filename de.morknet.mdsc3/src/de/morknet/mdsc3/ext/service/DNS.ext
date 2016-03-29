@@ -22,10 +22,10 @@ private Set[Host] getBindHostSet(Location loc) :
 
 List[Host] getBindHostsExt(Location loc, Host host) :
 	getBindHostSet(loc).sortBy(h|(host == h ? "0-" : "1-") + leftPad((1000-h.services.size).toString()) + " " + h.name);
-
+/*
 List[Host] getBindHosts(Machine m) :
 	getBindHostsExt(getLocation(getBaseNetwork(m)), m);
-
+*/
 String init(DNS service) :
 	isUbuntu(getHost(service)) ? "/etc/init.d/bind9" : "/etc/init.d/named";
 

@@ -6,7 +6,7 @@ import org.eclipse.xtext.ui.generator.*
 
 var fileExtensions = "mdsc3"
 var projectName = "de.morknet.mdsc3"
-var grammarURI = "platform:/resource/${projectName}/src/de/morknet/MDSC3.xtext"
+var grammarURI = "platform:/resource/${projectName}/src/de/morknet/mdsc3/MDSC3.xtext"
 var runtimeProject = "../${projectName}"
 var generateXtendStub = false
 var encoding = "UTF-8"
@@ -17,16 +17,10 @@ Workflow
 	{
 		scanClassPath = true
 		platformUri = "${runtimeProject}/.."
-		resourceSet = org.eclipse.xtext.resource.XtextResourceSet:theResourceSet {}
 
 		// The following two lines can be removed, if Xbase is not used.
 		// registerGeneratedEPackage = "org.eclipse.xtext.xbase.XbasePackage"
 		// registerGenModelFile = "platform:/resource/org.eclipse.xtext.xbase/model/Xbase.genmodel"
-		uriMap =
-		{
-			from = "platform:/resource/org.eclipse.xtext.common.types/"
-			to = "classpath:/"
-		}
 	}
 
 	component = DirectoryCleaner
@@ -54,7 +48,6 @@ Workflow
 
 		language = auto-inject
 		{
-			forcedResourceSet = theResourceSet
 			uri = grammarURI
 
 			// Java API to access grammar elements (required by several other fragments)

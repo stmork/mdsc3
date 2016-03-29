@@ -17,15 +17,15 @@ Require-Bundle: org.eclipse.equinox.common;bundle-version="3.5.0",
  org.antlr.runtime,
  org.apache.commons.logging
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Export-Package: de.morknet,
- de.morknet.services,
- de.morknet.mdsc3,
- de.morknet.mdsc3.impl,
- de.morknet.mdsc3.util,
- de.morknet.serializer,
- de.morknet.parser.antlr,
- de.morknet.parser.antlr.internal,
- de.morknet.validation,
- de.morknet.scoping,
- de.morknet.formatting
 Import-Package: org.apache.log4j
+Export-Package: de.morknet.mdsc3,
+ de.morknet.mdsc3.services,
+ de.morknet.mdsc3.mdsc3,
+ de.morknet.mdsc3.mdsc3.impl,
+ de.morknet.mdsc3.mdsc3.util,
+ de.morknet.mdsc3.serializer,
+ de.morknet.mdsc3.parser.antlr,
+ de.morknet.mdsc3.parser.antlr.internal,
+ de.morknet.mdsc3.validation,
+ de.morknet.mdsc3.scoping,
+ de.morknet.mdsc3.formatting

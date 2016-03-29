@@ -15,7 +15,7 @@
 **
 */
 
-package de.morknet.converter;
+package de.morknet.mdsc3.converter;
 
 import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.common.services.DefaultTerminalConverters;

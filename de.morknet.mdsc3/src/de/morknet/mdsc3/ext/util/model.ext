@@ -10,7 +10,7 @@ List[EObject] allElements(EObject this) :
 	this.allRootElements().eAllContents;
 
 List[EObject] allRootElements(EObject this) :
-	JAVA org.eclipse.xtext.xtend.ServiceHelper.allRootElements(org.eclipse.emf.ecore.EObject);
+	this.allRootElements();
 
 List[Location] getAllLocations(EObject m) :
 	m.eRootContainer.allRootElements().eAllContents.typeSelect(Location).sortBy(e|e.name).sortBy(e|e.name);

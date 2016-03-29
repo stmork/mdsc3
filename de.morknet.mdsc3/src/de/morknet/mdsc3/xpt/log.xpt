@@ -189,9 +189,11 @@ Location «this.name»
 «ERROR "Undefined type: " + metaType.name»
 «ENDDEFINE»
 
+«REM»
 «DEFINE Element FOR Import»
 Import «importURI»
 «ENDDEFINE»
+«ENDREM»
 
 «DEFINE Element FOR Location»
 ===== Location «name»
