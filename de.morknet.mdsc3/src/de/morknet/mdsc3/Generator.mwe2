@@ -21,7 +21,7 @@ Workflow
 {
 	bean = StandaloneSetup
 	{
-		registerGeneratedEPackage = "de.morknet.mdsc3.Mdsc3Package"
+		registerGeneratedEPackage = "de.morknet.mdsc3.mdsc3.Mdsc3Package"
 		platformUri = ".."
 	}
 
