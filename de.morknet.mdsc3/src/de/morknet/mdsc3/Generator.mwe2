@@ -48,16 +48,13 @@ Workflow
 		expand = "de::morknet::mdsc3::xpt::Main::Main FOREACH ${slotname}"
 		skipOnErrors = false
 
-		globalVarDef =
-		{
-			name="backup"            value="'${backup}'"
-			name="cahome"            value="'${cahome}'"
-			name="sslhome"           value="'${sslhome}'"
-			name="email"             value="'${email}'"
-			name="nagiostimeout"     value="'${nagiostimeout}'"
-			name="admin_group"       value="'${admin_group}'"
-			name="management_group"  value="'${management_group}'"
-		}
+		globalVarDef = { name="backup"            value="'${backup}'" }
+		globalVarDef = { name="cahome"            value="'${cahome}'" }
+		globalVarDef = { name="sslhome"           value="'${sslhome}'" }
+		globalVarDef = { name="email"             value="'${email}'" }
+		globalVarDef = { name="nagiostimeout"     value="'${nagiostimeout}'" }
+		globalVarDef = { name="admin_group"       value="'${admin_group}'" }
+		globalVarDef = { name="management_group"  value="'${management_group}'" }
 
 		outlet =
 		{
