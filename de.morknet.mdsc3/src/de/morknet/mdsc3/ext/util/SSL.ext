@@ -26,4 +26,4 @@ cached String getSslKey(Host host) :
 	getSslBase(host) + "/" + host.name + "-key.pem";
 
 cached String getSslCrl(Host host) :
-	getCrlBase(host) + "/" + getInfrastructure(host) + ".pem";
+	getCrlBase(host) + "/" + getInfrastructure(host).toLowerCase() + ".pem";

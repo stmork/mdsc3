@@ -10,6 +10,7 @@
 «EXTENSION de::morknet::mdsc3::ext::util::os»
 «EXTENSION de::morknet::mdsc3::ext::util::SSL»
 «EXTENSION de::morknet::mdsc3::ext::util::tools»
+«EXTENSION de::morknet::mdsc3::ext::util::constants»
 «EXTENSION de::morknet::mdsc3::ext::service::AppServer»
 «EXTENSION de::morknet::mdsc3::ext::service::MySQL»
 
@@ -286,7 +287,7 @@ $PKG
 JDK=`find /tmp/ -maxdepth 1 -type d -name "jdk*" | sort |tail -n1`
 mv $JDK $DST
 #
-$DST/bin/keytool -import -trustcacerts -alias "morknet-ca"\
+$DST/bin/keytool -import -trustcacerts -alias "«getInfrastructure(host).toLowerCase()»-ca"\
 	-file «getSslCaCert(host)»\
 	-keystore $DST/jre/lib/security/cacerts -storepass "changeit"
 #
