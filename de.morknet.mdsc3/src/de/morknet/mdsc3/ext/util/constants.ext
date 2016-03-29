@@ -5,8 +5,11 @@
 
 import mdsc3;
 
-String getInfrastructure() :
-	GLOBALVAR infrastructure;
+private Model getModel(Host host) :
+	host.eRootContainer;
+
+String getInfrastructure(Host host) :
+	getModel(host).name;
 
 cached String getCaHome() :
 	GLOBALVAR cahome;
