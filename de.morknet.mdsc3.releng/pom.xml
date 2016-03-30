@@ -66,10 +66,8 @@
 
 		<pluginManagement>
 			<plugins>
-				<!-- Avoid the generation of maven archive information in the META-INF 
-					folder -->
 				<plugin>
-					<groupId>${tycho-groupid}</groupId>
+					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>tycho-packaging-plugin</artifactId>
 					<version>${tycho-version}</version>
 					<configuration>
@@ -80,9 +78,9 @@
 						</archive>
 					</configuration>
 				</plugin>
-				<!-- TYCHO -->
+
 				<plugin>
-					<groupId>${tycho-groupid}</groupId>
+					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>tycho-compiler-plugin</artifactId>
 					<version>${tycho-version}</version>
 					<configuration>
@@ -91,6 +89,7 @@
 						<target>7.0</target>
 					</configuration>
 				</plugin>
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
@@ -99,16 +98,13 @@
 						<encoding>${project.build.sourceEncoding}</encoding>
 					</configuration>
 				</plugin>
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-clean-plugin</artifactId>
 					<version>2.4.1</version>
 				</plugin>
-				<plugin>
-					<groupId>org.fornax.toolsupport</groupId>
-					<artifactId>fornax-oaw-m2-plugin</artifactId>
-					<version>3.3.0</version>
-				</plugin>
+
 				<plugin>
 					<groupId>org.eclipse.tycho.extras</groupId>
 					<artifactId>tycho-source-feature-plugin</artifactId>
@@ -123,6 +119,7 @@
 						</execution>
 					</executions>
 				</plugin>
+
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>tycho-p2-plugin</artifactId>
@@ -143,22 +140,32 @@
 						</execution>
 					</executions>
 				</plugin>
+
+<!-- 
 				<plugin>
 					<groupId>${tycho-groupid}</groupId>
 					<artifactId>tycho-p2-repository-plugin</artifactId>
 					<version>${tycho-version}</version>
 				</plugin>
-				<!-- APACHE MAVEN PLUGINS -->
+
+				<plugin>
+					<groupId>${tycho-groupid}</groupId>
+					<artifactId>tycho-p2-director-plugin</artifactId>
+					<version>${tycho-version}</version>
+				</plugin>
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-antrun-plugin</artifactId>
 					<version>1.7</version>
 				</plugin>
+ 
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
 					<version>2.2-beta-4</version>
 				</plugin>
+
 				<plugin>
 					<artifactId>maven-release-plugin</artifactId>
 					<configuration>
@@ -171,6 +178,8 @@
 						<arguments>-Prelease</arguments>
 					</configuration>
 				</plugin>
+-->
+
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>target-platform-configuration</artifactId>
