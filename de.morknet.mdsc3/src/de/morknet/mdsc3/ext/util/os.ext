@@ -18,7 +18,8 @@ Boolean isDebian(Host host) :
 
 Boolean isUbuntu(Host host) :
 	(host.os == OS::Ubuntu_12_04) ||
-	(host.os == OS::Ubuntu_14_04);
+	(host.os == OS::Ubuntu_14_04) ||
+	(host.os == OS::Ubuntu_16_04);
 
 Boolean isLinux(Host host) :
 	isSuSE(host) || isDebian(host) || isUbuntu(host) || isRedHat(host);
@@ -40,10 +41,12 @@ Boolean isMac(Host host) :
 
 Boolean isMinUbuntuPrecise(Host host) :
 	(host.os == OS::Ubuntu_12_04) ||
-	(host.os == OS::Ubuntu_14_04);
+	(host.os == OS::Ubuntu_14_04) ||
+	(host.os == OS::Ubuntu_16_04);
 
 Boolean isMinUbuntuTrusty(Host host) :
-	(host.os == OS::Ubuntu_14_04);
+	(host.os == OS::Ubuntu_14_04) ||
+	(host.os == OS::Ubuntu_16_04);
 
 Boolean isMinDebianWheezy(Host host) :
 	(host.os == OS::Debian7) ||
