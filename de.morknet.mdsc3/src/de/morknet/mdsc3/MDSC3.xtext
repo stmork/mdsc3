@@ -78,6 +78,7 @@ enum OS : Dummy='Dummy' |
 	Debian8='Jessie'|
 	Ubuntu_12_04='Precise' |
 	Ubuntu_14_04='Trusty' |
+	Ubuntu_16_04='Xenial' |
 	ArchLinux='ArchLinux' |
 	Windows_2K3='Windows Server 2003'|
 	Windows_2K8='Windows Server 2008'|
