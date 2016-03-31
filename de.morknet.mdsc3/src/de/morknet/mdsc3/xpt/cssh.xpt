@@ -42,6 +42,7 @@
 «EXPAND HostList("ubuntu",  ubuntu)»
 «EXPAND HostList("precise", ubuntu.select(e|e.os == OS::Ubuntu_12_04))»
 «EXPAND HostList("trusty",  ubuntu.select(e|e.os == OS::Ubuntu_14_04))»
+«EXPAND HostList("xenial",  ubuntu.select(e|e.os == OS::Ubuntu_16_04))»
 «ENDIF»
 «ENDLET»
 
