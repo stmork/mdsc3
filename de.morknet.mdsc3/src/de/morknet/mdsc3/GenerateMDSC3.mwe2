@@ -57,7 +57,7 @@ Workflow
 			fragment = ecore.EMFGeneratorFragment auto-inject {}
 
 			// the old serialization component
-			// fragment = parseTreeConstructor.ParseTreeConstructorFragment auto-inject {}    
+			fragment = parseTreeConstructor.ParseTreeConstructorFragment auto-inject {}    
 
 			// serializer 2.0
 			// fragment = serializer.SerializerFragment auto-inject
