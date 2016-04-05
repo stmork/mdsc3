@@ -2,13 +2,13 @@
 
 VERSION=3.0.0
 
-for FILE in de.morknet.mdsc3.*/pom.xml
+for FILE in de.morknet.mdsc3*/pom.xml
 do
 	echo $FILE
 	sed -e "0,/${VERSION}-SNAPSHOT/s//${VERSION}/" -i ${FILE}
 done
 
-for FILE in de.morknet.mdsc3.*/feature.xml de.morknet.mdsc3.*/META-INF/MANIFEST.MF
+for FILE in de.morknet.mdsc3.*/feature.xml de.morknet.mdsc3*/META-INF/MANIFEST.MF
 do
 	echo $FILE
 	sed -e "s/${VERSION}.qualifier/${VERSION}/g" -i ${FILE}

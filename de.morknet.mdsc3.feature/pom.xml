@@ -10,7 +10,7 @@
 	</parent>
 
 	<name>Modelbased Server Configuration Feature</name>
-	<version>3.0.0-SNAPSHOT</version>
+	<version>3.0.0</version>
 	<groupId>de.morknet.mdsc3</groupId>
 	<artifactId>de.morknet.mdsc3.feature</artifactId>
 	<packaging>eclipse-feature</packaging>
