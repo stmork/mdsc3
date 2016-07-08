@@ -10,7 +10,7 @@
 	</parent>
 
 	<name>Modelbased Server Configuration Update Site</name>
-	<version>3.0.2-SNAPSHOT</version>
+	<version>3.0.2</version>
 	<groupId>de.morknet.mdsc3</groupId>
 	<artifactId>de.morknet.mdsc3.updatesite</artifactId>
 	<packaging>eclipse-repository</packaging>
