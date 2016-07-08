@@ -20,6 +20,13 @@ public class MDSC3UiModule extends de.morknet.mdsc3.ui.AbstractMDSC3UiModule
 		super(plugin);
 	}
 
+    // contributed by org.eclipse.xtext.ui.generator.projectWizard.SimpleProjectWizardFragment
+	@Override
+	public Class<? extends org.eclipse.xtext.ui.wizard.IProjectCreator> bindIProjectCreator()
+	{
+		return de.morknet.mdsc3.ui.wizard.MDSC3ProjectCreator.class;
+	}
+
 	@Override
 	public Class<? extends ILabelProvider> bindILabelProvider()
 	{
