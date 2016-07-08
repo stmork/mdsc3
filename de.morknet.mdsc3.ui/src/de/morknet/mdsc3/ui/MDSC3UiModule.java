@@ -9,6 +9,7 @@ import org.eclipse.xtext.ui.editor.syntaxcoloring.AbstractAntlrTokenToAttributeI
 
 import de.morknet.mdsc3.ui.coloring.SyntaxColoringMapper;
 import de.morknet.mdsc3.ui.labeling.MDSC3LabelProvider;
+import de.morknet.mdsc3.ui.wizard.MDSC3ProjectCreator;
 
 /**
  * Use this class to register components to be used within the IDE.
@@ -24,7 +25,7 @@ public class MDSC3UiModule extends de.morknet.mdsc3.ui.AbstractMDSC3UiModule
 	@Override
 	public Class<? extends org.eclipse.xtext.ui.wizard.IProjectCreator> bindIProjectCreator()
 	{
-		return de.morknet.mdsc3.ui.wizard.MDSC3ProjectCreator.class;
+		return MDSC3ProjectCreator.class;
 	}
 
 	@Override
