@@ -1,4 +1,4 @@
-package de.morknet.mdsc3.ui.wizard;
+package de.morknet.mdsc3.ui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +19,8 @@ import org.eclipse.xtend.type.impl.java.JavaBeansMetaModel;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+
+import de.morknet.mdsc3.ui.wizard.MDSC3ProjectInfo;
 
 public class MDSC3ProjectCreator extends org.eclipse.xtext.ui.wizard.AbstractPluginProjectCreator {
 

@@ -9,30 +9,36 @@ public class MDSC3ProjectInfo extends org.eclipse.xtext.ui.wizard.DefaultProject
 	@Override
 	public void setProjectName(final String projectName)
 	{
-		super.setProjectName(projectName);
 		final StringBuffer buffer = new StringBuffer();
+
+		super.setProjectName(projectName);
 
 		tokens = projectName.split("\\.");
 
-		for (int i = 0; i < tokens.length - 1;i++)
+		// Extract name
+		name = tokens[tokens.length - 1];
+
+		// Build domain from project name
+		for (int i = tokens.length - 2; i >= 0; i--)
 		{
+			buffer.append(tokens[i]);
 			if (i > 0)
 			{
 				buffer.append(".");
 			}
-			buffer.append(tokens[i]);
 		}
-		domain = buffer.toString();
-		name = tokens[tokens.length - 1];
+
+		// If there is any domain it's OK. Otherwise build some other domain. 
+		domain = buffer.length() > 0 ? buffer.toString() : tokens[0] + ".de";
 	}
 
 	public String getDomain()
 	{
-		return domain;
+		return domain.toLowerCase();
 	}
 
 	public String getName()
 	{
-		return name;
+		return name.toLowerCase();
 	}
 }

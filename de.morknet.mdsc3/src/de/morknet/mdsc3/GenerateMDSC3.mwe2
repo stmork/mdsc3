@@ -120,6 +120,13 @@ Workflow
 			// rename refactoring
 			fragment = refactoring.RefactorElementNameFragment auto-inject {}
 
+			// project wizard (optional)  
+			fragment = projectWizard.SimpleProjectWizardFragment
+			{  
+				generatorProjectName = "${projectName}"
+				fileExtension = "mdsc3"
+			}
+
 			// provides the necessary bindings for java types integration
 			// fragment = types.TypesGeneratorFragment auto-inject {}
 

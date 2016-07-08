@@ -39,6 +39,11 @@ location "«name.toFirstUpper()»" "admin@«domain»"
 		bits 24;
 		domain «domain»;
 	}
+	network ^localnet
+	{
+		address 127.0.0.0;
+		bits 08;
+	}
 }
 
 host _localhost Dummy
@@ -50,7 +55,7 @@ host _localhost Dummy
 «ENDDEFINE»
 
 «DEFINE workflow FOR MDSC3ProjectInfo»
-«FILE "workflow/«name».mwe2" -»
+«FILE "workflow/" + name + ".mwe2" -»
 module «name»
 
 var modelpath      = "./model"
