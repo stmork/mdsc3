@@ -3,3 +3,6 @@ V3.0.0:
 
 V3.0.1:
  * Corrected reexported plugin dependencies.
+
+V3.0.2:
+ * Added new project wizard.
