@@ -6,6 +6,7 @@
 «IMPORT de::morknet::mdsc3::ui::wizard»
 
 «DEFINE main FOR MDSC3ProjectInfo»
+«EXPAND build»
 «EXPAND manifest»
 «EXPAND mdsc»
 «EXPAND workflow»
@@ -23,12 +24,70 @@ Bundle-Vendor: «name.toFirstUpper()»
 «ENDFILE»
 «ENDDEFINE»
 
+«DEFINE build FOR MDSC3ProjectInfo»
+«FILE "build.xml"-»
+<project name="MDSC3 «name.toFirstUpper()»" basedir="." default="generate">
+	<property file="${user.home}/.build.properties" />
+	<property name="src-path"     value="./model"/>
+	<property name="gencnf-path"  value="./generated/config"/>
+	<property name="genlog-path"  value="./generated/logs"/>
+	<property name="eclipse.home.plugins" value="${eclipse.home}/plugins"/>
+
+	<path id="generate.classpath">
+		<fileset dir="${eclipse.home.plugins}">
+			<include name="org.eclipse.emf.*.jar"/>
+			<include name="org.eclipse.x*.*.jar"/>
+			<include name="org.eclipse.equi*.jar"/>
+			<include name="org.apache.commons.*.jar"/>
+			<include name="org.apache.log4j_*.*jar"/>
+			<include name="org.antlr.*.jar"/>
+			<include name="de.morknet.mdsc3*.jar"/>
+			<include name="com.google.*.jar"/>
+			<include name="com.google.*/*.jar"/>
+			<include name="com.ibm.*.jar"/>
+			<include name="javax.inject*.jar"/>
+			<include name="org.objectweb.asm_5.0.1*.jar"/>
+
+			<exclude name="**/*source*.jar"/>
+			<exclude name="**/*src*.jar"/>
+			<exclude name="**/*editor*.jar"/>
+		</fileset>
+		<pathelement path="${res-path}" />
+	</path>
+
+	<target name="generate">
+		<mkdir dir="${gencnf-path}" />
+		<mkdir dir="${genlog-path}" />
+        <java classname="org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher" classpathref="generate.classpath" fork="true">
+			<arg value="workflow/«name».mwe2"/>
+		</java>
+	</target>
+
+	<target name="hash">
+		<java classname="de.morknet.mdsc3.util.ConfigHasher" classpathref="hash.classpath">
+			<arg value="${gencnf-path}/"/>
+		</java>
+	</target>
+
+	<target name="deploy">
+		<exec executable="/bin/bash" dir="${gencnf-path}">
+			<arg line="deploy.sh"/>
+		</exec>
+	</target>
+
+	<target name="clean">
+		<delete>
+			<fileset dir="${gencnf-path}" />
+			<fileset dir="${genlog-path}" />
+			<fileset dir="bin" />
+		</delete>
+	</target>
+</project>
+«ENDFILE»
+«ENDDEFINE»
+
 «DEFINE mdsc FOR MDSC3ProjectInfo»
 «FILE "model/Model.mdsc3"-»
-/*
-** $Id$
-*/
-
 infrastructure "«name.toFirstUpper()»"
 
 location "«name.toFirstUpper()»" "admin@«domain»"
