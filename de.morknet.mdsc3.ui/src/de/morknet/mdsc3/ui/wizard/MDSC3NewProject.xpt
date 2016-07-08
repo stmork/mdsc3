@@ -29,7 +29,7 @@ Bundle-Vendor: «name.toFirstUpper()»
 ** $Id$
 */
 
-infrastructure "«name.tofirstUpper()»"
+infrastructure "«name.toFirstUpper()»"
 
 location "«name.toFirstUpper()»" "admin@«domain»"
 {
