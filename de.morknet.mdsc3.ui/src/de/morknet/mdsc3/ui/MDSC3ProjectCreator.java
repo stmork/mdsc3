@@ -22,7 +22,8 @@ import com.google.common.collect.Lists;
 
 import de.morknet.mdsc3.ui.wizard.MDSC3ProjectInfo;
 
-public class MDSC3ProjectCreator extends org.eclipse.xtext.ui.wizard.AbstractPluginProjectCreator {
+public class MDSC3ProjectCreator extends org.eclipse.xtext.ui.wizard.AbstractPluginProjectCreator
+{
 
 	protected static final String DSL_GENERATOR_PROJECT_NAME = "de.morknet.mdsc3";
 
@@ -32,22 +33,26 @@ public class MDSC3ProjectCreator extends org.eclipse.xtext.ui.wizard.AbstractPlu
 	protected final List<String> SRC_FOLDER_LIST = ImmutableList.of(MODEL_ROOT, WORKFLOW_ROOT, GEN_ROOT);
 
 	@Override
-	protected MDSC3ProjectInfo getProjectInfo() {
+	protected MDSC3ProjectInfo getProjectInfo()
+	{
 		return (MDSC3ProjectInfo) super.getProjectInfo();
 	}
-	
+
 	@Override
-	protected String getModelFolderName() {
+	protected String getModelFolderName()
+	{
 		return MODEL_ROOT;
 	}
-	
-	@Override
-	protected List<String> getAllFolders() {
-        return SRC_FOLDER_LIST;
-    }
 
-    @Override
-	protected List<String> getRequiredBundles() {
+	@Override
+	protected List<String> getAllFolders()
+	{
+		return SRC_FOLDER_LIST;
+	}
+
+	@Override
+	protected List<String> getRequiredBundles()
+	{
 		List<String> result = Lists.newArrayList(super.getRequiredBundles());
 		result.add(DSL_GENERATOR_PROJECT_NAME);
 		return result;
