@@ -368,4 +368,16 @@
     </fileTypes>
   </extension>
 
+	<extension point="org.eclipse.ui.newWizards">
+		<category id="de.morknet.mdsc3.ui.category" name="Infrastructure">
+		</category>
+		<wizard
+			category="de.morknet.mdsc3.ui.category"
+			class="de.morknet.mdsc3.ui.MDSC3ExecutableExtensionFactory:org.de.morknet.mdsc3.ui.wizard.MDSC3NewProjectWizard"
+			icon="icons/mdsc3_32.gif"
+			id="de.morknet.mdsc3.ui.wizard.MDSC3NewProjectWizard"
+			name="MDSC3 Generator Project"
+			project="true">
+		</wizard>
+	</extension>
 </plugin>

@@ -1,0 +1,75 @@
+«REM»
+«###»	Copyright (C) 2016 Steffen A. Mork, Dominik Pieper
+«###»	$Id$
+«ENDREM»
+
+«IMPORT de::morknet::mdsc3::ui::wizard»
+
+«DEFINE main FOR MDSC3ProjectInfo»
+«EXPAND manifest»
+«EXPAND mdsc»
+«EXPAND workflow»
+«ENDDEFINE»
+
+«DEFINE manifest FOR MDSC3ProjectInfo»
+«FILE "META-INF/MANIFEST.MF"-»
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: «name.toFirstUpper()»
+Bundle-SymbolicName: «projectName»
+Bundle-Version: 3.0.1.qualifier
+Require-Bundle: de.morknet.mdsc3;bundle-version="3.0.0"
+Bundle-Vendor: «name.toFirstUpper()»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE mdsc FOR MDSC3ProjectInfo»
+«FILE "model/Model.mdsc3"-»
+/*
+** $Id$
+*/
+
+infrastructure "«name.tofirstUpper()»"
+
+location "«name.toFirstUpper()»" "admin@«domain»"
+{
+	network ^«name»
+	{
+		address 192.168.0.0;
+		bits 24;
+		domain «domain»;
+	}
+}
+
+host _localhost Dummy
+{
+	NIC ^lo loopback ^localnet ip 127.0.0.1;
+}
+
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE workflow FOR MDSC3ProjectInfo»
+«FILE "workflow/«name».mwe2" -»
+module «name»
+
+var modelpath      = "./model"
+var logGenPath     = "./generated/logs"
+var configGenPath  = "./generated/config"
+
+var backup         = "/backup"
+var email          = "admin@«domain»"
+var cahome         = "/usr/local/«name»CA"
+var sslhome        = "/etc/ssl"
+var nagiostimeout  = "20"
+
+var admin_group       ='admin'
+var management_group  ='parents'
+
+Workflow
+{
+	component = @de.morknet.mdsc3.Generator auto-inject {}
+}
+«ENDFILE»
+«ENDDEFINE»
+

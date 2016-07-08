@@ -19,7 +19,8 @@ Require-Bundle: org.eclipse.equinox.common;bundle-version="3.5.0";visibility:=re
  org.eclipse.xpand;visibility:=reexport,
  org.objectweb.asm;bundle-version="5.0.1";resolution:=optional;visibility:=reexport,
  org.antlr.runtime,
- org.apache.commons.logging;visibility:=reexport
+ org.apache.commons.logging;visibility:=reexport,
+ org.apache.log4j;bundle-version="1.2.15";visibility:=reexport
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: org.apache.log4j
 Export-Package: de.morknet.mdsc3;uses:="org.eclipse.xtext,org.eclipse.xtext.service,com.google.inject",
@@ -33,4 +34,3 @@ Export-Package: de.morknet.mdsc3;uses:="org.eclipse.xtext,org.eclipse.xtext.serv
  de.morknet.mdsc3.services;uses:="org.eclipse.xtext,org.eclipse.xtext.common.services,org.eclipse.xtext.service",
  de.morknet.mdsc3.validation;uses:="org.eclipse.xtext.validation",
  de.morknet.mdsc3.parseTreeConstruction
-
