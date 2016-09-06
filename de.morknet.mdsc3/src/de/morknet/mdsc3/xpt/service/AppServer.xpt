@@ -244,6 +244,12 @@ test -d «path»/ && find «path»/ -name "server.log.*" -type f -mtime +30 -exe
 «ENDFILE»
 «ENDDEFINE»
 
+«DEFINE logrotate(Host host) FOR Wildfly»
+«FILE config(host, logrotate(this)) CONFIG»«EXPAND tools::ConfigShell(logrotate(this))»
+test -d «path»/ && find «path»/ -name "server.log.*" -type f -mtime +30 -exec rm -f "{}" \;
+«ENDFILE»
+«ENDDEFINE»
+
 «DEFINE logrotate(Host host) FOR Tomcat»
 «FILE config(host, logrotate(this)) CONFIG»«EXPAND tools::ConfigShell(logrotate(this))»
 test -d «path»/ && find «path»/logs/ \( -iname "*.log" -or -iname "*.txt" \) -mtime +30 -type f -exec rm -f "{}" \;
