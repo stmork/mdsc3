@@ -69,9 +69,11 @@ echo "Deploying..."
 echo
 «FOREACH getAllHosts(this).select(e|isLinux(e) && e.deploy && hasSshd(e)) AS host»
 «LET fqhn(host) + getSslBase(host) + "/" AS HostSslBase»
-#
+##
 # Deploy «fqhn(host)»
+##
 #
+echo "******************************************"
 test -d  «HostSslBase» || mkdir -p «HostSslBase»
 cp -a ${CA_HOME}/cacert.pem «HostSslBase»
 cp -a ${CA_HOME}/«getInfrastructure(host).toLowerCase()».pem «HostSslBase»
@@ -117,7 +119,6 @@ if [ "$md5sum_old" != "$md5sum_new" ]
 then
 	if ping -c1 «fqhn(host)» > /dev/null
 	then
-		echo "******************************************"
 		echo "Host «fqhn(host)» is reachable"
 		echo "Deploying..."
 		scp -P «getSSH(host).port» -r -q «fqhn(host)»/* root@«fqhn(host)»:/
@@ -126,12 +127,10 @@ then
 		echo "$md5sum_new «fqhn(host)»" >>hashes.txt
 		echo "Done."
 	else
-		echo "******************************************"
 		echo "Host «fqhn(host)» is not reachable"
 		echo "Skipping..."
 	fi
 else
-	echo "******************************************"
 	echo "Host «fqhn(host)» configuration not changed"
 	echo "$md5sum_new «fqhn(host)»" >>hashes.txt
 	echo "Skipping..."
