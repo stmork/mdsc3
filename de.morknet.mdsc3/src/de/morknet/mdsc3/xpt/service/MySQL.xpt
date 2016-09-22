@@ -42,7 +42,7 @@ ssl-key                 = «getSslBase(host)»/localhost-key.pem
 ssl-cert                = «getSslCert(host)»
 ssl-key                 = «getSslKey(host)»
 «ENDIF»
-ssl-cipher              = DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:AES256-SHA:AES128-SHA
+ssl-cipher              = «getCipher(this)»
 «ENDFILE»
 «ENDDEFINE»
 

@@ -246,9 +246,12 @@ fi
 test -d «logdir()» || mkdir -p «logdir()»
 
 «IF hasSubversion()»
+chmod 755 «svndir()»
 test -d «svnconf()» || mkdir -p «svnconf()»
 «ENDIF»
 «IF hasTrac()»
+chmod 755 «tracdir()» «gitdir()»
+chmod 644 «tracconf()»
 test -d «gitconf()» || mkdir -p «gitconf()»
 test -d «tracconf()» || mkdir -p «tracconf()»
 «ENDIF»

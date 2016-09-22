@@ -185,7 +185,8 @@ DHCP:		{DHCP}			'DHCP' (master?='master')?;
 DNS:		{DNS}			'DNS'  (master?='master')?;
 LDAP:		{LDAP}			'LDAP' baseDN=STRING credentials=STRING (master?='master')? (security?='SSL')? (debug?='debug')?;
 
-MySQL:		{MySQL}			'MySQL';
+MySQL:		{MySQL}			'MySQL'|MariaDB;
+MariaDB:	{MariaDB}		'MariaDB';
 
 Mail:						Postfix|Sendmail|Zimbra|Google;
 Postfix:	{Postfix}		'Postfix' relay=[Host|HOSTNAME];
