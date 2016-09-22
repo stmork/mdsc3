@@ -201,4 +201,4 @@ String interfaces(Host host) :
 	"/etc/network/interfaces";
 
 String locale(Host host) :
-	host.lang.split(".").first();
+	host.lang.split("\\.").first();
