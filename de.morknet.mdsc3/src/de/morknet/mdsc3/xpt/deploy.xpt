@@ -163,7 +163,11 @@ chmod u-s `which newgrp`
 «IF isUbuntu()»
 #
 # Configure locales
+«IF isMinUbuntuTrusty()»
+localedef -i «locale()» -c -f «charset» «locale()».«charset»
+«ELSE»
 dpkg-reconfigure locales
+«ENDIF»
 test -e «dpkglist(this)».sh && rm «dpkglist(this)».sh
 chmod 755 «dpkglist(this)»
 #

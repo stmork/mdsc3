@@ -199,4 +199,6 @@ String udev_rules(Host host) :
 
 String interfaces(Host host) :
 	"/etc/network/interfaces";
-	
+
+String locale(Host host) :
+	host.lang.split(".").first();
