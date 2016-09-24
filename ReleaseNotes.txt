@@ -6,3 +6,9 @@ V3.0.1:
 
 V3.0.2:
  * Added new project wizard.
+
+V3.0.3:
+ * Some cosmetical corrections during deployments.
+ * Added MariaDB
+ * Optimized locale definition on Ubuntu.
+
