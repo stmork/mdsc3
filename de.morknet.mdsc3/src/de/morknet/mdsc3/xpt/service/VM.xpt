@@ -301,6 +301,7 @@ esac
 «EXPAND tools::ConfigShell(vmmem(this))»
 #
 VM_LIST=`ls /etc/libvirt/qemu/*.xml`
+LC_ALL=en_GB
 #
 for CONFIG in ${VM_LIST}
 do
@@ -323,6 +324,7 @@ echo "Gesamt: ${sum} MB"
 «EXPAND tools::ConfigShell(vmctrl(this))»
 #
 VM_LIST=`ls /etc/libvirt/qemu/*.xml`
+LC_ALL=en_GB
 #
 MATCH=$1
 ACTION=$2
@@ -364,6 +366,7 @@ INDEX=`date +"%s / 24 / 3600 % $BACKUP_CYCLE" | bc -iq | tail -n1`
 VM_LIST="«FOREACH getVMs(host) AS client SEPARATOR " "»«client.name»«ENDFOREACH» ${ADDITIONAL_BACKUP_HOSTS}"
 VG=«vg»
 MAPPER=/dev/mapper
+LC_ALL=en_GB
 #
 logger -t BACKUP "Script startet."
 umask 027
