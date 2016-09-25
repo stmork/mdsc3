@@ -1,5 +1,5 @@
 instructions.configure=\
-org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:0,location:https${#58}//intra.morknet.de/maven/mdsc3/release/,enabled:%RELEASE%,name:Modelbased Server Configuration Release);\
-org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:1,location:https${#58}//intra.morknet.de/maven/mdsc3/release/,enabled:%RELEASE%,name:Modelbased Server Configuration Release);\
-org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:0,location:https${#58}//intra.morknet.de/maven/mdsc3/snapshot/,enabled:%SNAPSHOT%,name:Modelbased Server Configuration Snapshot);\
-org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:1,location:https${#58}//intra.morknet.de/maven/mdsc3/snapshot/,enabled:%SNAPSHOT%,name:Modelbased Server Configuration Snapshot);
+org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:0,location:http${#58}//mdsc3.sourceforge.net/updates/release/,enabled:%RELEASE%,name:Modelbased Server Configuration Release);\
+org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:1,location:http${#58}//mdsc3.sourceforge.net/updates/release/,enabled:%RELEASE%,name:Modelbased Server Configuration Release);\
+org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:0,location:http${#58}//mdsc3.sourceforge.net/updates/snapshot/,enabled:%SNAPSHOT%,name:Modelbased Server Configuration Snapshot);\
+org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:1,location:http${#58}//mdsc3.sourceforge.net/updates/snapshot/,enabled:%SNAPSHOT%,name:Modelbased Server Configuration Snapshot);
