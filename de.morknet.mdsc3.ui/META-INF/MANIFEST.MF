@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: de.morknet.mdsc3.ui
 Bundle-Vendor: MORKNet
-Bundle-Version: 3.0.3.qualifier
+Bundle-Version: 3.0.3
 Bundle-SymbolicName: de.morknet.mdsc3.ui; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: de.morknet.mdsc3;bundle-version="3.0.0";visibility:=reexport,
