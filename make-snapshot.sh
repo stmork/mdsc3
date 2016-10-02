@@ -1,7 +1,7 @@
 #!/bin/bash
 
-VERSION_OLD=3.0.3
-VERSION_NEW=3.0.4
+VERSION_OLD=3.0.4
+VERSION_NEW=3.0.5
 
 for FILE in de.morknet.mdsc3*/pom.xml
 do
