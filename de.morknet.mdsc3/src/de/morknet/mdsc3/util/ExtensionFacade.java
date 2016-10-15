@@ -73,7 +73,7 @@ public class ExtensionFacade {
 	 * @return The resulting IP address.
 	 * @throws UnknownHostException 
 	 */
-	public static String asIpAddress(String hostname) throws UnknownHostException
+	public static String asIpAddress(final String hostname) throws UnknownHostException
 	{
 		String ip;
 		InetAddress ia;
@@ -90,7 +90,7 @@ public class ExtensionFacade {
 	 * @return The resulting hostname.
 	 * @throws UnknownHostException 
 	 */
-	public static String asHostname(String ip) throws UnknownHostException
+	public static String asHostname(final String ip) throws UnknownHostException
 	{
 		return InetAddress.getByName(ip).getHostName();
 	}
@@ -100,7 +100,7 @@ public class ExtensionFacade {
 	 * @param bits The net mask bit count
 	 * @return The net mask as String.
 	 */
-	public static String getNetmask(Integer bits)
+	public static String getNetmask(final Integer bits)
 	{
 		String ip;
 		InetAddress ia;
@@ -117,7 +117,19 @@ public class ExtensionFacade {
 		return ip;
 	}
 	
-	public static String getNetworkAddress(String gw, Integer bits)
+	/**
+	 * This method computes the network address from the gateway
+	 * address and the networks mask bits. In fact this method
+	 * clears all bits of the gateway address left of the mask
+	 * bits.
+	 *
+	 * @param gw The IP address of the gateway.
+	 * @param bits The networks mask bits.
+	 * @return The network address of the gateway.
+	 */
+	public static String getNetworkAddress(
+		final String gw,
+		final Integer bits)
 	{
 		String nw;
 		InetAddress ia;
@@ -144,7 +156,19 @@ public class ExtensionFacade {
 		return nw;
 	}
 
-	public static String getBroadcastAddress(String gw, Integer bits)
+	/**
+	 * This method computes the broadcast address from the gateway
+	 * address and the networks mask bits. In fact this method
+	 * sets all bits of the gateway address left of the mask
+	 * bits.
+	 *
+	 * @param gw The IP address of the gateway.
+	 * @param bits The networks mask bits.
+	 * @return The broadcast address of the gateway.
+	 */
+	public static String getBroadcastAddress(
+		final String gw,
+		final Integer bits)
 	{
 		String nw;
 		InetAddress ia;
@@ -171,7 +195,7 @@ public class ExtensionFacade {
 		return nw;
 	}
 
-	public static String cryptSSHA(String credential)
+	public static String cryptSSHA(final String credential)
 	{
 		return SSHA.getLDAPSSHAHash(credential, null);
 	}
@@ -186,7 +210,7 @@ public class ExtensionFacade {
 		return year.format(new Date());
 	}
 
-	public static String leftPad(String val)
+	public static String leftPad(final String val)
 	{
 		String whole = "          " + val;
 		return whole.substring(whole.length() - 10);
