@@ -11,10 +11,11 @@
 
 	<!-- this is the parent POM from which all modules inherit common settings -->
 	<properties>
-		<tycho-version>0.21.0</tycho-version>
-		<tycho-extras-version>0.21.0</tycho-extras-version>
+		<tycho-version>0.24.0</tycho-version>
+		<tycho-extras-version>0.24.0</tycho-extras-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<eclipse.distro>luna</eclipse.distro>
+		<source.update.site>http://mdsc3.sourceforge.net/updates/release/</source.update.site>
 	</properties>
 
 	<modules>
