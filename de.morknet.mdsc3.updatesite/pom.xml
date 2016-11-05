@@ -35,6 +35,10 @@
 		</license>
 	</licenses>
 
+	<properties>
+		<target.update.site>target/repository</target.update.site>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -45,30 +49,38 @@
 						<includeAllDependencies>false</includeAllDependencies>
 					</configuration>
 			</plugin>
-<!-- 
+
 			<plugin>
-				<artifactId>tycho-p2-director-plugin</artifactId>
+				<groupId>org.eclipse.tycho.extras</groupId>
+				<artifactId>tycho-p2-extras-plugin</artifactId>
+				<version>${tycho-extras-version}</version>
+				<inherited>false</inherited>
 				<executions>
 					<execution>
-						<id>materialize-products</id>
+						<id>append</id>
+						<phase>package</phase>
 						<goals>
-							<goal>materialize-products</goal>
+							<goal>mirror</goal>
 						</goals>
-					</execution>
-					<execution>
-						<id>archive-products</id>
-						<goals>
-							<goal>archive-products</goal>
-						</goals>
+						<configuration>
+							<source>
+								<repository>
+									<url>${source.update.site}</url>
+									<layout>p2</layout>
+								</repository>
+							</source>
+							<destination>${target.update.site}</destination>
+							<compress>true</compress>
+							<append>true</append>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
- -->
  
 			<plugin>
 				<groupId>org.jboss.tools.tycho-plugins</groupId>
 				<artifactId>repository-utils</artifactId>
-				<version>0.19.0-SNAPSHOT</version>
+				<version>0.22.0</version>
 				<executions>
 					<execution>
 						<id>generate-facade</id>
@@ -85,9 +97,6 @@
 								<update.site.version>${project.version}</update.site.version>
 								<target.eclipse.version>${target.eclipse.version}</target.eclipse.version>
 							</symbols>
-							<associateSites>
-								<site>http://download.itemis.com/updates/releases/2.0.0/</site>
-							</associateSites>
 						</configuration>
 					</execution>
 				</executions>
