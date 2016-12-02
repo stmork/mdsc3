@@ -11,6 +11,7 @@
 «EXTENSION de::morknet::mdsc3::ext::util::SSL»
 «EXTENSION de::morknet::mdsc3::ext::util::tools»
 «EXTENSION de::morknet::mdsc3::ext::util::constants»
+«EXTENSION de::morknet::mdsc3::ext::service::Apache»
 «EXTENSION de::morknet::mdsc3::ext::service::AppServer»
 «EXTENSION de::morknet::mdsc3::ext::service::MySQL»
 
@@ -158,9 +159,9 @@ esac
 «EXPAND tools::ConfigShell(init(this))»
 #
 ### BEGIN INIT INFO
-# Provides:          «typeName()»
-# Required-Start:    $local_fs $remote_fs«IF hasMySQL(host)» mysql«ENDIF»
-# Required-Stop:     $local_fs $remote_fs«IF hasMySQL(host)» mysql«ENDIF»
+# Provides:          «typeName(this).toLowerCase()»
+# Required-Start:    $local_fs $remote_fs«IF hasMySQL(host)» mysql«ENDIF»«IF hasApache(host)» apache2«ENDIF»
+# Required-Stop:     $local_fs $remote_fs«IF hasMySQL(host)» mysql«ENDIF»«IF hasApache(host)» apache2«ENDIF»
 # Default-Start:     2 3 4 5
 # Default-Stop:      S 0 1 6
 # Short-Description: «typeName()»
@@ -168,7 +169,7 @@ esac
 #                    placed in /etc/init.d.
 ### END INIT INFO
 #
-DESC="«typeName()» Application server"
+DESC="«typeName()» Application Server"
 SCRIPTNAME=$0
 export «asHome()»=«path»
 NAME=«typeName().toLowerCase()»
