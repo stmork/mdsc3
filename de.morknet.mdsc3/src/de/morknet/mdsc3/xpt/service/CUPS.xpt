@@ -124,7 +124,11 @@ LogLevel info
 MaxLogSize 0
 #
 # Don't cancel jobs if printer is not reachable!
+«IF isMinUbuntuXenial(host)»
+MaxJobTime 1461d
+«ELSE»
 MaxJobTime 0
+«ENDIF»
 #
 # Administrator user group...
 SystemGroup lpadmin
