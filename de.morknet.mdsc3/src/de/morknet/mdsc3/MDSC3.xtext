@@ -76,6 +76,7 @@ enum OS : Dummy='Dummy' |
 	Debian6='Squeeze'|
 	Debian7='Wheezy'|
 	Debian8='Jessie'|
+	Debian9='Stretch'|
 	Ubuntu_12_04='Precise' |
 	Ubuntu_14_04='Trusty' |
 	Ubuntu_16_04='Xenial' |

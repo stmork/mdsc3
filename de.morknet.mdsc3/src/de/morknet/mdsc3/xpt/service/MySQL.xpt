@@ -30,7 +30,7 @@ socket                  = /run/mysqld/mysqld.sock
 ssl-ca                  = «getSslCaCert(host)»
 #
 [mysqld]
-character_set_server    = utf8  
+#character_set_server    = utf8  
 default-storage-engine  = InnoDB
 #
 ssl
