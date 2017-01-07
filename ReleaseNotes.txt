@@ -12,3 +12,11 @@ V3.0.3:
  * Added MariaDB
  * Optimized locale definition on Ubuntu.
 
+V3.0.4:
+ * Added some documentation.
+ * Fixed some smaller build issues.
+
+V3.0.5:
+ * Added Support Debian Stretch.
+ * Optimized MariaDB
+ * Some build issues fixed.
