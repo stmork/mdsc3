@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/de.morknet.mdsc3.feature_3.0.5.qualifier.jar" id="de.morknet.mdsc3.feature" version="3.0.5.qualifier">
+   <feature url="features/de.morknet.mdsc3.feature_3.0.6.qualifier.jar" id="de.morknet.mdsc3.feature" version="3.0.6.qualifier">
       <category name="de.morknet.mdsc3"/>
    </feature>
    <category-def name="de.morknet.mdsc3" label="MDSC3"/>
