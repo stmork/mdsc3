@@ -160,6 +160,8 @@ Legend1[«fqhn(this)»_imap]: connections
 ##
 «IF !isLinux(this)»
 Target[«fqhn(this)»_«nic.name»]: /«getIpAddress(nic)»:public@«fqhn(this)»::1:1
+«ELSEIF isMinUbuntuXenial()»
+Target[«fqhn(this)»_«nic.name»]: #«nic.name»:public@«fqhn(this)»::1:1::2
 «ELSE»
 Target[«fqhn(this)»_«nic.name»]: \«nic.name»:public@«fqhn(this)»::1:1::2
 «ENDIF»
@@ -209,6 +211,7 @@ Legend1[«fqhn(this)»_load]: Load
 #
 ##
 # host cpu utilization
+# snmpwalk -c public -v 1 -O n «fqhn(this)» 1.3.6.1.4.1.2021.11.50
 ##
 Target[«fqhn(this)»_cpu]: 1.3.6.1.4.1.2021.11.50.0&1.3.6.1.4.1.2021.11.52.0:public@«fqhn(this)»
 MaxBytes[«fqhn(this)»_cpu]: «getCpuCount() * 101»
@@ -257,6 +260,7 @@ Legend1[«fqhn(this)»_proc]: Processes
 #
 ##
 # CPU temperature of core «number * 2 - 1» and «number * 2»
+# snmpwalk -c public -v 1 -O n «fqhn(this)» 1.3.6.1.4.1.2021.13.16.2.1.3
 ##
 Target[«fqhn(this)»_temp«number»]: 1.3.6.1.4.1.2021.13.16.2.1.3.«number * 2 - 1»&1.3.6.1.4.1.2021.13.16.2.1.3.«number * 2»:public@«fqhn(this)»
 MaxBytes[«fqhn(this)»_temp«number»]: 100000
@@ -275,6 +279,7 @@ Legend1[«fqhn(this)»_temp«number»]: &deg;C
 #
 ##
 # CPU temperature of core «number»
+# snmpwalk -c public -v 1 -O n «fqhn(this)» 1.3.6.1.4.1.2021.13.16.2.1.3
 ##
 Target[«fqhn(this)»_temp«number»]: 1.3.6.1.4.1.2021.13.16.2.1.3.«number»&1.3.6.1.4.1.2021.4.1.0:public@«fqhn(this)»
 MaxBytes[«fqhn(this)»_temp«number»]: 100000
@@ -298,6 +303,7 @@ Legend1[«fqhn(this)»_temp«number»]: &deg;C
 #
 ##
 # Usage of partition «part.name» on device «part.device»
+# snmpwalk -c public -v 1 -O n «fqhn(this)» 1.3.6.1.4.1.2021.9.1.9.«getValue("part")»
 ##
 Target[«fqhn(this)»_part«getValue("part")»]: 1.3.6.1.4.1.2021.9.1.9.«getValue("part")»&1.3.6.1.4.1.2021.4.1.0:public@«fqhn(this)»
 MaxBytes[«fqhn(this)»_part«getValue("part")»]: 110
@@ -313,7 +319,8 @@ Legend1[«fqhn(this)»_part«getValue("part")»]: Used space on disk «part.name
 #
 ##
 # Disk IO of partition «part.name» on device «part.device»
-# snmpwalk -c public -v 2c -O n «fqhn(this)» 1.3.6.1.4.1.2021.13.15.1.1.2
+# snmpwalk -c public -v 2c -O n «fqhn(this)» 1.3.6.1.4.1.2021.13.15.1.12.«part.snmpindex»
+# snmpwalk -c public -v 2c -O n «fqhn(this)» 1.3.6.1.4.1.2021.13.15.1.13.«part.snmpindex»
 ##
 Target[«fqhn(this)»_io«getValue("part")»]: 1.3.6.1.4.1.2021.13.15.1.1.12.«part.snmpindex»&1.3.6.1.4.1.2021.13.15.1.1.13.«part.snmpindex»:public@«fqhn(this)»:::::2
 MaxBytes[«fqhn(this)»_io«getValue("part")»]: 800000000
@@ -333,6 +340,7 @@ kilo[«fqhn(this)»_io«getValue("part")»]: 1024
 #
 ##
 # disk temperature of «disk.device»
+# snmpwalk -c public -v 2c -O n «fqhn(this)» 1.3.6.1.4.1.2021.8.1.101.«getValue("pos")»
 ##
 Target[«fqhn(this)»_«disk.number»_temp]: 1.3.6.1.4.1.2021.8.1.101.«getValue("pos")»&1.3.6.1.4.1.2021.4.1.0:public@«fqhn(this)»::5:2
 MaxBytes[«fqhn(this)»_«disk.number»_temp]: 50
@@ -379,6 +387,8 @@ Skip APC status.
 #
 ##
 # APC load and battery charge
+# snmpwalk -c public -v 2c -O n «fqhn(this)» 1.3.6.1.4.1.2021.8.1.101.«getValue("pos")»
+# snmpwalk -c public -v 2c -O n «fqhn(this)» 1.3.6.1.4.1.2021.8.1.101.«getValue("pos")+2»
 ##
 Target[«fqhn(this)»_apc1]: 1.3.6.1.4.1.2021.8.1.101.«getValue("pos")»&1.3.6.1.4.1.2021.8.1.101.«getValue("pos")+2»:public@«fqhn(this)»::5:2
 MaxBytes[«fqhn(this)»_apc1]: 110
@@ -393,6 +403,7 @@ Legend1[«fqhn(this)»_apc1]:APC load and battery charge
 #
 ##
 # APC time left
+# snmpwalk -c public -v 2c -O n «fqhn(this)» 1.3.6.1.4.1.2021.8.1.101.«getValue("pos")+1»
 ##
 Target[«fqhn(this)»_apc2]: 1.3.6.1.4.1.2021.8.1.101.«getValue("pos")+1»&1.3.6.1.4.1.2021.4.1.0:public@«fqhn(this)»::5:2
 MaxBytes[«fqhn(this)»_apc2]: 1440
