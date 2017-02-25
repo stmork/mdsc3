@@ -9,7 +9,6 @@
 	<version>1.0.0</version>
 	<packaging>pom</packaging>
 
-	<!-- this is the parent POM from which all modules inherit common settings -->
 	<properties>
 		<tycho-version>0.24.0</tycho-version>
 		<tycho-extras-version>0.24.0</tycho-extras-version>
@@ -47,7 +46,7 @@
 
 	<build>
 		<plugins>
-		<!-- 
+<!-- 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
@@ -58,7 +57,6 @@
 			</plugin>
  -->
 			<plugin>
-				<!-- enable tycho build extension -->
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-maven-plugin</artifactId>
 				<version>${tycho-version}</version>
