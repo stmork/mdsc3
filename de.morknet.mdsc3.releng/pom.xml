@@ -14,7 +14,7 @@
 		<tycho-version>0.24.0</tycho-version>
 		<tycho-extras-version>0.24.0</tycho-extras-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<eclipse.distro>luna</eclipse.distro>
+		<eclipse.distro>mars</eclipse.distro>
 		<source.update.site>http://mdsc3.sourceforge.net/updates/release/</source.update.site>
 	</properties>
 
