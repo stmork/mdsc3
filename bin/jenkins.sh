@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DISTRO=${1:-neon}
-RELEASE=${2:-1}
+RELEASE=${2:-2}
 DOWNLOAD_SERVER=ftp.halifax.rwth-aachen.de
 #LEVEL=release
 LEVEL=snapshot
