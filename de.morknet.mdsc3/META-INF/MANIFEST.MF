@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: de.morknet.mdsc3
+Bundle-Name: Modeldriven Server Configuration V3
 Bundle-Vendor: MORKNet
 Bundle-Version: 3.0.6.qualifier
 Bundle-SymbolicName: de.morknet.mdsc3; singleton:=true
