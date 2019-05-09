@@ -2,29 +2,32 @@
 
 DISTRO=${1:-2018-12}
 RELEASE=${2:-R}
-DOWNLOAD_SERVER=ftp.halifax.rwth-aachen.de
+DOWNLOAD_SERVER=archive.eclipse.org
+DOWNLOAD_URI=
+
 #LEVEL=release
 LEVEL=snapshot
 
 BASE=$PWD
-TARGET=${BASE}/target
-DOWNLOAD=${TARGET}/download
+TARGET_BASE=${BASE}/target
+DOWNLOAD=${TARGET_BASE}/download
 BUILD=${BASE}
-DIST=${TARGET}/dist
-DIRECTOR=${TARGET}/director/director
+DIST=${TARGET_BASE}/dist
+DIRECTOR_ZIP=eclipse-testing-kepler-SR2-linux-gtk-x86_64.tar.gz
+DIRECTOR=${TARGET_BASE}/eclipse/eclipse
 
 set -e
 mkdir -p $DOWNLOAD $BUILD $DIST
 
 echo "Preparing director..."
-if [ ! -e ${DOWNLOAD}/director_latest.zip ]
+if [ ! -e ${DOWNLOAD}/${DIRECTOR_ZIP} ]
 then
-	URL="http://${DOWNLOAD_SERVER}/eclipse/tools/buckminster/products/director_latest.zip"
-	echo "Downloading $URL..."
-	wget -q $URL -O ${DOWNLOAD}/director_latest.zip
+	URL="http://${DOWNLOAD_SERVER}${DOWNLOAD_URI}/technology/epp/downloads/release/kepler/SR2/${DIRECTOR_ZIP}"
+    echo "Downloading $URL..."
+    wget -q $URL -O ${DOWNLOAD}/${DIRECTOR_ZIP}
 fi
 
-test -d ${TARGET}/director || unzip -q ${DOWNLOAD}/director_latest.zip -d ${TARGET}
+test -d ${TARGET_BASE}/director || tar xfz ${DOWNLOAD}/${DIRECTOR_ZIP} -C ${TARGET_BASE}
 
 function unpack
 {
@@ -79,7 +82,7 @@ function build
 	then
 		if [ ! -e ${DOWNLOAD}/${ECLIPSE} ]
 		then
-			URL="http://${DOWNLOAD_SERVER}/eclipse/technology/epp/downloads/release/${DISTRO}/${RELEASE}/${ECLIPSE}"
+			URL="http://${DOWNLOAD_SERVER}${DOWNLOAD_URI}/technology/epp/downloads/release/${DISTRO}/${RELEASE}/${ECLIPSE}"
 			echo "Downloading $URL..."
 			wget -q $URL -O "${DOWNLOAD}/${ECLIPSE}"
 		fi
@@ -113,5 +116,5 @@ build linux-gtk-x86_64.tar.gz
 #build win32-x86_64.zip
 #build win32.zip
 
-#rm -rf ${BUILD} ${DOWNLOAD} ${TARGET}/director
+#rm -rf ${BUILD} ${DOWNLOAD} ${TARGET_BASE}/director
 rm -rf ${TARGET}
