@@ -10,7 +10,7 @@ Boolean isLinux(Host host) :
 
 Boolean isSuSE(Host host) :
 	host.os.toString().startsWith("SuSE") || host.os.toString().startsWith("SLES");
-	
+
 Boolean isRedHat(Host host) :
 	(host.os == OS::Red_Hat);
 
