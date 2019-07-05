@@ -111,7 +111,7 @@ HostDevice :
 	(CPU|NIC|IPMI|Partition|Controller) ';';
 
 Controller :
-	(TWI|SAS|AHCI|Areca|LSI)
+	(TWI|SAS|AHCI|NVME|Areca|LSI)
 	'{'
 		(drives+=Drive)+
 		(volumes+=Volume)+
@@ -121,6 +121,7 @@ TWI:		{TWI}	'3ware' number=INT (bbu?='bbu')?;
 LSI:		{LSI}	'LSI' number=INT (bbu?='bbu')?;
 SAS:		{SAS}	'SAS';
 Areca:		{Areca}	'Areca';
+NVME:		{NVME}	'NVME';
 
 AHCI:		{AHCI}	'AHCI' (name=STRING)?;
 

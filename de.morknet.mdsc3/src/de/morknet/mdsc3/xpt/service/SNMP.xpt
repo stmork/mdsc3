@@ -159,12 +159,19 @@ view system included  .iso.org.dod.internet.mgmt.mib-2.system
 device=$1
 channel=$2
 #
-if [ "$channel" == "scsi" ]
-then
-  temp=`sudo /usr/sbin/smartctl -A -T permissive -d $channel $device |fgrep "Current Drive Temp" | cut -b30-33 | sed -e "s/ //g"`
-else
-  temp=`sudo /usr/sbin/smartctl -A -T permissive -d $channel $device |fgrep "194 Temp" | cut -b86-89 | sed -e "s/ //g"`
-fi
+case "$channel" in
+	scsi)
+	temp=`sudo /usr/sbin/smartctl -A -T permissive -d $channel $device |fgrep "Current Drive Temp" | cut -b30-33 | sed -e "s/ //g"`
+	;;
+#	
+	nvme)
+	temp=`sudo /usr/sbin/smartctl -A -T permissive -d $channel $device |fgrep "Temperature:"|cut -b20-39 | sed -e "s/ //g"`
+	;;
+#	
+	*)
+	temp=`sudo /usr/sbin/smartctl -A -T permissive -d $channel $device |fgrep "194 Temp" | cut -b86-89 | sed -e "s/ //g"`
+	;;
+esac
 #
 test -z $temp && temp=20
 echo $temp
