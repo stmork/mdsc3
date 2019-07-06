@@ -169,7 +169,7 @@ case "$channel" in
 	;;
 #	
 	*)
-	temp=`sudo /usr/sbin/smartctl -A -T permissive -d $channel $device |fgrep "194 Temp" | cut -b86-89 | sed -e "s/ //g"`
+	temp=`sudo /usr/sbin/smartctl -A -T permissive -d $channel $device |fgrep "Temperature_" | cut -b86-89 | sed -e "s/ //g"`
 	;;
 esac
 #
