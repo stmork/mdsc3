@@ -24,4 +24,7 @@ V3.0.5:
 V3.0.6:
  * Support for Ubuntu 18.03
  * Support for Debian 10
+
+V3.0.7:
+ * Support for NVME
    
