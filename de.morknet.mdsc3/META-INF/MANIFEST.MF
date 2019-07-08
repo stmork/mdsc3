@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Modeldriven Server Configuration V3
 Bundle-Vendor: MORKNet
-Bundle-Version: 3.0.7
+Bundle-Version: 3.0.8.qualifier
 Bundle-SymbolicName: de.morknet.mdsc3; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.equinox.common;bundle-version="3.5.0";visibility:=reexport,

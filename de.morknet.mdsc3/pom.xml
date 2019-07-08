@@ -11,7 +11,7 @@
 	</parent>
 
 	<name>Modelbased Server Configuration DSL/Generator</name>
-	<version>3.0.7</version>
+	<version>3.0.8-SNAPSHOT</version>
 	<groupId>de.morknet.mdsc3</groupId>
 	<artifactId>de.morknet.mdsc3</artifactId>
 	<packaging>eclipse-plugin</packaging>
