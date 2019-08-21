@@ -319,8 +319,8 @@ Legend1[«fqhn(this)»_part«getValue("part")»]: Used space on disk «part.name
 #
 ##
 # Disk IO of partition «part.name» on device «part.device»
-# read:  snmpwalk -c public -v 2c -O n «fqhn(this)» 1.3.6.1.4.1.2021.13.15.1.12.«part.snmpindex»
-# write: snmpwalk -c public -v 2c -O n «fqhn(this)» 1.3.6.1.4.1.2021.13.15.1.13.«part.snmpindex»
+# read:  snmpwalk -c public -v 2c -O n «fqhn(this)» 1.3.6.1.4.1.2021.13.15.1.1.12.«part.snmpindex»
+# write: snmpwalk -c public -v 2c -O n «fqhn(this)» 1.3.6.1.4.1.2021.13.15.1.1.13.«part.snmpindex»
 ##
 Target[«fqhn(this)»_io«getValue("part")»]: 1.3.6.1.4.1.2021.13.15.1.1.12.«part.snmpindex»&1.3.6.1.4.1.2021.13.15.1.1.13.«part.snmpindex»:public@«fqhn(this)»:::::2
 MaxBytes[«fqhn(this)»_io«getValue("part")»]: 800000000
