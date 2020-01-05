@@ -9,7 +9,7 @@ V3.0.2:
 
 V3.0.3:
  * Some cosmetical corrections during deployments.
- * Added MariaDB
+ * Added MariaDB.
  * Optimized locale definition on Ubuntu.
 
 V3.0.4:
@@ -18,16 +18,16 @@ V3.0.4:
 
 V3.0.5:
  * Added Support Debian Stretch.
- * Optimized MariaDB
+ * Optimized MariaDB.
  * Some build issues fixed.
 
 V3.0.6:
- * Support for Ubuntu 18.03
- * Support for Debian 10
+ * Support for Ubuntu 18.04.
+ * Support for Debian 10.
 
 V3.0.7:
- * Support for NVME
+ * Support for NVME.
 
 V3.0.8:
- * Support for Ubuntu Bionic
- * Support for Debian Stretch and Buster
+ * Support for Ubuntu Bionic.
+ * Support for Debian Stretch and Buster.
