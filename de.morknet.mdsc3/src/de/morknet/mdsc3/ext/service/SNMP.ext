@@ -88,3 +88,9 @@ String init(SNMP service) :
 String driveId(Drive hd) :
 	hd.device.replaceAll("/", "_").replaceAll(":", "").toLowerCase();
 //	hd.number;
+
+String snmpUser(Host host) :
+	isMinUbuntuBionic(host) || isMinDebianStretch(host )?
+		"Debian-snmp" : "snmp";
+
+

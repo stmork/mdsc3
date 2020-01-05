@@ -32,6 +32,10 @@ Boolean isMinDebianJessie(Host host) :
 	(host.os == OS::Debian9) ||
 	(host.os == OS::Debian10);
 
+Boolean isMinDebianStretch(Host host) :
+	(host.os == OS::Debian9) ||
+	(host.os == OS::Debian10);
+
 Boolean isUbuntu(Host host) :
 	(host.os == OS::Ubuntu_12_04) ||
 	(host.os == OS::Ubuntu_14_04) ||
@@ -51,6 +55,9 @@ Boolean isMinUbuntuTrusty(Host host) :
 
 Boolean isMinUbuntuXenial(Host host) :
 	(host.os == OS::Ubuntu_16_04) ||
+	(host.os == OS::Ubuntu_18_04);
+
+Boolean isMinUbuntuBionic(Host host) :
 	(host.os == OS::Ubuntu_18_04);
 
 Boolean isWindows(Host host) :

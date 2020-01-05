@@ -145,6 +145,11 @@ rocommunity public «getIpAddress(watcher)»
 syscontact Sysadmin («adminmail()»)
 syslocation «getLocation(getBaseNetwork(host)).name»
 sysservices 72
+«IF isMinUbuntuXenial(host) || isMinDebianStretch(host)»
+#
+# Don't log UDP connections.
+dontLogTCPWrappersConnects yes
+«ENDIF»
 #
 view all    included  .1                               80
 view system included  .iso.org.dod.internet.mgmt.mib-2.system
@@ -217,15 +222,15 @@ echo $age
 «FILE config(host, sudoers(host)) CONFIG»
 «EXPAND tools::ConfigHeader(sudoers(host))»
 «IF hasSmart(host)»
-snmp	ALL = NOPASSWD: /usr/sbin/smartctl
+«snmpUser(host)»	ALL = NOPASSWD: /usr/sbin/smartctl
 «ENDIF»
 «IF has3ware(host)»
-snmp	ALL = NOPASSWD: /usr/sbin/tw_cli
+«snmpUser(host)»	ALL = NOPASSWD: /usr/sbin/tw_cli
 «ENDIF»
 «IF hasLsi(host)»
-snmp	ALL = NOPASSWD: /usr/sbin/megacli
+«snmpUser(host)»	ALL = NOPASSWD: /usr/sbin/megacli
 «ENDIF»
-snmp	ALL = NOPASSWD: /bin/grep
+«snmpUser(host)»	ALL = NOPASSWD: /bin/grep
 «ENDFILE»
 «ENDDEFINE»
 
