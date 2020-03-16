@@ -39,13 +39,6 @@ HostKey /etc/ssh/ssh_host_ecdsa_key
 HostKey /etc/ssh/ssh_host_dsa_key
 «ENDIF»
 
-#Privilege Separation is turned on for security
-#UsePrivilegeSeparation yes
-
-# Lifetime and size of ephemeral version 1 server key
-#KeyRegenerationInterval 3600
-#ServerKeyBits 768
-
 # Logging
 SyslogFacility AUTH
 LogLevel VERBOSE
@@ -55,7 +48,7 @@ LoginGraceTime 120
 PermitRootLogin yes
 StrictModes yes
 
-#RSAAuthentication yes
+# RSAAuthentication yes
 PubkeyAuthentication yes
 #AuthorizedKeysFile     %h/.ssh/authorized_keys
 
