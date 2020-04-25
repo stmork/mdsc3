@@ -40,25 +40,33 @@ Boolean isUbuntu(Host host) :
 	(host.os == OS::Ubuntu_12_04) ||
 	(host.os == OS::Ubuntu_14_04) ||
 	(host.os == OS::Ubuntu_16_04) ||
-	(host.os == OS::Ubuntu_18_04);
+	(host.os == OS::Ubuntu_18_04) ||
+	(host.os == OS::Ubuntu_20_04);
 
 Boolean isMinUbuntuPrecise(Host host) :
 	(host.os == OS::Ubuntu_12_04) ||
 	(host.os == OS::Ubuntu_14_04) ||
 	(host.os == OS::Ubuntu_16_04) ||
-	(host.os == OS::Ubuntu_18_04);
+	(host.os == OS::Ubuntu_18_04) ||
+	(host.os == OS::Ubuntu_20_04);
 
 Boolean isMinUbuntuTrusty(Host host) :
 	(host.os == OS::Ubuntu_14_04) ||
 	(host.os == OS::Ubuntu_16_04) ||
-	(host.os == OS::Ubuntu_18_04);
+	(host.os == OS::Ubuntu_18_04) ||
+	(host.os == OS::Ubuntu_20_04);
 
 Boolean isMinUbuntuXenial(Host host) :
 	(host.os == OS::Ubuntu_16_04) ||
-	(host.os == OS::Ubuntu_18_04);
+	(host.os == OS::Ubuntu_18_04) ||
+	(host.os == OS::Ubuntu_20_04);
 
 Boolean isMinUbuntuBionic(Host host) :
-	(host.os == OS::Ubuntu_18_04);
+	(host.os == OS::Ubuntu_18_04) ||
+	(host.os == OS::Ubuntu_20_04);
+
+Boolean isMinUbuntuFocal(Host host) :
+	(host.os == OS::Ubuntu_20_04);
 
 Boolean isWindows(Host host) :
 	host.os.toString().startsWith("Windows");

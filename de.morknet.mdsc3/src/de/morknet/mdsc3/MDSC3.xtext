@@ -77,6 +77,7 @@ enum OS : Dummy='Dummy' |
 	Ubuntu_14_04='Trusty' |
 	Ubuntu_16_04='Xenial' |
 	Ubuntu_18_04='Bionic' |
+	Ubuntu_20_04='Focal' |
 	ArchLinux='ArchLinux' |
 	Windows_2K3='Windows Server 2003'|
 	Windows_2K8='Windows Server 2008'|
