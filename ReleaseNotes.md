@@ -29,5 +29,14 @@
 * Support for NVME.
 
 # V3.0.8:
-* Support for Ubuntu Bionic.
-* Support for Debian Stretch and Buster.
+* Support for new Ubuntu
+  * Bionic
+  * Focal
+* Support for new Debian
+  * Stretch
+  * Buster
+  * Bullseye
+  * Bookworm
+* Support for new macOS up to Big Sur
+* Removed old Windows support.
+

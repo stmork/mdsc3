@@ -73,21 +73,24 @@ enum OS : Dummy='Dummy' |
 	Debian8='Jessie'|
 	Debian9='Stretch'|
 	Debian10='Buster'|
+	Debian11='Bullseye'|
+	Debian12='Bookworm'|
 	Ubuntu_12_04='Precise' |
 	Ubuntu_14_04='Trusty' |
 	Ubuntu_16_04='Xenial' |
 	Ubuntu_18_04='Bionic' |
 	Ubuntu_20_04='Focal' |
 	ArchLinux='ArchLinux' |
-	Windows_2K3='Windows Server 2003'|
-	Windows_2K8='Windows Server 2008'|
 	Windows_2K12='Windows Server 2012'|
 	Windows_7='Windows 7'|
-	Mac_10_6='Snow'|
-	Mac_10_7='Lion'|
-	Mac_10_8='Mountain Lion'|
-	Mac_10_9='Mavericks'|
+	Windows_10='Windows 10'|
 	Mac_10_10='Yosemite'|
+	Mac_10_11='El Capitan'|
+	Mac_10_12='Sierra'|
+	Mac_10_13='High Sierra'|
+	Mac_10_14='Mojave'|
+	Mac_10_15='Catalina'|
+	Mac_11_0='Big Sur'|
 	Red_Hat='Red Hat';
 
 //**************************
@@ -271,3 +274,4 @@ terminal HOSTNAME:
 
 terminal INTERFACE:
 	('#')?('a'..'z')+('0'..'9')*(':' ('0'..'9')+)?;
+
