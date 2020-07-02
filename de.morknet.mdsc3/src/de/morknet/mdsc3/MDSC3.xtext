@@ -90,7 +90,7 @@ enum OS : Dummy='Dummy' |
 	Mac_10_13='High Sierra'|
 	Mac_10_14='Mojave'|
 	Mac_10_15='Catalina'|
-	Mac_11_0='Big Sur'|
+	Mac_11_00='Big Sur'|
 	Red_Hat='Red Hat';
 
 //**************************

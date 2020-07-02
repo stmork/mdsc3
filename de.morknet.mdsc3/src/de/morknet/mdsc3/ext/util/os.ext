@@ -19,22 +19,30 @@ Boolean isDebian(Host host) :
 	(host.os == OS::Debian7) ||
 	(host.os == OS::Debian8) ||
 	(host.os == OS::Debian9) ||
-	(host.os == OS::Debian10);
+	(host.os == OS::Debian10) ||
+	(host.os == OS::Debian11) ||
+	(host.os == OS::Debian12);
 
 Boolean isMinDebianWheezy(Host host) :
 	(host.os == OS::Debian7) ||
 	(host.os == OS::Debian8) ||
 	(host.os == OS::Debian9) ||
-	(host.os == OS::Debian10);
+	(host.os == OS::Debian10) ||
+	(host.os == OS::Debian11) ||
+	(host.os == OS::Debian12);
 
 Boolean isMinDebianJessie(Host host) :
 	(host.os == OS::Debian8) ||
 	(host.os == OS::Debian9) ||
-	(host.os == OS::Debian10);
+	(host.os == OS::Debian10) ||
+	(host.os == OS::Debian11) ||
+	(host.os == OS::Debian12);
 
 Boolean isMinDebianStretch(Host host) :
 	(host.os == OS::Debian9) ||
-	(host.os == OS::Debian10);
+	(host.os == OS::Debian10) ||
+	(host.os == OS::Debian11) ||
+	(host.os == OS::Debian12);
 
 Boolean isUbuntu(Host host) :
 	(host.os == OS::Ubuntu_12_04) ||
@@ -77,9 +85,10 @@ Boolean isWindowsServer(Host host) :
 	(host.os == OS::Windows_2K12);
 
 Boolean isMac(Host host) :
-	(host.os == OS::Mac_10_6) ||
-	(host.os == OS::Mac_10_7) ||
-	(host.os == OS::Mac_10_8) ||
-	(host.os == OS::Mac_10_9) ||
-	(host.os == OS::Mac_10_10);
-	
+	(host.os == OS::Mac_10_10) ||
+	(host.os == OS::Mac_10_11) ||
+	(host.os == OS::Mac_10_12) ||
+	(host.os == OS::Mac_10_13) ||
+	(host.os == OS::Mac_10_14) ||
+	(host.os == OS::Mac_10_15) ||
+	(host.os == OS::Mac_11_00);
