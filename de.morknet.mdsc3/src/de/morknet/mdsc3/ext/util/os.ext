@@ -80,8 +80,6 @@ Boolean isWindows(Host host) :
 	host.os.toString().startsWith("Windows");
 
 Boolean isWindowsServer(Host host) :
-	(host.os == OS::Windows_2K3) ||
-	(host.os == OS::Windows_2K8) ||
 	(host.os == OS::Windows_2K12);
 
 Boolean isMac(Host host) :
