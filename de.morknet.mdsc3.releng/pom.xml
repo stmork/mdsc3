@@ -10,10 +10,10 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<tycho-version>0.24.0</tycho-version>
-		<tycho-extras-version>0.24.0</tycho-extras-version>
+		<tycho-version>1.7.0</tycho-version>
+		<tycho-extras-version>1.7.0</tycho-extras-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<eclipse.distro>mars</eclipse.distro>
+		<eclipse.distro>2018-09</eclipse.distro>
 		<source.update.site>http://mdsc3.sourceforge.net/updates/release/</source.update.site>
 	</properties>
 
@@ -46,16 +46,6 @@
 
 	<build>
 		<plugins>
-<!-- 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.5</version>
-				<configuration>
-					<encoding>${project.build.sourceEncoding}</encoding>
-				</configuration>
-			</plugin>
- -->
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-maven-plugin</artifactId>
@@ -231,7 +221,6 @@
 			<layout>p2</layout>
 			<url>http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/</url>
 		</repository>
--->
 
 		<repository>
 			<id>codehaus-snapshots</id>
@@ -243,6 +232,7 @@
 				<enabled>false</enabled>
 			</releases>
 		</repository>
+-->
 	</repositories>
 
 	<pluginRepositories>
