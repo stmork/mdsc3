@@ -15,6 +15,7 @@ pipeline
 			{
 				withMaven()
 				{
+					sh "mvn clean verify"
 				}
 			}
 		}
