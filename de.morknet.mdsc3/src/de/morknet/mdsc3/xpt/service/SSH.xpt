@@ -29,22 +29,21 @@ SyslogFacility AUTH
 LogLevel VERBOSE
 StrictModes yes
 ##
-PubkeyAuthentication yes
-PermitEmptyPasswords no
+# Authentication
 ChallengeResponseAuthentication no
+PubkeyAuthentication yes
+PermitRootLogins yes
+PermitEmptyPasswords no
 PasswordAuthentication no
 ##
-X11Forwarding yes
 X11DisplayOffset 10
 PrintMotd no
 PrintLastLog yes
 TCPKeepAlive yes
-AcceptEnv LANG LC_*
-UsePAM yes
 ##
 ##
 # Ciphers & Co.
-##
+# Copy ciphers, kex' and MACs to own config file on demand.
 «IF isMinUbuntuTrusty(host)»
 # Ciphers       chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes256-ctr,aes256-cbc,aes128-ctr,aes128-cbc
 «ELSE»
