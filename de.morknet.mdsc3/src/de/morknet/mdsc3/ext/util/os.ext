@@ -83,10 +83,6 @@ Boolean isWindowsServer(Host host) :
 	(host.os == OS::Windows_2K12);
 
 Boolean isMac(Host host) :
-	(host.os == OS::Mac_10_10) ||
-	(host.os == OS::Mac_10_11) ||
-	(host.os == OS::Mac_10_12) ||
-	(host.os == OS::Mac_10_13) ||
 	(host.os == OS::Mac_10_14) ||
 	(host.os == OS::Mac_10_15) ||
 	(host.os == OS::Mac_11_00);
