@@ -13,7 +13,7 @@ pipeline
 		{
 			steps
 			{
-				withMaven()
+				withMaven(mavenSettingsFilePath: 'de.morknet.mdsc3.releng/pom.xml')
 				{
 					sh "mvn clean verify"
 				}
