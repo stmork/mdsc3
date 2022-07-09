@@ -19,3 +19,4 @@ public class MDSC3RuntimeModule extends de.morknet.mdsc3.AbstractMDSC3RuntimeMod
 		return MdscValueConverters.class;
 	}
 }
+	
