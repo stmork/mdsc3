@@ -32,7 +32,6 @@ StrictModes yes
 # Authentication
 ChallengeResponseAuthentication no
 PubkeyAuthentication yes
-PermitRootLogins yes
 PermitEmptyPasswords no
 PasswordAuthentication no
 ##
