@@ -40,3 +40,5 @@
 * Support for new macOS up to Big Sur
 * Removed old Windows support.
 
+# V3.0.9
+* Moved SSH server configuration into subdirectory.
