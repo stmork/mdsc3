@@ -25,11 +25,11 @@ pipeline
 	{
 		failure
 		{
-			sendMail('sm@morknet.de')
+			mail to: 'sm@morknet.de'
 		}
 		success
 		{
-			sendMail('sm@morknet.de')
+			mail to: 'sm@morknet.de'
 		}
 		always
 		{
