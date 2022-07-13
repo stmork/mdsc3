@@ -23,6 +23,10 @@ pipeline
 
 	post
 	{
+		failure
+		{
+			sendMail('sm@morknet.de')
+		}
 		always
 		{
 			chuckNorris()
