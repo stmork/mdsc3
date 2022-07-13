@@ -27,6 +27,10 @@ pipeline
 		{
 			sendMail('sm@morknet.de')
 		}
+		success
+		{
+			sendMail('sm@morknet.de')
+		}
 		always
 		{
 			chuckNorris()
