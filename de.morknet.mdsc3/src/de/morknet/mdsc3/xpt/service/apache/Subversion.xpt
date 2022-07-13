@@ -219,7 +219,7 @@ IncludeOptional «tracconf()»/[^.#]*
 #
 IncludeOptional «gitconf()»/[^.#]*
 #
-SetEnv GIT_PROJECT_ROOT /data/git
+SetEnv GIT_PROJECT_ROOT «gitdir()»
 SetEnv GIT_HTTP_EXPORT_ALL
 ScriptAlias /git/ /usr/lib/git-core/git-http-backend/
 «ENDFILE»
