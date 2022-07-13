@@ -23,14 +23,6 @@ pipeline
 
 	post
 	{
-		failure
-		{
-			mail to: 'sm@morknet.de'
-		}
-		success
-		{
-			mail to: 'sm@morknet.de'
-		}
 		always
 		{
 			chuckNorris()
