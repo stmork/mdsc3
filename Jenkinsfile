@@ -26,6 +26,7 @@ pipeline
 		always
 		{
 			chuckNorris()
+			step([$class: 'Mailer', recipients: 'sm@morknet.de'])
 		}
 	}
 }

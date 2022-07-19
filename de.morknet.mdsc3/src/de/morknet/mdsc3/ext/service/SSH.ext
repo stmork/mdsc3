@@ -18,7 +18,7 @@ cached String config(SSH ssh) :
 	"/etc/ssh/sshd_config.d/mdsc3.conf";
 
 cached String init(SSH ssh) :
-	isUbuntu(getHost(ssh))? "systemctl reload ssh" :
+	isUbuntu(getHost(ssh))? "systemctl reload ssh # " :
 		(isRedHat(getHost(ssh)) ? "/etc/init.d/sshd" : "/etc/init.d/ssh");
 
 cached String login(Host host) :
