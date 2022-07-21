@@ -379,7 +379,7 @@ fi
 echo "Creating repository..."
 mkdir ${GIT_REPOSITORY}
 cd ${GIT_REPOSITORY}
-git init --bare --shared=group
+git init --bare --shared=0660
 git update-server-info
 touch git-daemon-export-ok
 git config --file config http.receivepack true
@@ -388,9 +388,9 @@ echo "Copying hook scripts..."
 test -f «GIT_hook()» && sed -e s\\%TRAC_DIR%\\$TRAC_BASE/$PROJECT_NAME\\g «GIT_hook()» >hooks/post-receive
 #
 echo "Setting rights for repository..."
-chgrp -R ${WWW_GROUP} ${GIT_REPOSITORY}
-chown -R ${WWW_USER}  ${GIT_REPOSITORY}
-chmod 750 ${GIT_REPOSITORY} -R
+chown -R ${WWW_USER}.${GROUP_NAME}  ${GIT_REPOSITORY}
+chmod -R ug+rwX,o-rwx               ${GIT_REPOSITORY}
+find ${GIT_REPOSITORY} -type d|xargs chmod g+s
 #
 echo "Configuring Apache Location for Git"
 echo '<Location "/git/'$PROJECT_NAME'">
