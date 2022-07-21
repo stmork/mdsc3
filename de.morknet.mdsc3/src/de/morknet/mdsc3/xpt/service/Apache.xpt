@@ -277,7 +277,7 @@ LDAPSharedCacheSize   8192000
 		AuthUserFile /dev/null
 		AuthPAM_Enabled on
 		AuthBasicAuthoritative Off
-		Require group «getAdminGroup()»
+		Require group «group»
 «IF group != getAdminGroup()»
 		Require group «getAdminGroup()»
 «ENDIF»
@@ -305,7 +305,7 @@ LDAPSharedCacheSize   8192000
 	Require valid-user
 
 	<IfModule mod_authz_unixgroup.c>
-		Require unix-group «getAdminGroup()»
+		Require unix-group «group»
 «IF group != getAdminGroup()»
 		Require unix-group «getAdminGroup()»
 «ENDIF»

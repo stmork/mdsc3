@@ -283,8 +283,10 @@ logout = disabled
 #
 [components]
 webadmin.* = enabled
+tractoc.* = enabled
 «IF isApache24(host)»
-tracopt.versioncontrol.svn.svn_fs.subversionconnector = enabled
+tracopt.versioncontrol.svn.* = enabled
+tracopt.versioncontrol.git.* = enabled
 «ENDIF»
 #
 [notification]
@@ -426,7 +428,12 @@ logout = disabled
 #
 [components]
 webadmin.* = enabled
+tractoc.* = enabled
 tracext.git.* = enabled
+«IF isApache24(host)»
+tracopt.versioncontrol.svn.* = enabled
+tracopt.versioncontrol.git.* = enabled
+«ENDIF»
 #
 [notification]
 always_notify_owner    = true
