@@ -15,7 +15,7 @@
 		<tycho-extras-version>2.7.4</tycho-extras-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<xtext-version>2.27.0</xtext-version>
-		<eclipse.distro>2021-09</eclipse.distro>
+		<eclipse.distro>2021-12</eclipse.distro>
 		<source.update.site>http://mdsc3.sourceforge.net/updates/release/</source.update.site>
 	</properties>
 
