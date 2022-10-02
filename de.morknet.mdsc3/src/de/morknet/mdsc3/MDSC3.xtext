@@ -89,6 +89,7 @@ enum OS : Dummy='Dummy' |
 	Mac_10_15='Catalina'|
 	Mac_11_00='Big Sur'|
 	Mac_12_00='Monterey'|
+	Mac_13_00='Ventura'|
 	Red_Hat='Red Hat';
 
 //**************************
