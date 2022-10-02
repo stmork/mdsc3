@@ -5,12 +5,9 @@ Bundle-Vendor: MORKNet
 Bundle-Version: 3.0.9.qualifier
 Bundle-SymbolicName: de.morknet.mdsc3; singleton:=true
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.equinox.common;bundle-version="3.5.0";visibility:=reexport,
- org.eclipse.emf.ecore,
- org.eclipse.emf.common,
- org.eclipse.emf.mwe2.launch;visibility:=reexport,
- org.eclipse.emf.mwe2.lib;visibility:=reexport,
- org.eclipse.xtext;visibility:=reexport,
+Require-Bundle: org.eclipse.jdt.core;visibility:=reexport,
+ org.eclipse.core.resources;visibility:=reexport,
+ org.eclipse.xtext,
  org.eclipse.xtext.xbase;visibility:=reexport,
  org.eclipse.xtext.common.types,
  org.eclipse.xtext.generator,
@@ -18,6 +15,10 @@ Require-Bundle: org.eclipse.equinox.common;bundle-version="3.5.0";visibility:=re
  org.eclipse.xtend;visibility:=reexport,
  org.eclipse.xtend.typesystem.emf;visibility:=reexport,
  org.eclipse.xpand;visibility:=reexport,
+ org.eclipse.emf.ecore,
+ org.eclipse.emf.common,
+ org.eclipse.emf.mwe2.launch;visibility:=reexport,
+ org.eclipse.emf.mwe2.lib;visibility:=reexport,
  org.objectweb.asm;bundle-version="5.0.1";resolution:=optional;visibility:=reexport,
  org.antlr.runtime,
  org.apache.commons.logging;visibility:=reexport,
