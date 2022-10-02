@@ -42,3 +42,6 @@
 
 # V3.0.9
 * Moved SSH server configuration into subdirectory.
+* Support for
+  * Ubuntu Jammy
+  * macOS Ventura
