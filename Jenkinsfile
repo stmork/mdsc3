@@ -4,7 +4,7 @@ pipeline
 
 	tools
 	{
-        jdk 'OpenJDK 8.0'
+        jdk 'OpenJDK 11.0'
     }
 
 	stages
