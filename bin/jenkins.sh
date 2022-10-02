@@ -2,8 +2,10 @@
 
 DISTRO=${1:-2021-12}
 RELEASE=${2:-R}
-DOWNLOAD_SERVER=archive.eclipse.org
-DOWNLOAD_URI=
+DOWNLOAD_SERVER=ftp.halifax.rwth-aachen.de
+#DOWNLOAD_SERVER=archive.eclipse.org
+DOWNLOAD_URI=/eclipse
+#DOWNLOAD_URI="/downloads/download.php?file="
 
 #LEVEL=release
 LEVEL=snapshot
@@ -13,7 +15,7 @@ TARGET_BASE=${BASE}/target
 DOWNLOAD=${TARGET_BASE}/download
 BUILD=${BASE}
 DIST=${TARGET_BASE}/dist
-DIRECTOR_ZIP=eclipse-testing-kepler-SR2-linux-gtk-x86_64.tar.gz
+DIRECTOR_ZIP=eclipse-java-${DISTRO}-${RELEASE}-linux-gtk-x86_64.tar.gz
 DIRECTOR=${TARGET_BASE}/eclipse/eclipse
 
 set -e
@@ -22,7 +24,7 @@ mkdir -p $DOWNLOAD $BUILD $DIST
 echo "Preparing director..."
 if [ ! -e ${DOWNLOAD}/${DIRECTOR_ZIP} ]
 then
-	URL="http://${DOWNLOAD_SERVER}${DOWNLOAD_URI}/technology/epp/downloads/release/kepler/SR2/${DIRECTOR_ZIP}"
+	URL="http://${DOWNLOAD_SERVER}${DOWNLOAD_URI}/technology/epp/downloads/release/${DISTRO}/${RELEASE}/${DIRECTOR_ZIP}"
     echo "Downloading $URL..."
     wget -q $URL -O ${DOWNLOAD}/${DIRECTOR_ZIP}
 fi
