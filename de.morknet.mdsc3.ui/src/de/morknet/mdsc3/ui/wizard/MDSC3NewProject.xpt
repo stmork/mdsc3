@@ -58,7 +58,7 @@ Bundle-Vendor: «name.toFirstUpper()»
 	<target name="generate">
 		<mkdir dir="${gencnf-path}" />
 		<mkdir dir="${genlog-path}" />
-        <java classname="org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher" classpathref="generate.classpath" fork="true">
+		<java classname="org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher" classpathref="generate.classpath" fork="true">
 			<arg value="workflow/«name».mwe2"/>
 		</java>
 	</target>

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DISTRO=${1:-2019-06}
+DISTRO=${1:-2021-12}
 RELEASE=${2:-R}
 DOWNLOAD_SERVER=archive.eclipse.org
 DOWNLOAD_URI=

@@ -2,6 +2,7 @@
 <project
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
 	<name>Modelbased Server Configuration Release Engineering</name>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.morknet.mdsc3</groupId>
@@ -10,10 +11,11 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<tycho-version>1.7.0</tycho-version>
-		<tycho-extras-version>1.7.0</tycho-extras-version>
+		<tycho-version>2.7.4</tycho-version>
+		<tycho-extras-version>2.7.4</tycho-extras-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<eclipse.distro>2018-09</eclipse.distro>
+		<xtext-version>2.27.0</xtext-version>
+		<eclipse.distro>2021-12</eclipse.distro>
 		<source.update.site>http://mdsc3.sourceforge.net/updates/release/</source.update.site>
 	</properties>
 
@@ -141,6 +143,12 @@
 				<plugin>
 					<groupId>${tycho-groupid}</groupId>
 					<artifactId>tycho-p2-director-plugin</artifactId>
+					<version>${tycho-version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>${tycho-groupid}</groupId>
+					<artifactId>tycho-bundles</artifactId>
 					<version>${tycho-version}</version>
 				</plugin>
 
