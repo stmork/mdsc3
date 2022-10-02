@@ -25,7 +25,7 @@ echo "Preparing director..."
 if [ ! -e ${DOWNLOAD}/${DIRECTOR_ZIP} ]
 then
 	URL="http://${DOWNLOAD_SERVER}${DOWNLOAD_URI}/technology/epp/downloads/release/${DISTRO}/${RELEASE}/${DIRECTOR_ZIP}"
-    echo "Downloading $URL..."
+    echo "Downloading $URL"
     wget -q $URL -O ${DOWNLOAD}/${DIRECTOR_ZIP}
 fi
 
@@ -85,7 +85,7 @@ function build
 		if [ ! -e ${DOWNLOAD}/${ECLIPSE} ]
 		then
 			URL="http://${DOWNLOAD_SERVER}${DOWNLOAD_URI}/technology/epp/downloads/release/${DISTRO}/${RELEASE}/${ECLIPSE}"
-			echo "Downloading $URL..."
+			echo "Downloading $URL"
 			wget -q $URL -O "${DOWNLOAD}/${ECLIPSE}"
 		fi
 
