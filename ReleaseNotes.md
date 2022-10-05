@@ -45,3 +45,6 @@
 * Support for
   * Ubuntu Jammy
   * macOS Ventura
+
+# V3.0.10
+* Support for Debian Trixie.
