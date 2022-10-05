@@ -75,6 +75,7 @@ enum OS : Dummy='Dummy' |
 	Debian10='Buster'|
 	Debian11='Bullseye'|
 	Debian12='Bookworm'|
+	Debian13='Trixie'|
 	Ubuntu_12_04='Precise' |
 	Ubuntu_14_04='Trusty' |
 	Ubuntu_16_04='Xenial' |
