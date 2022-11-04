@@ -299,6 +299,7 @@ version(s), and exceptions or additional permissions here}."
    </url>
 
    <requires>
+      <import plugin="de.morknet.mdsc3" version="3.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.equinox.common" version="3.5.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.emf.ecore"/>
       <import plugin="org.eclipse.emf.common"/>
@@ -310,7 +311,6 @@ version(s), and exceptions or additional permissions here}."
       <import plugin="org.antlr.runtime"/>
       <import plugin="org.apache.commons.logging"/>
       <import plugin="org.apache.log4j" version="1.2.15" match="greaterOrEqual"/>
-      <import plugin="de.morknet.mdsc3" version="3.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.xtext.ui"/>
       <import plugin="org.eclipse.ui.editors" version="3.5.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.ui.ide" version="3.5.0" match="greaterOrEqual"/>
