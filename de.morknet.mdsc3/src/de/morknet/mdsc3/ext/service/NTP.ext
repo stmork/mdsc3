@@ -32,8 +32,10 @@ List[String] getExternalNtpServer() :
 		"ptbtime1.ptb.de",
 		"ptbtime2.ptb.de",
 		"ptbtime3.ptb.de",
-		"ntp1.belwue.de",
-		"ntp2.belwue.de"
+		"0.de.pool.ntp.org",
+		"1.de.pool.ntp.org",
+		"2.de.pool.ntp.org",
+		"3.de.pool.ntp.org"
 	};
 
 String AppArmor(Host host) :
