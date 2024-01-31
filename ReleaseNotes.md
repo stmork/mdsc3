@@ -45,3 +45,9 @@
 * Support for
   * Ubuntu Jammy
   * macOS Ventura
+
+# 3.0.10
+* Changed NTP servers
+* Added support for new Ubuntu LTS distributions.
+* Added support for Debian Trixie
+* Added macOS versions.
