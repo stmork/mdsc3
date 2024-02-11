@@ -1,5 +1,5 @@
 /*
-**	Copyright (C) 2016 - Steffen A. Mork
+**	Copyright (C) 2024 - Steffen A. Mork
 **	$Id$
 */
 
@@ -196,6 +196,9 @@ String iftab(Host host) :
 
 String udev_rules(Host host) :
 	"/etc/udev/rules.d/70-persistent-net.rules";
+
+String link(NIC nic) :
+	"/etc/systemd/network/60-bridge-" + nic.name + ".link";
 
 String interfaces(Host host) :
 	"/etc/network/interfaces";

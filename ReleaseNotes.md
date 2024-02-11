@@ -48,6 +48,10 @@
 
 # 3.0.10
 * Changed NTP servers
-* Added support for new Ubuntu LTS distributions.
-* Added support for Debian Trixie
-* Added macOS versions.
+* Support for new Ubuntu
+  * Noble
+* Support for new Debian
+  * Trixie
+* Support for new macOS
+  * Sonoma
+* Corrected bridging behaviour for newer systemd versions.
