@@ -48,6 +48,7 @@
 
 # 3.0.10
 * Changed NTP servers
+* Added NTP leap file.
 * Support for new Ubuntu
   * Noble
 * Support for new Debian

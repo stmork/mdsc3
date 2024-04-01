@@ -1,5 +1,5 @@
 <welcomePage 
-        title="SCT-Qt-Generator"
+        title="MDSC3 Generator"
         format="wrap">
         <intro>This generator allows to maintain the MORKNet infrastructure.</intro>
 </welcomePage>

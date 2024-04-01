@@ -45,6 +45,9 @@ hwclock --systohc
 #logfile «ntplogfile()»
 #
 driftfile «driftfile()»
+«IF isMinUbuntuJammy()»
+leapfile «ntpleapfile()»
+«ENDIF»
 statsdir «ntpstatdir()»/
 #
 statistics loopstats peerstats clockstats
@@ -56,7 +59,7 @@ filegen clockstats file clockstats type day enable
 # NOTE: in a local network, set the local stratum of *one* stable server
 # to 10; otherwise your clocks will drift apart if you lose connectivity.
 server 127.127.1.0
-fudge 127.127.1.0 stratum 13
+fudge 127.127.1.0 stratum 10
 #
 # You do need to talk to an NTP server or two (or three).
 «LET getNtpHosts() AS hosts»

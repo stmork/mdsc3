@@ -15,8 +15,8 @@ String config(NTP ntp) :
 cached Boolean hasNtp(Host host) :
 	host.services.exists(s|NTP.isInstance(s));
 
-List[Host] getNtpHosts(Host host) :
-	getBaseHosts(getBaseNetwork(host)).select(h|hasNtp(h)).sortBy(h|h.name);
+Set[Host] getNtpHosts(Host host) :
+	getBaseHosts(getBaseNetwork(host)).select(h|hasNtp(h)).toSet();
 
 /*
 List[String] getExternalNtpServer() :
@@ -60,6 +60,9 @@ String driftfile(Host host) :
 
 String ntplogfile(Host host) :
 	"/var/log/ntp";
+
+String ntpleapfile(Host host) :
+	"/usr/share/zoneinfo/leap-seconds.list";
 
 String ntpstatdir(Host host) :
 	"/var/log/ntpstats";
