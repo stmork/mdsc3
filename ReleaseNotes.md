@@ -47,4 +47,12 @@
   * macOS Ventura
 
 # V3.0.10
-* Support for Debian Trixie.
+* Changed NTP servers
+* Added NTP leap file.
+* Support for new Ubuntu
+  * Noble
+* Support for new Debian
+  * Trixie
+* Support for new macOS
+  * Sonoma
+* Corrected bridging behaviour for newer systemd versions.

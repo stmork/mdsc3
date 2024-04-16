@@ -66,6 +66,7 @@ public class ConfBeautifier extends BaseBeautifier {
 			name.endsWith(".cfg") ||
 			name.endsWith(".cf") ||
 			name.endsWith(".dot") ||
+			name.endsWith(".link") ||
 			name.equals("iftab") ||
 			name.equals("interfaces") ||
 			name.equals("sudoers") ||

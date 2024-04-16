@@ -76,12 +76,14 @@ enum OS : Dummy='Dummy' |
 	Debian11='Bullseye'|
 	Debian12='Bookworm'|
 	Debian13='Trixie'|
+	Debian14='Forky'|
 	Ubuntu_12_04='Precise' |
 	Ubuntu_14_04='Trusty' |
 	Ubuntu_16_04='Xenial' |
 	Ubuntu_18_04='Bionic' |
 	Ubuntu_20_04='Focal' |
 	Ubuntu_22_04='Jammy' |
+	Ubuntu_24_04='Noble' |
 	ArchLinux='ArchLinux' |
 	Windows_2K12='Windows Server 2012'|
 	Windows_7='Windows 7'|
@@ -91,6 +93,7 @@ enum OS : Dummy='Dummy' |
 	Mac_11_00='Big Sur'|
 	Mac_12_00='Monterey'|
 	Mac_13_00='Ventura'|
+	Mac_14_00='Sonoma'|
 	Red_Hat='Red Hat';
 
 //**************************

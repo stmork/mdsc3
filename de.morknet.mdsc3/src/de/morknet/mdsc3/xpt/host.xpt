@@ -1,5 +1,5 @@
 «REM»
-«###»		Copyright (C) 2016 - Steffen A. Mork
+«###»		Copyright (C) 2024 - Steffen A. Mork
 «###»		$Id$
 «ENDREM»
 
@@ -39,6 +39,7 @@
 «EXPAND iftab»
 «EXPAND udevRules»
 «EXPAND interfaces»
+«EXPAND link(this) FOREACH getNICs(this)»
 «EXPAND bonding_module»
 «EXPAND blacklist»
 «ENDIF»
@@ -199,6 +200,20 @@ options    single-request-reopen
 «FOREACH getNICs().rejectVPN().reject(n|isBonded(n) || isBridged(n)) AS nic»
 SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="«nic.mac»", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="eth*", NAME="«nic.name»"
 «ENDFOREACH»
+«ENDFILE»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE link(Host host) FOR NIC»
+«IF isMinUbuntuJammy(host) && isBridged() && isConnected()»
+«FILE config(host, link(this)) CONFIG»
+«EXPAND tools::ConfigHeader(link(this))»
+#
+[Match]
+OriginalName=«name»
+#
+[Link]
+MACAddressPolicy=none
 «ENDFILE»
 «ENDIF»
 «ENDDEFINE»
