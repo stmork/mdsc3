@@ -53,7 +53,7 @@ String ntprestart(Host host) :
 	"/etc/cron.hourly/ntp-restart";
 
 String ntpconfig(Host host) :
-	"/etc/ntp.conf";
+	isMinUbuntuNoble(host) ? "/etc/ntpsec/ntp.conf" : "/etc/ntpsec/ntp.conf";
 
 String driftfile(Host host) :
 	isSuSE(host) ? "/var/lib/ntp/drift/ntp.drift" : "/var/lib/ntp/ntp.drift";

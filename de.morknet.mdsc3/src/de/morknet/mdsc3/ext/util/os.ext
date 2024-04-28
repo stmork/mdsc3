@@ -100,6 +100,9 @@ Boolean isMinUbuntuJammy(Host host) :
 	(host.os == OS::Ubuntu_22_04) ||
 	(host.os == OS::Ubuntu_24_04);
 
+Boolean isMinUbuntuNoble(Host host) :
+	(host.os == OS::Ubuntu_24_04);
+
 Boolean isWindows(Host host) :
 	host.os.toString().startsWith("Windows");
 
