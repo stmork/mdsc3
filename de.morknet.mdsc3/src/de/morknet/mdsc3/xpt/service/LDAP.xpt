@@ -323,7 +323,7 @@ sed -e s/uri=\"\"//g  $BAD_LDIF >/tmp/bdb.ldif && mv /tmp/bdb.ldif $BAD_LDIF
 «IF !debug»
 echo "olcLoglevel: 0" >>$LDAP_DIR/cn\=config.ldif
 «ENDIF»
-chown -R openldap.openldap $LDAP_DIR
+chown -R openldap:openldap $LDAP_DIR
 «init(this)» start
 «ENDFILE»
 «ENDIF»

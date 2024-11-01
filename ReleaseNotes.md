@@ -56,3 +56,4 @@
 * Support for new macOS
   * Sonoma
 * Corrected bridging behaviour for newer systemd versions.
+* Corrected chown syntax.

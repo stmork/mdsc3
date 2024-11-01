@@ -200,7 +200,7 @@ test -f «sudoers()» && chmod 440 «sudoers()»
 #
 sed -n "/^-----BEGIN \(RSA \)*PRIVATE KEY-----/,/^-----END \(RSA \)*PRIVATE KEY-----/p"  «getSslKey()»   >«get3wareCert()»
 sed -n "/^-----BEGIN CERTIFICATE-----/,/^-----END CERTIFICATE-----/p"          «getSslCert()» >>«get3wareCert()»
-chown root.ssl-cert «get3wareCert()»
+chown root:ssl-cert «get3wareCert()»
 chmod 640           «get3wareCert()»
 chmod 750           «getOpt3wareScript()»
 «ENDIF»
@@ -273,12 +273,12 @@ test -d «getCrlBase()» || mkdir «getCrlBase()»
 test -e «getSslBase()»/$crl_name && mv «getSslBase()»/$crl_name «getCrlBase()»
 test -e «getCrlBase()»/.r0 && rm «getCrlBase()»/.r0 
 #
-chown root.ssl-cert «getSslBase()»/*-key.pem
+chown root:ssl-cert «getSslBase()»/*-key.pem
 chmod 640           «getSslBase()»/*-key.pem
 #
 if [ -e «getSslCaCert()» ]
 then
-	chown root.root     «getSslCaCert()» «getSslBase()»/*-cert.pem «getSslCrl()» «getSslCaChainCert()»
+	chown root:root     «getSslCaCert()» «getSslBase()»/*-cert.pem «getSslCrl()» «getSslCaChainCert()»
 	chmod 644           «getSslCaCert()» «getSslBase()»/*-cert.pem «getSslCrl()» «getSslCaChainCert()»
 	chmod 755           «getCrlBase()»
 fi
