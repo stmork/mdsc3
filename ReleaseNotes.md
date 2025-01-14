@@ -53,6 +53,7 @@
   * Noble
 * Support for new Debian
   * Trixie
+  * Forky
 * Support for new macOS
   * Sonoma
 * Corrected bridging behaviour for newer systemd versions.
