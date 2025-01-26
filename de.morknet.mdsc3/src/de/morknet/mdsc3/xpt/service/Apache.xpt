@@ -112,7 +112,9 @@ ServerSignature off
 	SSLCertificateFile      «getSslCert(host)»
 	SSLCertificateKeyFile   «getSslKey(host)»
 	SSLCACertificateFile    «getSslCaCert(host)»
+«REM»
 	SSLCertificateChainFile «getSslCaChainCert(host)»
+«ENDREM»
 #	SSLCARevocationPath     «getCrlBase(host)»
 #
 	<IfModule mod_headers.c>

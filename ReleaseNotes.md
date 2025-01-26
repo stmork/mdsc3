@@ -58,3 +58,4 @@
   * Sonoma
 * Corrected bridging behaviour for newer systemd versions.
 * Corrected chown syntax.
+* SSL certificate chain file in Apache 2.4.8 and later is deprecated.
