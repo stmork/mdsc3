@@ -11,8 +11,8 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<tycho-version>2.7.4</tycho-version>
-		<tycho-extras-version>2.7.4</tycho-extras-version>
+		<tycho-version>2.7.5</tycho-version>
+		<tycho-extras-version>2.7.5</tycho-extras-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<xtext-version>2.27.0</xtext-version>
 		<eclipse.distro>2021-12</eclipse.distro>
