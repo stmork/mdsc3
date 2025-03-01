@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
-    <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>de.morknet.mdsc3</groupId>
@@ -76,17 +76,17 @@
 					</execution>
 				</executions>
 			</plugin>
- 
+
 			<plugin>
 				<groupId>org.jboss.tools.tycho-plugins</groupId>
 				<artifactId>repository-utils</artifactId>
-				<version>2.7.5</version>
+				<version>${tycho-version}</version>
 
 				<dependencies>
 					<dependency>
 						<groupId>org.eclipse.tycho</groupId>
 						<artifactId>tycho-core</artifactId>
-						<version>2.7.5</version>
+						<version>${tycho-version}</version>
 					</dependency>
 				</dependencies>
 

@@ -1,14 +1,14 @@
 #!/bin/bash
 
-DISTRO=${1:-2021-12}
+DISTRO=${1:-2024-12}
 RELEASE=${2:-R}
 DOWNLOAD_SERVER=ftp.halifax.rwth-aachen.de
 #DOWNLOAD_SERVER=archive.eclipse.org
 DOWNLOAD_URI=/eclipse
 #DOWNLOAD_URI="/downloads/download.php?file="
 
-#LEVEL=release
-LEVEL=snapshot
+LEVEL=release
+#LEVEL=snapshot
 
 BASE=$PWD
 TARGET_BASE=${BASE}/target
@@ -17,6 +17,7 @@ BUILD=${BASE}
 DIST=${TARGET_BASE}/dist
 DIRECTOR_ZIP=eclipse-java-${DISTRO}-${RELEASE}-linux-gtk-x86_64.tar.gz
 DIRECTOR=${TARGET_BASE}/eclipse/eclipse
+LOG_CONFIG_XML=`realpath logback.xml`
 
 set -e
 mkdir -p $DOWNLOAD $BUILD $DIST
@@ -102,9 +103,10 @@ function build
 		${DIRECTOR} -noSplash\
 			-application org.eclipse.equinox.p2.director\
 			-profileProperties org.eclipse.update.install.features=true\
-			-repository http://mdsc3.sourceforge.net/updates/${LEVEL}/,http://download.eclipse.org/releases/${DISTRO}\
+			-repository https://mdsc3.sourceforge.net/updates/${LEVEL}/,http://download.eclipse.org/releases/${DISTRO}\
 			-destination ${DEST}\
-			-installIU de.morknet.mdsc3.feature.feature.group
+			-installIU de.morknet.mdsc3.feature.feature.group\
+			-vmargs -Dlogback.configurationFile=${LOG_CONFIG_XML}
 
 #		pack ${TARGET}
 	else

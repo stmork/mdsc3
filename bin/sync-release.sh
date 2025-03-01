@@ -2,6 +2,8 @@
 
 DST=/var/www/maven/mdsc3
 
+chmod -R o+rX de.morknet.mdsc3.updatesite/target/repository/
+
 chgrp -R  www-data  de.morknet.mdsc3.updatesite/target/repository/
 rsync -av --delete de.morknet.mdsc3.updatesite/target/repository/\
 	root@scorpius.morknet.de:${DST}/release/
