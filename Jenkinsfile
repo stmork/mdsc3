@@ -19,6 +19,17 @@ pipeline
 				}
 			}
 		}
+
+		stage('Deploy')
+		{
+			steps
+			{
+				sshagent(['becd95b9-30ad-4ba9-99db-60431bf32568'])
+				{
+					sh 'bin/sync-snapshot.sh'
+				}
+			}
+		}
 	}
 
 	post
