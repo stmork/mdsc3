@@ -59,3 +59,9 @@
 * Corrected bridging behaviour for newer systemd versions.
 * Corrected chown syntax.
 * SSL certificate chain file in Apache 2.4.8 and later is deprecated.
+
+# V3.0.11
+* Support for new Debian
+  * Duke
+* Added extended AppArmor support for NTP daemon.
+* Write network configuration into subdirectory /etc/network/interfaces.d

@@ -23,7 +23,8 @@ Boolean isDebian(Host host) :
 	(host.os == OS::Debian11) ||
 	(host.os == OS::Debian12) ||
 	(host.os == OS::Debian13) ||
-	(host.os == OS::Debian14);
+	(host.os == OS::Debian14) ||
+	(host.os == OS::Debian15);
 
 Boolean isMinDebianWheezy(Host host) :
 	(host.os == OS::Debian7) ||
@@ -33,7 +34,8 @@ Boolean isMinDebianWheezy(Host host) :
 	(host.os == OS::Debian11) ||
 	(host.os == OS::Debian12) ||
 	(host.os == OS::Debian13) ||
-	(host.os == OS::Debian14);
+	(host.os == OS::Debian14) ||
+	(host.os == OS::Debian15);
 
 Boolean isMinDebianJessie(Host host) :
 	(host.os == OS::Debian8) ||
@@ -42,7 +44,8 @@ Boolean isMinDebianJessie(Host host) :
 	(host.os == OS::Debian11) ||
 	(host.os == OS::Debian12) ||
 	(host.os == OS::Debian13) ||
-	(host.os == OS::Debian14);
+	(host.os == OS::Debian14) ||
+	(host.os == OS::Debian15);
 
 Boolean isMinDebianStretch(Host host) :
 	(host.os == OS::Debian9) ||
@@ -50,7 +53,8 @@ Boolean isMinDebianStretch(Host host) :
 	(host.os == OS::Debian11) ||
 	(host.os == OS::Debian12) ||
 	(host.os == OS::Debian13) ||
-	(host.os == OS::Debian14);
+	(host.os == OS::Debian14) ||
+	(host.os == OS::Debian15);
 
 Boolean isUbuntu(Host host) :
 	(host.os == OS::Ubuntu_12_04) ||
