@@ -56,7 +56,8 @@ String ntpconfig(Host host) :
 	isMinUbuntuNoble(host) ? "/etc/ntpsec/ntp.conf" : "/etc/ntpsec/ntp.conf";
 
 String driftfile(Host host) :
-	isSuSE(host) ? "/var/lib/ntp/drift/ntp.drift" : "/var/lib/ntp/ntp.drift";
+	isSuSE(host) ? "/var/lib/ntp/drift/ntp.drift" :
+		(isMinUbuntuNoble(host) ? "/var/lib/ntpsec/ntp.drift" : "/var/lib/ntp/ntp.drift");
 
 String ntplogfile(Host host) :
 	"/var/log/ntp";
