@@ -43,15 +43,13 @@ TCPKeepAlive yes
 ##
 # Ciphers & Co.
 # Copy ciphers, kex' and MACs to own config file on demand.
-«IF isMinUbuntuTrusty(host)»
+«IF isUbuntu(host)»
 # Ciphers       chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes256-ctr,aes256-cbc,aes128-ctr,aes128-cbc
-«ELSE»
-# Ciphers       aes256-ctr,aes256-cbc,aes128-ctr,aes128-cbc
 «ENDIF»
-«IF isMinUbuntuTrusty(host)»
+«IF isUbuntu(host)»
 # KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
 # MACs          hmac-sha2-512,hmac-sha2-256,hmac-sha1
-«ELSEIF isMinUbuntuPrecise(host) || isMinDebianWheezy(host) || isRedHat(host)»
+«ELSEIF isUbuntu(host) || isDebian(host) || isRedHat(host)»
 # KexAlgorithms diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
 # MACs          hmac-sha2-512,hmac-sha2-256,hmac-sha1
 «ELSE»

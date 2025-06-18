@@ -57,7 +57,9 @@ String ntpconfig(Host host) :
 
 String driftfile(Host host) :
 	isSuSE(host) ? "/var/lib/ntp/drift/ntp.drift" :
-		(isMinUbuntuNoble(host) ? "/var/lib/ntpsec/ntp.drift" : "/var/lib/ntp/ntp.drift");
+		(isMinUbuntuNoble(host) || isMinDebianBookworm(host) ?
+			"/var/lib/ntpsec/ntp.drift" :
+			"/var/lib/ntp/ntp.drift");
 
 String ntplogfile(Host host) :
 	"/var/log/ntp";

@@ -202,7 +202,7 @@ String link(NIC nic) :
 	"/etc/systemd/network/60-bridge-" + nic.name + ".link";
 
 String interfaces(Host host) :
-	isMinUbuntuJammy(host) ? "/etc/network/interfaces.d/mdsc3.conf" : "/etc/network/interfaces";
+	isMinUbuntuJammy(host) || isMinDebianBookworm(host) ? "/etc/network/interfaces.d/mdsc3.conf" : "/etc/network/interfaces";
 
 String locale(Host host) :
 	host.lang.split("\\.").first();

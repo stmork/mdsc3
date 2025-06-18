@@ -124,7 +124,7 @@ LogLevel info
 MaxLogSize 0
 #
 # Don't cancel jobs if printer is not reachable!
-«IF isMinUbuntuXenial(host)»
+«IF isUbuntu(host)»
 MaxJobTime 1461d
 «ELSE»
 MaxJobTime 0

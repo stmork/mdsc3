@@ -145,7 +145,7 @@ rocommunity public «getIpAddress(watcher)»
 syscontact Sysadmin («adminmail()»)
 syslocation «getLocation(getBaseNetwork(host)).name»
 sysservices 72
-«IF isMinUbuntuXenial(host) || isMinDebianStretch(host)»
+«IF isUbuntu(host) || isDebian(host)»
 #
 # Don't log UDP connections.
 dontLogTCPWrappersConnects yes

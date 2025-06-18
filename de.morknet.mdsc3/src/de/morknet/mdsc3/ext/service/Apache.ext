@@ -13,7 +13,7 @@ Apache getApache(Host host) :
 	host.services.typeSelect(Apache).first();
 
 cached Boolean isApache24(Host host) :
-	isMinUbuntuTrusty(host) || isMinDebianJessie(host);
+	isUbuntu(host) || isDebian(host);
 
 cached Boolean hasApache(Host host) :
 	host.services.exists(s|Apache.isInstance(s));
@@ -162,4 +162,4 @@ String GIT_hook(Apache service) :
 	"/root/config/trac-post-receive-hook.3.py";
 
 Boolean noWorkersFileConfig(Host host) :
-	isMinUbuntuPrecise(host) || isMinDebianWheezy(host);
+	isUbuntu(host) || isDebian(host);

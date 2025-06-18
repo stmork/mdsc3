@@ -90,7 +90,7 @@ String driveId(Drive hd) :
 //	hd.number;
 
 String snmpUser(Host host) :
-	isMinUbuntuBionic(host) || isMinDebianStretch(host )?
+	isUbuntu(host) || isDebian(host)?
 		"Debian-snmp" : "snmp";
 
 
