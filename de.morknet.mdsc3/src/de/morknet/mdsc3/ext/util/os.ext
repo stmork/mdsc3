@@ -41,11 +41,6 @@ Boolean isUbuntu(Host host) :
 	(host.os == OS::Ubuntu_22_04) ||
 	(host.os == OS::Ubuntu_24_04);
 
-Boolean isMinUbuntuFocal(Host host) :
-	(host.os == OS::Ubuntu_20_04) ||
-	(host.os == OS::Ubuntu_22_04) ||
-	(host.os == OS::Ubuntu_24_04);
-
 Boolean isMinUbuntuJammy(Host host) :
 	(host.os == OS::Ubuntu_22_04) ||
 	(host.os == OS::Ubuntu_24_04);

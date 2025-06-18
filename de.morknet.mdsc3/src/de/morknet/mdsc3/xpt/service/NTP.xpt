@@ -20,7 +20,7 @@
 «FILE config(this, AppArmor(this)) CONFIG -»«EXPAND tools::ConfigHeader(AppArmor(this))»
 /etc/ldap/ldap.conf r,
 /var/log/ntpstats/** rwl,
-«driftfile()» rw,
+«ntpdir()»** rw,
 «ENDFILE»
 «ENDDEFINE»
 

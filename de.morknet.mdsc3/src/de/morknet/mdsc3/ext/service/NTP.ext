@@ -53,13 +53,16 @@ String ntprestart(Host host) :
 	"/etc/cron.hourly/ntp-restart";
 
 String ntpconfig(Host host) :
-	isMinUbuntuNoble(host) ? "/etc/ntpsec/ntp.conf" : "/etc/ntpsec/ntp.conf";
+	isMinUbuntuNoble(host) ? "/etc/ntpsec/ntp.conf" : "/etc/ntp.conf";
+
+String ntpdir(Host host) :
+	isSuSE(host) ? "/var/lib/ntp/drift/" :
+		(isMinUbuntuNoble(host) || isMinDebianBookworm(host) ?
+			"/var/lib/ntpsec/" :
+			"/var/lib/ntp/");
 
 String driftfile(Host host) :
-	isSuSE(host) ? "/var/lib/ntp/drift/ntp.drift" :
-		(isMinUbuntuNoble(host) || isMinDebianBookworm(host) ?
-			"/var/lib/ntpsec/ntp.drift" :
-			"/var/lib/ntp/ntp.drift");
+	ntpdir(host) + "ntp.drift";
 
 String ntplogfile(Host host) :
 	"/var/log/ntp";
