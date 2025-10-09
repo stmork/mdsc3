@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DISTRO=${1:-2025-03}
+DISTRO=${1:-2025-09}
 RELEASE=${2:-R}
 DOWNLOAD_SERVER=ftp.halifax.rwth-aachen.de
 #DOWNLOAD_SERVER=archive.eclipse.org
@@ -108,9 +108,9 @@ function build
 		${DIRECTOR} -noSplash\
 			-application org.eclipse.equinox.p2.director\
 			-profileProperties org.eclipse.update.install.features=true\
-			-repository https://mdsc3.sourceforge.net/updates/${LEVEL}/,http://download.eclipse.org/releases/${DISTRO},http://download.eclipse.org/releases/2021-12/\
-			-installIU org.eclipse.emf.sdk.feature.group,org.eclipse.xpand.sdk.feature.group,org.eclipse.xtend.sdk.feature.group,org.eclipse.xtext.sdk.feature.group,de.morknet.mdsc3.feature.feature.group\
+			-repository https://mdsc3.sourceforge.net/updates/${LEVEL}/,https://download.eclipse.org/releases/2024-06/\
 			-destination ${DEST}\
+			-installIU de.morknet.mdsc3.feature.feature.group\
 			-vmargs -Dlogback.configurationFile=${LOG_CONFIG_XML}
 
 		pack ${TARGET}
