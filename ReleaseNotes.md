@@ -63,5 +63,10 @@
 # V3.0.11
 * Support for new Debian
   * Duke
+* Support for new Ubuntu
+  * Resolute Racoon
+* Support for new macOS
+  * Sequoia
+  * Tahoe
 * Added extended AppArmor support for NTP daemon.
 * Write network configuration into subdirectory /etc/network/interfaces.d

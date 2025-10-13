@@ -39,14 +39,17 @@ Boolean isUbuntu(Host host) :
 	(host.os == OS::Ubuntu_18_04) ||
 	(host.os == OS::Ubuntu_20_04) ||
 	(host.os == OS::Ubuntu_22_04) ||
-	(host.os == OS::Ubuntu_24_04);
+	(host.os == OS::Ubuntu_24_04) ||
+	(host.os == OS::Ubuntu_26_04);
 
 Boolean isMinUbuntuJammy(Host host) :
 	(host.os == OS::Ubuntu_22_04) ||
-	(host.os == OS::Ubuntu_24_04);
+	(host.os == OS::Ubuntu_24_04) ||
+	(host.os == OS::Ubuntu_26_04);
 
 Boolean isMinUbuntuNoble(Host host) :
-	(host.os == OS::Ubuntu_24_04);
+	(host.os == OS::Ubuntu_24_04) ||
+	(host.os == OS::Ubuntu_26_04);
 
 Boolean isWindows(Host host) :
 	host.os.toString().startsWith("Windows");
@@ -60,4 +63,6 @@ Boolean isMac(Host host) :
 	(host.os == OS::Mac_11_00) ||
 	(host.os == OS::Mac_12_00) ||
 	(host.os == OS::Mac_13_00) ||
-	(host.os == OS::Mac_14_00);
+	(host.os == OS::Mac_14_00) ||
+	(host.os == OS::Mac_15_00) ||
+	(host.os == OS::Mac_26_00);
