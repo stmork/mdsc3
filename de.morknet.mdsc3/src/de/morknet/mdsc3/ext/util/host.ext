@@ -8,6 +8,7 @@ import emf;
 
 extension de::morknet::mdsc3::ext::util::model;
 extension de::morknet::mdsc3::ext::util::network;
+extension de::morknet::mdsc3::ext::util::os;
 
 Machine getMachine(NIC nic) :
 	(Machine)nic.eContainer;
@@ -201,7 +202,9 @@ String link(NIC nic) :
 	"/etc/systemd/network/60-bridge-" + nic.name + ".link";
 
 String interfaces(Host host) :
-	"/etc/network/interfaces";
+	isMinUbuntuJammy(host) || isMinDebianBookworm(host) ?
+		"/etc/network/interfaces.d/mdsc3.conf" :
+		"/etc/network/interfaces";
 
 String locale(Host host) :
 	host.lang.split("\\.").first();

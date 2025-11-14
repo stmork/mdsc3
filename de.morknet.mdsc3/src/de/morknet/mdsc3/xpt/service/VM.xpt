@@ -379,7 +379,7 @@ fi
 #
 for SNAPSHOT in `find ${VG} -name "*-snap"`
 do
-«IF isMinDebianWheezy(host)»
+«IF isDebian(host)»
 #	dmsetup remove ${SNAPSHOT} >/dev/null
 «ENDIF»
 	lvremove -f    ${SNAPSHOT} >/dev/null
@@ -435,7 +435,7 @@ do
 			logger -t BACKUP "  Backing up ${SNAPSHOT}..."
 			echo             "Backing up ${SNAPSHOT}..."
 			dd if=${SNAPSHOT} bs=4M | pbzip2 -1 -c >${DST_DIR}/${NAME}.dd.bz2
-«IF isMinDebianWheezy(host)»
+«IF isDebian(host)»
 #			dmsetup remove ${SNAPSHOT} >/dev/null
 «ENDIF»
 			lvremove -f    ${SNAPSHOT} >/dev/null

@@ -73,7 +73,7 @@ ServerSignature off
 #	A+ 100%/90%/100%/80%
 #	SSLProtocol             all +SSLv3 -TLSv1.1
 #	SSLCipherSuite          DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA:AES128-SHA:DES-CBC3-SHA
-«ELSEIF isMinUbuntuPrecise(host)»
+«ELSEIF isUbuntu(host)»
 	SSLProtocol             all -SSLv2 -SSLv3
 #
 «IF !hasSubversion(this)»

@@ -145,7 +145,7 @@ rocommunity public «getIpAddress(watcher)»
 syscontact Sysadmin («adminmail()»)
 syslocation «getLocation(getBaseNetwork(host)).name»
 sysservices 72
-«IF isMinUbuntuXenial(host) || isMinDebianStretch(host)»
+«IF isUbuntu(host) || isDebian(host)»
 #
 # Don't log UDP connections.
 dontLogTCPWrappersConnects yes
@@ -153,6 +153,9 @@ dontLogTCPWrappersConnects yes
 #
 view all    included  .1                               80
 view system included  .iso.org.dod.internet.mgmt.mib-2.system
+#
+# include a all *.conf files in a directory
+includeDir /etc/snmp/snmpd.conf.d
 «ENDFILE»
 «ENDDEFINE»
 

@@ -160,7 +160,7 @@ Legend1[«fqhn(this)»_imap]: connections
 ##
 «IF !isLinux(this)»
 Target[«fqhn(this)»_«nic.name»]: /«getIpAddress(nic)»:public@«fqhn(this)»::1:1
-«ELSEIF isMinUbuntuXenial()»
+«ELSEIF isUbuntu()»
 Target[«fqhn(this)»_«nic.name»]: #«nic.name»:public@«fqhn(this)»::1:1::2
 «ELSE»
 Target[«fqhn(this)»_«nic.name»]: \«nic.name»:public@«fqhn(this)»::1:1::2

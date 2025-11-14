@@ -2,7 +2,7 @@
 <feature
       id="de.morknet.mdsc3.feature"
       label="Modelbased Server Configuration V3"
-      version="3.0.10"
+      version="3.0.11"
       provider-name="MORKNet"
       plugin="de.morknet.mdsc3">
 
@@ -11,7 +11,7 @@
    </description>
 
    <copyright url="http://morknet.de/">
-      Copyright (C) 2024 - Steffen A. Mork. All rights reserved.
+      Copyright (C) 2025 - Steffen A. Mork. All rights reserved.
    </copyright>
 
    <license url="http://www.eclipse.org/legal/epl-v20.html">
@@ -321,6 +321,10 @@ version(s), and exceptions or additional permissions here}."
       <import plugin="org.eclipse.xtext.ui.codetemplates.ui"/>
       <import plugin="org.eclipse.compare"/>
       <import plugin="org.eclipse.xtext.ide"/>
+      <import feature="org.eclipse.emf.mwe.sdk"/>
+      <import feature="org.eclipse.xpand.sdk"/>
+      <import feature="org.eclipse.xtend.sdk"/>
+      <import feature="org.eclipse.xtext.sdk"/>
    </requires>
 
    <plugin

@@ -11,7 +11,7 @@
 	</parent>
 
 	<name>Modelbased Server Configuration UI</name>
-	<version>3.0.10</version>
+	<version>3.0.11</version>
 	<groupId>de.morknet.mdsc3</groupId>
 	<artifactId>de.morknet.mdsc3.ui</artifactId>
 	<packaging>eclipse-plugin</packaging>
@@ -20,14 +20,14 @@
 		<developer>
 			<name>Steffen Mork</name>
 			<email>linux-dev@morknet.de</email>
-			<url>http://morknet.de</url>
+			<url>https://morknet.de</url>
 		</developer>
 	</developers>
 
 	<licenses>
 		<license>
 			<name>Eclipse Public License</name>
-			<url>http://www.eclipse.org/legal/epl-v20.html</url>
+			<url>https://www.eclipse.org/legal/epl-v20.html</url>
 		</license>
 	</licenses>
 

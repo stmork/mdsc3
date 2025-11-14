@@ -23,34 +23,14 @@ Boolean isDebian(Host host) :
 	(host.os == OS::Debian11) ||
 	(host.os == OS::Debian12) ||
 	(host.os == OS::Debian13) ||
-	(host.os == OS::Debian14);
+	(host.os == OS::Debian14) ||
+	(host.os == OS::Debian15);
 
-Boolean isMinDebianWheezy(Host host) :
-	(host.os == OS::Debian7) ||
-	(host.os == OS::Debian8) ||
-	(host.os == OS::Debian9) ||
-	(host.os == OS::Debian10) ||
-	(host.os == OS::Debian11) ||
+Boolean isMinDebianBookworm(Host host) :
 	(host.os == OS::Debian12) ||
 	(host.os == OS::Debian13) ||
-	(host.os == OS::Debian14);
-
-Boolean isMinDebianJessie(Host host) :
-	(host.os == OS::Debian8) ||
-	(host.os == OS::Debian9) ||
-	(host.os == OS::Debian10) ||
-	(host.os == OS::Debian11) ||
-	(host.os == OS::Debian12) ||
-	(host.os == OS::Debian13) ||
-	(host.os == OS::Debian14);
-
-Boolean isMinDebianStretch(Host host) :
-	(host.os == OS::Debian9) ||
-	(host.os == OS::Debian10) ||
-	(host.os == OS::Debian11) ||
-	(host.os == OS::Debian12) ||
-	(host.os == OS::Debian13) ||
-	(host.os == OS::Debian14);
+	(host.os == OS::Debian14) ||
+	(host.os == OS::Debian15);
 
 Boolean isUbuntu(Host host) :
 	(host.os == OS::Ubuntu_12_04) ||
@@ -59,49 +39,17 @@ Boolean isUbuntu(Host host) :
 	(host.os == OS::Ubuntu_18_04) ||
 	(host.os == OS::Ubuntu_20_04) ||
 	(host.os == OS::Ubuntu_22_04) ||
-	(host.os == OS::Ubuntu_24_04);
-
-Boolean isMinUbuntuPrecise(Host host) :
-	(host.os == OS::Ubuntu_12_04) ||
-	(host.os == OS::Ubuntu_14_04) ||
-	(host.os == OS::Ubuntu_16_04) ||
-	(host.os == OS::Ubuntu_18_04) ||
-	(host.os == OS::Ubuntu_20_04) ||
-	(host.os == OS::Ubuntu_22_04) ||
-	(host.os == OS::Ubuntu_24_04);
-
-Boolean isMinUbuntuTrusty(Host host) :
-	(host.os == OS::Ubuntu_14_04) ||
-	(host.os == OS::Ubuntu_16_04) ||
-	(host.os == OS::Ubuntu_18_04) ||
-	(host.os == OS::Ubuntu_20_04) ||
-	(host.os == OS::Ubuntu_22_04) ||
-	(host.os == OS::Ubuntu_24_04);
-
-Boolean isMinUbuntuXenial(Host host) :
-	(host.os == OS::Ubuntu_16_04) ||
-	(host.os == OS::Ubuntu_18_04) ||
-	(host.os == OS::Ubuntu_20_04) ||
-	(host.os == OS::Ubuntu_22_04) ||
-	(host.os == OS::Ubuntu_24_04);
-
-Boolean isMinUbuntuBionic(Host host) :
-	(host.os == OS::Ubuntu_18_04) ||
-	(host.os == OS::Ubuntu_20_04) ||
-	(host.os == OS::Ubuntu_22_04) ||
-	(host.os == OS::Ubuntu_24_04);
-
-Boolean isMinUbuntuFocal(Host host) :
-	(host.os == OS::Ubuntu_20_04) ||
-	(host.os == OS::Ubuntu_22_04) ||
-	(host.os == OS::Ubuntu_24_04);
+	(host.os == OS::Ubuntu_24_04) ||
+	(host.os == OS::Ubuntu_26_04);
 
 Boolean isMinUbuntuJammy(Host host) :
 	(host.os == OS::Ubuntu_22_04) ||
-	(host.os == OS::Ubuntu_24_04);
+	(host.os == OS::Ubuntu_24_04) ||
+	(host.os == OS::Ubuntu_26_04);
 
 Boolean isMinUbuntuNoble(Host host) :
-	(host.os == OS::Ubuntu_24_04);
+	(host.os == OS::Ubuntu_24_04) ||
+	(host.os == OS::Ubuntu_26_04);
 
 Boolean isWindows(Host host) :
 	host.os.toString().startsWith("Windows");
@@ -115,4 +63,6 @@ Boolean isMac(Host host) :
 	(host.os == OS::Mac_11_00) ||
 	(host.os == OS::Mac_12_00) ||
 	(host.os == OS::Mac_13_00) ||
-	(host.os == OS::Mac_14_00);
+	(host.os == OS::Mac_14_00) ||
+	(host.os == OS::Mac_15_00) ||
+	(host.os == OS::Mac_26_00);

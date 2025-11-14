@@ -88,7 +88,7 @@ then
 	cp -a ${CA_HOME}/files/«fqhn(host)»-key.pem  «HostSslBase»/«host.name»-key.pem
 fi
 
-«IF hasApache(host) && isMinUbuntuTrusty(host)»
+«IF hasApache(host) && isUbuntu(host)»
 «LET getApache(host) AS apache»
 #
 if [ `openssl x509 -in «HostSslBase»/«host.name»-cert.pem -noout -ocsp_uri |wc -l` -gt 0 ]
@@ -163,7 +163,7 @@ chmod u-s `which newgrp`
 «IF isUbuntu()»
 #
 # Configure locales
-«IF isMinUbuntuTrusty()»
+«IF isUbuntu()»
 localedef -i «locale()» -c -f «charset» «locale()».«charset»
 «ELSE»
 dpkg-reconfigure locales
@@ -218,7 +218,7 @@ test -e «ntprestart(this)» && chmod 755 «ntprestart(this)»
 «IF isUbuntu(host) || isDebian(host)»
 a2enmod -q ssl
 a2enmod -q headers
-«IF isMinUbuntuTrusty(host)»
+«IF isUbuntu(host)»
 a2disconf -q security
 test -f «sslhost_old()» && rm -f «sslhost_old(this)»
 if [ -d «confdir_old()» ]
@@ -403,7 +403,7 @@ chmod 644 «nsSwitch(this)»
 «ENDDEFINE»
 
 «DEFINE init(Host host) FOR PamLDAP»
-«IF isMinUbuntuPrecise(host)»
+«IF isUbuntu(host)»
 nssldap-update-ignoreusers
 «ENDIF»
 chmod 644 «nsSwitch(this)» «pam_conf(this)»

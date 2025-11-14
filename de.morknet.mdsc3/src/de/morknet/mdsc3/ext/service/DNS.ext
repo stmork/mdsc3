@@ -27,7 +27,7 @@ List[Host] getBindHosts(Host host) :
 	getSortedBindHosts(getLocation(getBaseNetwork(host)), host);
 
 String init(DNS service) :
-	!isMinUbuntuFocal(getHost(service)) ? "/etc/init.d/bind9" : "/etc/init.d/named";
+	!isUbuntu(getHost(service)) ? "/etc/init.d/bind9" : "/etc/init.d/named";
 
 String AppArmor(DNS bind) :
 	"/etc/apparmor.d/local/usr.sbin.named";

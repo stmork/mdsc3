@@ -95,7 +95,7 @@ FONTSIZE="16"
 # SCREEN_WIDTH=80
 # SCREEN_HEIGHT=25
 
-«IF isMinUbuntuPrecise()»
+«IF isUbuntu()»
 if [ -f /etc/default/keyboard ]; then
 	. /etc/default/keyboard
 fi
@@ -176,7 +176,7 @@ search     «getDomain()»
 «FOREACH  getBindHosts(this) AS bind»
 nameserver «getIpAddress(bind)»
 «ENDFOREACH»
-«IF isMinUbuntuTrusty() || isRedHat()»
+«IF isUbuntu() || isRedHat()»
 options    single-request-reopen
 «ENDIF»
 «ENDFILE»

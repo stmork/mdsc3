@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
-    <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>de.morknet.mdsc3</groupId>
@@ -10,28 +10,28 @@
 	</parent>
 
 	<name>Modelbased Server Configuration Update Site</name>
-	<version>3.0.10</version>
+	<version>3.0.11</version>
 	<groupId>de.morknet.mdsc3</groupId>
 	<artifactId>de.morknet.mdsc3.updatesite</artifactId>
 	<packaging>eclipse-repository</packaging>
 
 	<organization>
 		<name>MORKNet</name>
-		<url>http://morknet.de/</url>
+		<url>https://morknet.de/</url>
 	</organization>
 
 	<developers>
 		<developer>
 			<name>Steffen A. Mork</name>
 			<email>linux-dev@morknet.de</email>
-			<url>http://morknet.de</url>
+			<url>https://morknet.de</url>
 		</developer>
 	</developers>
 
 	<licenses>
 		<license>
 			<name>Eclipse Public License</name>
-			<url>http://www.eclipse.org/legal/epl-v20.html</url>
+			<url>https://www.eclipse.org/legal/epl-v20.html</url>
 		</license>
 	</licenses>
 
@@ -76,7 +76,7 @@
 					</execution>
 				</executions>
 			</plugin>
- 
+
 			<plugin>
 				<groupId>org.jboss.tools.tycho-plugins</groupId>
 				<artifactId>repository-utils</artifactId>
@@ -117,12 +117,12 @@
 		<pluginRepository>
 			<id>jboss-public-repository-group</id>
 			<name>JBoss Public Repository Group</name>
-			<url>http://repository.jboss.org/nexus/content/groups/public/</url>
+			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
 		</pluginRepository>
 		<pluginRepository>
 			<id>jboss-snapshots-repository</id>
 			<name>JBoss Snapshots Repository</name>
-			<url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
+			<url>https://repository.jboss.org/nexus/content/repositories/releases/</url>
 		</pluginRepository>
 	</pluginRepositories>
 </project>

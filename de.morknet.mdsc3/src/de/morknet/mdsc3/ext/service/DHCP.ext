@@ -10,9 +10,7 @@ extension de::morknet::mdsc3::ext::util::os;
 extension de::morknet::mdsc3::ext::util::network;
 
 private String configBase(DHCP service) :
-	isUbuntu(getHost(service)) ?
-		(isMinUbuntuPrecise(getHost(service)) ? "/etc/dhcp" : "/etc/dhcp3") :
-		"/etc";
+	isUbuntu(getHost(service)) ? "/etc/dhcp" : "/etc";
 
 String AppArmor(DHCP service) :
 	"/etc/apparmor.d/local/usr.sbin.dhcpd";
@@ -46,5 +44,5 @@ Host getDhcpdSlave(Host host) :
 
 String init(DHCP service) :
 	isUbuntu(getHost(service)) ?
-		(isMinUbuntuPrecise(getHost(service)) ? "service isc-dhcp-server" : "/etc/init.d/dhcp3-server") :
+		"service isc-dhcp-server" :
 		"/etc/init.d/dhcpd";

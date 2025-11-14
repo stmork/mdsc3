@@ -16,7 +16,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<xtext-version>2.27.0</xtext-version>
 		<eclipse.distro>2021-12</eclipse.distro>
-		<source.update.site>https://intra.morknet.de/maven/mdsc3/release/</source.update.site>
+		<source.update.site>https://mdsc3.sourceforge.net/updates/release/</source.update.site>
 	</properties>
 
 	<modules>
@@ -35,14 +35,14 @@
 		<developer>
 			<name>Steffen A. Mork</name>
 			<email>linux-dev@morknet.de</email>
-			<url>http://morknet.de</url>
+			<url>https://morknet.de</url>
 		</developer>
 	</developers>
 
 	<licenses>
 		<license>
 			<name>Eclipse Public License</name>
-			<url>http://www.eclipse.org/legal/epl-v20.html</url>
+			<url>https://www.eclipse.org/legal/epl-v20.html</url>
 		</license>
 	</licenses>
 
@@ -220,19 +220,19 @@
 		<repository>
 			<id>release</id>
 			<layout>p2</layout>
-			<url>http://download.eclipse.org/releases/${eclipse.distro}/</url>
+			<url>https://download.eclipse.org/releases/${eclipse.distro}/</url>
 		</repository>
 
 <!--
 		<repository>
 			<id>xtext</id>
 			<layout>p2</layout>
-			<url>http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/</url>
+			<url>https://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/</url>
 		</repository>
 
 		<repository>
 			<id>codehaus-snapshots</id>
-			<url>http://nexus.codehaus.org/</url>
+			<url>https://nexus.codehaus.org/</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>

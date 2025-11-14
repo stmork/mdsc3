@@ -2,28 +2,31 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Modeldriven Server Configuration V3
 Bundle-Vendor: MORKNet
-Bundle-Version: 3.0.10
+Bundle-Version: 3.0.11
 Bundle-SymbolicName: de.morknet.mdsc3; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.jdt.core;visibility:=reexport,
  org.eclipse.core.resources;visibility:=reexport,
- org.eclipse.xtext,
- org.eclipse.xtext.xbase;visibility:=reexport,
- org.eclipse.xtext.common.types,
- org.eclipse.xtext.generator,
- org.eclipse.xtext.util,
- org.eclipse.xtend;visibility:=reexport,
- org.eclipse.xtend.typesystem.emf;visibility:=reexport,
- org.eclipse.xpand;visibility:=reexport,
  org.eclipse.emf.ecore,
  org.eclipse.emf.common,
  org.eclipse.emf.mwe2.launch;visibility:=reexport,
  org.eclipse.emf.mwe2.lib;visibility:=reexport,
+ org.eclipse.equinox.common;visibility:=reexport,
+ org.eclipse.xtext,
+ org.eclipse.xtext.xbase;visibility:=reexport,
+ org.eclipse.xtext.common.types,
+ org.eclipse.xtext.generator,
+ org.eclipse.xtext.ui;visibility:=reexport,
+ org.eclipse.xtext.util,
+ org.eclipse.xtend;visibility:=reexport,
+ org.eclipse.xtend.typesystem.emf;visibility:=reexport,
+ org.eclipse.xpand;visibility:=reexport,
  org.objectweb.asm;bundle-version="9.1.0";resolution:=optional;visibility:=reexport,
  org.antlr.runtime,
  org.apache.commons.logging;visibility:=reexport,
  org.apache.log4j;bundle-version="1.2.15";visibility:=reexport
-Import-Package: org.apache.log4j
+Import-Package: org.apache.commons.logging,
+ org.apache.log4j
 Export-Package: de.morknet.mdsc3;uses:="org.eclipse.xtext,org.eclipse.xtext.service,com.google.inject",
  de.morknet.mdsc3.formatting;uses:="org.eclipse.xtext.formatting.impl",
  de.morknet.mdsc3.mdsc3;uses:="org.eclipse.emf.ecore,org.eclipse.emf.common.util",

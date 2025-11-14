@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DISTRO=${1:-2024-12}
+DISTRO=${1:-2025-09}
 RELEASE=${2:-R}
 DOWNLOAD_SERVER=ftp.halifax.rwth-aachen.de
 #DOWNLOAD_SERVER=archive.eclipse.org
@@ -13,7 +13,7 @@ LEVEL=release
 BASE=$PWD
 TARGET_BASE=${BASE}/target
 DOWNLOAD=${TARGET_BASE}/download
-BUILD=${BASE}
+BUILD=${TARGET_BASE}/build
 DIST=${TARGET_BASE}/dist
 DIRECTOR_ZIP=eclipse-java-${DISTRO}-${RELEASE}-linux-gtk-x86_64.tar.gz
 DIRECTOR=${TARGET_BASE}/eclipse/eclipse
@@ -30,47 +30,52 @@ then
     wget -q $URL -O ${DOWNLOAD}/${DIRECTOR_ZIP}
 fi
 
+echo "Unpacking director..."
 test -d ${TARGET_BASE}/director || tar xfz ${DOWNLOAD}/${DIRECTOR_ZIP} -C ${TARGET_BASE}
 
 function unpack
 {
-	rm -rf ${BUILD}/?clipse*
+	ARCHIVE=${1}
 
-	echo "Unpacking... $1"
+	rm -rf ${BUILD}/?clipse* ${BUILD}/?.*
 
-	case "${1}" in
+	echo "Unpacking... ${ARCHIVE}"
+
+	case "${ARCHIVE}" in
 	*.zip)
-		unzip -q ${1} -d $BUILD
+		unzip -q ${ARCHIVE} -d $BUILD
 		;;
 	*.tar)
-		tar xf ${1} -C $BUILD
+		tar xf ${ARCHIVE} -C $BUILD
 		;;
 	*.tar.gz)
-		tar xfz ${1} -C $BUILD
+		tar xfz ${ARCHIVE} -C $BUILD
 		;;
 	*.tar.bz2)
-		tar xfj ${1} -C $BUILD
+		tar xfj ${ARCHIVE} -C $BUILD
 		;;
 	esac
 }
 
 function pack
 {
+	ARCHIVE=`echo ${1} | sed -e 's/.dmg$/.tar.bz2/g'`
+
 	echo "Packing into... $1"
 
 	cd $BUILD
-	case "${1}" in
+	case "${ARCHIVE}" in
 	*.zip)
-		zip -r9 -q ${1} ?clipse*
+		zip -r9 -q ${ARCHIVE} ?clipse*
 		;;
 	*.tar)
-		tar cf ${1} ?clipse*
+		tar cf ${ARCHIVE} ?clipse*
 		;;
 	*.tar.gz)
-		tar cfz ${1} ?clipse*
+		tar cfz ${ARCHIVE} ?clipse*
 		;;
 	*.tar.bz2)
-		tar cfj ${1} ?clipse*
+		tar cfj ${ARCHIVE} ?clipse*
 		;;
 	esac
 	cd $BASE
@@ -103,22 +108,22 @@ function build
 		${DIRECTOR} -noSplash\
 			-application org.eclipse.equinox.p2.director\
 			-profileProperties org.eclipse.update.install.features=true\
-			-repository https://mdsc3.sourceforge.net/updates/${LEVEL}/,http://download.eclipse.org/releases/${DISTRO}\
+			-repository https://mdsc3.sourceforge.net/updates/${LEVEL}/,https://download.eclipse.org/releases/2024-06/\
 			-destination ${DEST}\
 			-installIU de.morknet.mdsc3.feature.feature.group\
 			-vmargs -Dlogback.configurationFile=${LOG_CONFIG_XML}
 
-#		pack ${TARGET}
+		pack ${TARGET}
 	else
 		echo "${TARGET} already exists."
 	fi
 }
 
 build linux-gtk-x86_64.tar.gz
-#build linux-gtk.tar.gz
 #build macosx-cocoa-x86_64.tar.gz
 #build win32-x86_64.zip
-#build win32.zip
 
-#rm -rf ${BUILD} ${DOWNLOAD} ${TARGET_BASE}/director
-rm -rf ${TARGET}
+rm -rf ${BUILD}
+rm -rf ${TARGET_BASE}/director
+#rm -rf ${DOWNLOAD}
+#rm -rf ${TARGET}
