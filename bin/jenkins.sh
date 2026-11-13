@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DISTRO=${1:-2025-09}
+DISTRO=${1:-2026-09}
 RELEASE=${2:-R}
 DOWNLOAD_SERVER=ftp.halifax.rwth-aachen.de
 #DOWNLOAD_SERVER=archive.eclipse.org
