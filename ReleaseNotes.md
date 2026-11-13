@@ -70,3 +70,8 @@
   * Tahoe
 * Added extended AppArmor support for NTP daemon.
 * Write network configuration into subdirectory /etc/network/interfaces.d
+
+# V3.0.12
+* Removed browser configuration from cupsd.conf
+* Corrected Trac creation scripts
+* Corrected chown calls

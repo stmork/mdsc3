@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DISTRO=${1:-2025-09}
+DISTRO=${1:-2026-06}
 RELEASE=${2:-R}
 DOWNLOAD_SERVER=ftp.halifax.rwth-aachen.de
 #DOWNLOAD_SERVER=archive.eclipse.org
@@ -15,7 +15,7 @@ TARGET_BASE=${BASE}/target
 DOWNLOAD=${TARGET_BASE}/download
 BUILD=${TARGET_BASE}/build
 DIST=${TARGET_BASE}/dist
-DIRECTOR_ZIP=eclipse-java-${DISTRO}-${RELEASE}-linux-gtk-x86_64.tar.gz
+DIRECTOR_ZIP=eclipse-java-2025-03-${RELEASE}-linux-gtk-x86_64.tar.gz
 DIRECTOR=${TARGET_BASE}/eclipse/eclipse
 LOG_CONFIG_XML=`realpath logback.xml`
 
@@ -25,7 +25,7 @@ mkdir -p $DOWNLOAD $BUILD $DIST
 echo "Preparing director..."
 if [ ! -e ${DOWNLOAD}/${DIRECTOR_ZIP} ]
 then
-	URL="http://${DOWNLOAD_SERVER}${DOWNLOAD_URI}/technology/epp/downloads/release/${DISTRO}/${RELEASE}/${DIRECTOR_ZIP}"
+	URL="http://archive.eclipse.org/technology/epp/downloads/release/2025-03/${RELEASE}/${DIRECTOR_ZIP}"
     echo "Downloading $URL"
     wget -q $URL -O ${DOWNLOAD}/${DIRECTOR_ZIP}
 fi
@@ -108,7 +108,7 @@ function build
 		${DIRECTOR} -noSplash\
 			-application org.eclipse.equinox.p2.director\
 			-profileProperties org.eclipse.update.install.features=true\
-			-repository https://mdsc3.sourceforge.net/updates/${LEVEL}/,https://download.eclipse.org/releases/2024-06/\
+			-repository https://mdsc3.sourceforge.net/updates/${LEVEL}/,https://download.eclipse.org/releases/2025-09/,https://download.eclipse.org/releases/2021-12/,https://download.eclipse.org/modeling/m2t/xpand/updates/releases/R201605260315/\
 			-destination ${DEST}\
 			-installIU de.morknet.mdsc3.feature.feature.group\
 			-vmargs -Dlogback.configurationFile=${LOG_CONFIG_XML}

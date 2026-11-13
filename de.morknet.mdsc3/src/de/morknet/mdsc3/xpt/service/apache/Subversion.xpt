@@ -269,10 +269,18 @@ fi
 #
 echo 'Creating trac project...'
 «IF isUbuntu(host)»
-trac-admin $TRAC_REPOSITORY initenv $PROJECT_NAME sqlite:db/trac.db svn $SVN_REPOSITORY
+trac-admin $TRAC_REPOSITORY initenv $PROJECT_NAME sqlite:db/trac.db
 «ELSE»
 trac-admin $TRAC_REPOSITORY initenv $PROJECT_NAME sqlite:db/trac.db svn $SVN_REPOSITORY $TRAC_TEMPLATES 
 «ENDIF»
+#
+«EXPAND Trac_Config(host)»
+#
+trac-admin $TRAC_REPOSITORY repository add source ${SVN_REPOSITORY} svn
+trac-admin $TRAC_REPOSITORY config set trac repository_dir ${SVN_REPOSITORY}
+trac-admin $TRAC_REPOSITORY config set trac repository_type svn
+#
+#
 find $TRAC_REPOSITORY -type f -exec chmod  660 {} \;
 find $TRAC_REPOSITORY -type d -exec chmod 2770 {} \;
 chgrp -R $WWW_GROUP $TRAC_REPOSITORY
@@ -306,7 +314,7 @@ smtp_server = «fqhn(connections.typeSelect(Trac).first().relay)»
 «ENDIF»
 smtp_subject_prefix = __default__
 use_tls = true
-' >> $TRAC_REPOSITORY/conf/trac.ini
+' >> /tmp/trac.ini
 #
 echo 'Creating trac apache configuration...'
 #
@@ -404,10 +412,16 @@ echo 'Creating trac project...'
 mkdir $TRAC_REPOSITORY
 #
 «IF isUbuntu(host)» 
-trac-admin $TRAC_REPOSITORY initenv $PROJECT_NAME sqlite:db/trac.db git $GIT_REPOSITORY
+trac-admin $TRAC_REPOSITORY initenv $PROJECT_NAME sqlite:db/trac.db
 «ELSE»
 trac-admin $TRAC_REPOSITORY initenv $PROJECT_NAME sqlite:db/trac.db git $GIT_REPOSITORY $TRAC_TEMPLATES 
 «ENDIF»
+#
+«EXPAND Trac_Config(host)»
+#
+trac-admin $TRAC_REPOSITORY repository add source ${GIT_REPOSITORY} git
+trac-admin $TRAC_REPOSITORY config set trac repository_dir ${GIT_REPOSITORY}
+trac-admin $TRAC_REPOSITORY config set trac repository_type git
 #
 #
 find $TRAC_REPOSITORY -type f -exec chmod  660 {} \;
@@ -458,7 +472,7 @@ cached_repository =false
 git_bin = /usr/bin/git
 persistent_cache = false
 shortrev_len = 7
-' >> $TRAC_REPOSITORY/conf/trac.ini
+' >> /tmp/trac.ini
 #
 echo 'Creating trac apache configuration...'
 echo '<Location "/trac/'$PROJECT_NAME'">
@@ -471,6 +485,35 @@ echo "Reloading Apache"
 #
 echo Done.
 «ENDFILE»
+«ENDDEFINE»
+
+«DEFINE Trac_Config(Host host) FOR Apache»
+trac-admin $TRAC_REPOSITORY config set components 'tracext.git.*' enabled
+trac-admin $TRAC_REPOSITORY config set components 'webadmin.*' enabled
+trac-admin $TRAC_REPOSITORY config set components 'tractoc.git.*' enabled
+«IF isApache24(host)»
+trac-admin $TRAC_REPOSITORY config set components 'tracopt.versioncontrol.svn.*' enabled
+trac-admin $TRAC_REPOSITORY config set components 'tracopt.versioncontrol.git.*' enabled
+«ENDIF»
+#
+trac-admin $TRAC_REPOSITORY config set notification always_notify_owner true
+trac-admin $TRAC_REPOSITORY config set notification always_notify_reporter true
+trac-admin $TRAC_REPOSITORY config set notification always_notify_updater true
+trac-admin $TRAC_REPOSITORY config set notification smtp_enabled true
+trac-admin $TRAC_REPOSITORY config set notification smtp_port 25
+trac-admin $TRAC_REPOSITORY config set notification use_tls true
+«IF hasMail(host)»
+trac-admin $TRAC_REPOSITORY config set notification smtp_server localhost
+«ELSE»
+trac-admin $TRAC_REPOSITORY config set notification smtp_server «fqhn(connections.typeSelect(Trac).first().relay)»
+«ENDIF»
+trac-admin $TRAC_REPOSITORY config set notification smtp_default_domain «getDomain(host)»
+trac-admin $TRAC_REPOSITORY config set notification smtp_from trac@«getDomain(host)»
+trac-admin $TRAC_REPOSITORY config set notification smtp_replyto trac@«getDomain(host)»
+#
+trac-admin $TRAC_REPOSITORY config set trac show_email_addresses true
+#
+trac-admin $TRAC_REPOSITORY config set metanav logout disabled
 «ENDDEFINE»
 
 «DEFINE Trac_WSGI(Host host) FOR Apache»
