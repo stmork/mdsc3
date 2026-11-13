@@ -73,3 +73,5 @@
 
 # V3.0.12
 * Removed browser configuration from cupsd.conf
+* Corrected Trac creation scripts
+* Corrected chown calls
